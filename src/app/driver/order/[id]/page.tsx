@@ -54,11 +54,14 @@ export default function DriverOrderPage() {
     const handleComplete = async () => {
         if (!pin || pin.length < 4) return alert('Ingresa el código de seguridad de 4 dígitos')
 
-        try {
-            await verifyDelivery(order.id, pin)
-            router.push('/driver') // Back to list
-        } catch (error: any) {
-            alert(error.message || 'Error al verificar la entrega')
+        const result = await verifyDelivery(order.id, pin)
+
+        if (!result.success) {
+            alert("❌ " + result.message)
+            setPin('') // Clear input on error
+        } else {
+            alert("✅ " + result.message)
+            router.push('/driver')
         }
     }
 

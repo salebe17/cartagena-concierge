@@ -104,40 +104,47 @@ export async function getProfile() {
 }
 
 export async function verifyDelivery(orderId: string, inputCode: string) {
-    const supabase = createClient()
+    try {
+        const supabase = createClient()
 
-    // 1. Fetch Order
-    const { data: order, error: fetchError } = await (await supabase)
-        .from('orders')
-        .select('delivery_code, status')
-        .eq('id', orderId)
-        .single()
+        // 1. Fetch Order
+        const { data: order, error: fetchError } = await (await supabase)
+            .from('orders')
+            .select('delivery_code, status')
+            .eq('id', orderId)
+            .single()
 
-    if (fetchError || !order) {
-        throw new Error('Order not found')
+        if (fetchError || !order) {
+            return { success: false, message: 'Orden no encontrada' }
+        }
+
+        // 2. Verify Code
+        // Allow 'SKIPPED' bypass or exact match
+        if (inputCode !== 'SKIPPED' && order.delivery_code !== inputCode) {
+            return { success: false, message: 'PIN Incorrecto. Intenta de nuevo.' }
+        }
+
+        // 3. Update Status
+        const { error: updateError } = await (await supabase)
+            .from('orders')
+            .update({
+                status: 'delivered',
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', orderId)
+
+        if (updateError) {
+            return { success: false, message: 'Error al actualizar la orden' }
+        }
+
+        revalidatePath('/driver')
+        revalidatePath('/dashboard')
+        return { success: true, message: 'Entrega Exitosa' }
+
+    } catch (error) {
+        console.error('Verification Error:', error)
+        return { success: false, message: 'Error técnico al verificar' }
     }
-
-    // 2. Verify Code
-    if (inputCode !== 'SKIPPED' && order.delivery_code !== inputCode) {
-        throw new Error('Invalid delivery code')
-    }
-
-    // 3. Update Status
-    const { error: updateError } = await (await supabase)
-        .from('orders')
-        .update({
-            status: 'delivered',
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', orderId)
-
-    if (updateError) {
-        throw new Error('Failed to update order')
-    }
-
-    revalidatePath('/driver')
-    revalidatePath('/dashboard')
-    return { success: true }
 }
 
 export async function validateOrderCode(orderId: string, inputCode: string) {
