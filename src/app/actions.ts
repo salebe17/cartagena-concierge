@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 export async function calculateOrderFee(amount: number, distanceKm: number) {
     // Service Fee = 10% of amount
@@ -390,4 +391,10 @@ export async function rejectUser(userId: string) {
     revalidatePath('/admin')
     revalidatePath('/order')
     return { success: true }
+}
+
+export async function signOut() {
+    const supabase = await createClient()
+    await supabase.auth.signOut()
+    return redirect('/login')
 }
