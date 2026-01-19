@@ -121,7 +121,8 @@ export async function verifyDelivery(orderId: string, inputCode: string) {
 
         // 2. Verify Code
         if (inputCode !== 'SKIPPED' && order.delivery_code !== inputCode) {
-            return { success: false, message: `PIN Incorrecto. Esperaba: ${order.delivery_code}, Recibí: ${inputCode}` }
+            // SECURITY: Never return the real PIN in the error message
+            return { success: false, message: '❌ PIN Incorrecto. Por favor verifícalo con el cliente e intenta de nuevo.' }
         }
 
         // 3. Update Status (FORCE UPDATE with Auto-Claim)
