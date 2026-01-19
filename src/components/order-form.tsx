@@ -114,43 +114,41 @@ export function OrderForm() {
     }
 
     const handleCreateOrder = async () => {
-        // 🛑 BLOQUEO DE SEGURIDAD
-        if (!phone || phone.length < 5 || !addressDetails || addressDetails.length < 3) {
-            alert(t.alert_error);
-            return; // This return is crucial. It stops the function dead.
+        // 🛑 VALIDACIÓN ESTRICTA
+        if (!phone || phone.length < 7) {
+            alert("❌ Por favor ingresa un número de teléfono válido (mínimo 7 dígitos).")
+            return
+        }
+        if (!addressDetails || addressDetails.length < 5) {
+            alert("❌ Por favor ingresa una dirección detallada (mínimo 5 caracteres).")
+            return
+        }
+        if (!coordinates) {
+            alert("❌ Por favor selecciona una ubicación en el mapa.")
+            return
         }
 
         setLoading(true)
         const distance = 5 // Mock
-
-        const lat = coordinates?.lat || 10.391 // Fallback if missing
-        const lng = coordinates?.lng || -75.479
+        const lat = coordinates.lat
+        const lng = coordinates.lng
 
         try {
             const result = await createOrder(Number(amount), distance, lat, lng, phone)
 
             if (typeof result === 'object' && result?.error) {
-                toast({
-                    title: "Error Creating Order",
-                    description: result.error,
-                    variant: "destructive"
-                })
-                return
+                throw new Error(result.error)
             }
 
-            toast({
-                title: "Order Created",
-                description: "Redirecting to payment..."
-            })
-            router.push('/dashboard')
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive"
-            })
-        } finally {
-            setLoading(false)
+            // Success
+            // alert("✅ Orden creada correctamente!") // Optional feedback
+            router.push('/order/' + result) // Result is the order ID string
+            router.refresh()
+
+        } catch (error: any) {
+            console.error(error)
+            alert("❌ Error al crear la orden: " + (error.message || "Error desconocido"))
+            setLoading(false) // Only stop loading on error, keep it loading during redirect
         }
     }
 
@@ -397,10 +395,10 @@ export function OrderForm() {
                                     </Button>
                                     <Button
                                         onClick={handleCreateOrder}
-                                        disabled={!phone || !addressDetails}
+                                        disabled={loading || !phone || !addressDetails}
                                         className={`w-full font-bold text-lg ${(!phone || !addressDetails) ? 'opacity-50 cursor-not-allowed bg-gray-500' : 'bg-[#D4AF37] hover:bg-[#b5952f] text-white'}`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? t.alert_error : t.btn_submit)}
+                                        {loading ? "Procesando... 🔄" : (!phone || !addressDetails ? t.alert_error : t.btn_submit)}
                                     </Button>
                                 </div>
                                 <p className="text-center text-xs text-zinc-300 mt-4">
