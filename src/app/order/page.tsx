@@ -27,18 +27,17 @@ export default async function OrderPage() {
     // 2. Pending -> Full Screen Block
     if (status === 'pending') {
         return (
-            <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-black flex items-center justify-center p-4">
                 <div className="max-w-md text-center space-y-4">
-                    <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <Clock className="w-8 h-8 text-yellow-600" />
+                    <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                        <Clock className="w-8 h-8 text-yellow-500" />
                     </div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Tu cuenta está en revisión</h1>
-                    <p className="text-zinc-500">
-                        Hemos recibido tus documentos y estamos verificando tu identidad.
-                        Este proceso suele tomar unos minutos. Te enviaremos un correo pronto.
+                    <h1 className="text-2xl font-bold text-white">Tu cuenta está en revisión</h1>
+                    <p className="text-zinc-400">
+                        ⏳ Tus documentos están en revisión. Te notificaremos por WhatsApp cuando te aprobemos.
                     </p>
                     <Link href="/dashboard">
-                        <Button variant="outline">Ir al Dashboard</Button>
+                        <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">Volver al Dashboard</Button>
                     </Link>
                 </div>
             </div>
@@ -48,14 +47,14 @@ export default async function OrderPage() {
     // 3. Rejected -> Block with Retry
     if (status === 'rejected') {
         return (
-            <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-black flex items-center justify-center p-4">
                 <div className="max-w-md text-center space-y-4">
-                    <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                        <ShieldAlert className="w-8 h-8 text-red-600" />
+                    <div className="mx-auto w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center">
+                        <ShieldAlert className="w-8 h-8 text-red-500" />
                     </div>
-                    <h1 className="text-2xl font-bold text-red-900">Verificación Rechazada</h1>
-                    <p className="text-red-700">
-                        Hubo un problema con tus documentos. Por favor intenta subirlos nuevamente.
+                    <h1 className="text-2xl font-bold text-red-500">Verificación Denegada</h1>
+                    <p className="text-red-400">
+                        ❌ Verificación denegada. Contacta soporte.
                     </p>
                     <Link href="/verify">
                         <Button className="bg-red-600 hover:bg-red-700 text-white">
