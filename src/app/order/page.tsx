@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
 import { OrderForm } from "@/components/order-form"
-import { KYCBanner } from "@/components/kyc-banner"
+import { LogoutButton } from "@/components/logout-button"
 
 export default async function OrderPage() {
     const supabase = await createClient()
@@ -12,15 +12,47 @@ export default async function OrderPage() {
 
     if (!user) return redirect('/login')
 
+    // Fetch Profile Status
     const { data: profile } = await supabase
         .from('profiles')
         .select('kyc_status')
         .eq('id', user.id)
         .single()
 
-    const status = profile?.kyc_status || 'unverified'
-    const isVerified = status === 'verified'
+    // 🛑 THE SECURITY WALL 🛑
+    // If no status or 'unverified', KICK them to verify page
+    if (!profile?.kyc_status || profile.kyc_status === 'unverified') {
+        redirect('/verify')
+    }
 
+    // If 'pending', show Waiting Room (Do not allow ordering)
+    if (profile.kyc_status === 'pending') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-black text-white">
+                <h1 className="text-2xl font-bold mb-4">⏳ Verificación en Proceso</h1>
+                <p>Tus documentos están siendo revisados por nuestro equipo.</p>
+                <p className="mt-2 text-sm text-gray-400">Te notificaremos cuando puedas pedir.</p>
+                <div className="mt-6">
+                    <LogoutButton />
+                </div>
+            </div>
+        )
+    }
+
+    // If 'rejected', show Error
+    if (profile.kyc_status === 'rejected') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-black text-white">
+                <h1 className="text-2xl font-bold mb-4 text-red-500">❌ Tu solicitud fue rechazada</h1>
+                <p>Contacta soporte para más información.</p>
+                <div className="mt-6">
+                    <LogoutButton />
+                </div>
+            </div>
+        )
+    }
+
+    // If 'verified', render the normal Order Form...
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-8 dark:bg-black">
             <div className="max-w-md mx-auto">
@@ -33,17 +65,7 @@ export default async function OrderPage() {
                     <h1 className="text-xl font-bold text-slate-900 dark:text-emerald-400">Solicitar Efectivo</h1>
                 </div>
 
-                {/* KYC Banner at the top */}
-                <KYCBanner status={status} />
-
-                {/* Order Form - Only visible if verified */}
-                {isVerified ? (
-                    <OrderForm />
-                ) : (
-                    <div className="text-center p-8 bg-zinc-900/50 rounded-lg border border-zinc-800 text-zinc-500">
-                        <p>Formulario de pedido deshabilitado hasta completar verificación.</p>
-                    </div>
-                )}
+                <OrderForm />
             </div>
         </div>
     )

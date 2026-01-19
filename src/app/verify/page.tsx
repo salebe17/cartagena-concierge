@@ -165,8 +165,8 @@ export default function VerifyPage() {
                         </div>
                     )}
                     <div>
-                        <h1 className="text-2xl font-bold">Hola, {profile?.full_name?.split(' ')[0] || 'Usuario'}</h1>
-                        <p className="text-zinc-400 text-sm">Verifica tu identidad para comenzar</p>
+                        <h1 className="text-2xl font-bold">Verificación de Identidad Requerida</h1>
+                        <p className="text-zinc-400 text-sm">Para seguridad de todos, necesitamos validar quién eres antes de tu primer pedido.</p>
                     </div>
                 </div>
 
@@ -230,7 +230,7 @@ export default function VerifyPage() {
                             disabled={!idFile || !selfieFile || uploading}
                         >
                             {uploading ? <Loader2 className="animate-spin mr-2" /> : null}
-                            {uploading ? "Enviando..." : "Enviar Verificación"}
+                            {uploading ? "Enviando..." : "Enviar Documentos"}
                         </Button>
 
                     </CardContent>
