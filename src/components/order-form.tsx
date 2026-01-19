@@ -84,14 +84,10 @@ export function OrderForm() {
     const handleCalculate = async () => {
         if (!amount || !coordinates) return
 
-        // Validation: Phone and Location Details required before review
-        if (!isFormValid) {
-            toast({
-                title: "Information Missing",
-                description: "Por favor ingresa un celular válido (mínimo 7 dígitos) y detalles de ubicación.",
-                variant: "destructive"
-            })
-            return
+        // 🛑 BLOQUEO DE SEGURIDAD
+        if (!phone || phone.length < 5 || !addressDetails || addressDetails.length < 3) {
+            alert("🛑 DATOS INCOMPLETOS:\n\nPor favor escribe tu número de celular y los detalles de la ubicación (Apto/Edificio) para que el conductor pueda llegar.");
+            return; // This return is crucial. It stops the function dead.
         }
 
         setLoading(true)
@@ -115,14 +111,10 @@ export function OrderForm() {
     }
 
     const handleCreateOrder = async () => {
-        // Double check validation
-        if (!isFormValid) {
-            toast({
-                title: "Information Missing",
-                description: "Por favor ingresa un celular válido y detalles de ubicación para continuar.",
-                variant: "destructive"
-            })
-            return
+        // 🛑 BLOQUEO DE SEGURIDAD
+        if (!phone || phone.length < 5 || !addressDetails || addressDetails.length < 3) {
+            alert("🛑 DATOS INCOMPLETOS:\n\nPor favor escribe tu número de celular y los detalles de la ubicación (Apto/Edificio) para que el conductor pueda llegar.");
+            return; // This return is crucial. It stops the function dead.
         }
 
         setLoading(true)
@@ -339,14 +331,10 @@ export function OrderForm() {
                                     </Button>
                                     <Button
                                         onClick={handleCalculate}
-                                        disabled={!isFormValid || loading}
-                                        style={{ opacity: !isFormValid ? 0.5 : 1 }}
-                                        className={`flex-1 h-14 text-lg rounded-xl transition-all ${!isFormValid
-                                                ? 'bg-zinc-200 text-zinc-500 cursor-not-allowed'
-                                                : 'bg-black hover:bg-zinc-800 text-white'
-                                            }`}
+                                        disabled={!phone || !addressDetails}
+                                        className={`w-full font-bold text-lg ${(!phone || !addressDetails) ? 'opacity-50 cursor-not-allowed bg-gray-500' : 'bg-black hover:bg-zinc-800 text-white'}`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : (!isFormValid ? "⚠️ Completa Campos" : "Review Details")}
+                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? "Falta Celular/Ubicación ⚠️" : "Review Details")}
                                     </Button>
                                 </div>
                                 {!isFormValid && (
@@ -406,14 +394,10 @@ export function OrderForm() {
                                     </Button>
                                     <Button
                                         onClick={handleCreateOrder}
-                                        disabled={!isFormValid || loading}
-                                        style={{ opacity: !isFormValid ? 0.5 : 1 }}
-                                        className={`flex-1 h-14 text-lg rounded-xl font-bold shadow-lg transition-all ${!isFormValid
-                                                ? 'bg-zinc-200 text-zinc-500 cursor-not-allowed shadow-none'
-                                                : 'bg-[#D4AF37] hover:bg-[#b5952f] text-white shadow-orange-100'
-                                            }`}
+                                        disabled={!phone || !addressDetails}
+                                        className={`w-full font-bold text-lg ${(!phone || !addressDetails) ? 'opacity-50 cursor-not-allowed bg-gray-500' : 'bg-[#D4AF37] hover:bg-[#b5952f] text-white'}`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : (!isFormValid ? "⚠️ Completa Celular y Ubicación" : "Confirm & Pay")}
+                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? "Falta Celular/Ubicación ⚠️" : "ConfirmAR PEDIDO")}
                                     </Button>
                                 </div>
                                 <p className="text-center text-xs text-zinc-300 mt-4">
