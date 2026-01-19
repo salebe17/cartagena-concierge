@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { calculateOrderFee, createOrder } from '@/app/actions'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
+
 import LocationPicker from '@/components/location-picker'
+import { useLanguage } from '@/hooks/useLanguage'
 
 const CASH_PACKS = [
     { value: '200000', label: '$200.000', sub: 'COP' },
@@ -28,6 +30,7 @@ const NEIGHBORHOODS = [
 ]
 
 export function OrderForm() {
+    const { t } = useLanguage()
     const [step, setStep] = useState(1)
     const [amount, setAmount] = useState('')
     // const [neighborhood, setNeighborhood] = useState('') // Replaced by more specific location
@@ -86,7 +89,7 @@ export function OrderForm() {
 
         // 🛑 BLOQUEO DE SEGURIDAD
         if (!phone || phone.length < 5 || !addressDetails || addressDetails.length < 3) {
-            alert("🛑 DATOS INCOMPLETOS:\n\nPor favor escribe tu número de celular y los detalles de la ubicación (Apto/Edificio) para que el conductor pueda llegar.");
+            alert(t.alert_error);
             return; // This return is crucial. It stops the function dead.
         }
 
@@ -113,7 +116,7 @@ export function OrderForm() {
     const handleCreateOrder = async () => {
         // 🛑 BLOQUEO DE SEGURIDAD
         if (!phone || phone.length < 5 || !addressDetails || addressDetails.length < 3) {
-            alert("🛑 DATOS INCOMPLETOS:\n\nPor favor escribe tu número de celular y los detalles de la ubicación (Apto/Edificio) para que el conductor pueda llegar.");
+            alert(t.alert_error);
             return; // This return is crucial. It stops the function dead.
         }
 
@@ -172,8 +175,8 @@ export function OrderForm() {
                                 className="space-y-6"
                             >
                                 <div className="text-center space-y-2 mb-8">
-                                    <h2 className="text-2xl font-bold font-serif tracking-tight">Select Amount</h2>
-                                    <p className="text-zinc-400 text-sm">How much cash do you need delivered?</p>
+                                    <h2 className="text-2xl font-bold font-serif tracking-tight">{t.title}</h2>
+                                    <p className="text-zinc-400 text-sm">{t.subtitle}</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4">
@@ -212,7 +215,7 @@ export function OrderForm() {
                                 {amount && (
                                     <div className="mt-6 p-5 bg-zinc-50 border border-zinc-100 rounded-2xl space-y-3 shadow-inner">
                                         <div className="flex justify-between text-sm text-zinc-500">
-                                            <span>Solicitado:</span>
+                                            <span>{t.amount_label}:</span>
                                             <span>${Number(amount).toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-zinc-500">
@@ -251,8 +254,8 @@ export function OrderForm() {
                                 className="space-y-6"
                             >
                                 <div className="text-center space-y-2 mb-4">
-                                    <h2 className="text-2xl font-bold font-serif tracking-tight">Exact Location</h2>
-                                    <p className="text-zinc-400 text-sm">Help the driver find you.</p>
+                                    <h2 className="text-2xl font-bold font-serif tracking-tight">{t.location_label}</h2>
+                                    <p className="text-zinc-400 text-sm">{t.subtitle}</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -291,7 +294,7 @@ export function OrderForm() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-zinc-500 font-medium ml-1">Location Details</Label>
+                                        <Label className="text-zinc-500 font-medium ml-1">{t.location_label}</Label>
                                         <Input
                                             required
                                             placeholder="Apt 201, Building Name, Color..."
@@ -302,7 +305,7 @@ export function OrderForm() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-zinc-500 font-medium ml-1">Número de Celular (WhatsApp)</Label>
+                                        <Label className="text-zinc-500 font-medium ml-1">{t.phone_label}</Label>
                                         <Input
                                             required
                                             type="tel"
@@ -334,12 +337,12 @@ export function OrderForm() {
                                         disabled={!phone || !addressDetails}
                                         className={`w-full font-bold text-lg ${(!phone || !addressDetails) ? 'opacity-50 cursor-not-allowed bg-gray-500' : 'bg-black hover:bg-zinc-800 text-white'}`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? "Falta Celular/Ubicación ⚠️" : "Review Details")}
+                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? t.alert_error : "Review Details")}
                                     </Button>
                                 </div>
                                 {!isFormValid && (
                                     <p className="text-center text-xs text-orange-600 mt-3 font-medium animate-pulse">
-                                        ⚠️ Completa los campos (Celular y Ubicación) para continuar
+                                        {t.alert_error}
                                     </p>
                                 )}
                             </motion.div>
@@ -360,7 +363,7 @@ export function OrderForm() {
 
                                 <div className="bg-zinc-50 p-6 rounded-2xl space-y-4 border border-zinc-100">
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-zinc-500">Requested Cash</span>
+                                        <span className="text-zinc-500">{t.amount_label}</span>
                                         <span className="font-semibold text-zinc-900">${Number(amount).toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
@@ -397,7 +400,7 @@ export function OrderForm() {
                                         disabled={!phone || !addressDetails}
                                         className={`w-full font-bold text-lg ${(!phone || !addressDetails) ? 'opacity-50 cursor-not-allowed bg-gray-500' : 'bg-[#D4AF37] hover:bg-[#b5952f] text-white'}`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? "Falta Celular/Ubicación ⚠️" : "ConfirmAR PEDIDO")}
+                                        {loading ? <Loader2 className="animate-spin" /> : (!phone || !addressDetails ? t.alert_error : t.btn_submit)}
                                     </Button>
                                 </div>
                                 <p className="text-center text-xs text-zinc-300 mt-4">
