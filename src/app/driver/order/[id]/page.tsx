@@ -1,109 +1,157 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { SignaturePad } from '@/components/signature-pad'
-import { verifyDelivery } from '@/app/actions'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
-import { Loader2, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { getOrder, completeOrder } from '@/app/actions'
+import { MapPin, Navigation, CheckCircle, MessageCircle } from 'lucide-react'
+
+// Simple button component for consistency
+const ActionButton = ({ onClick, color, icon: Icon, label, disabled }: any) => (
+    <button
+        onClick={onClick}
+        disabled={disabled}
+        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-95 ${disabled ? 'bg-gray-300' : color
+            }`}
+    >
+        {Icon && <Icon size={20} />}
+        {label}
+    </button>
+)
 
 export default function DriverOrderPage() {
     const params = useParams()
     const router = useRouter()
-    const { toast } = useToast()
+    const [order, setOrder] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+    const [step, setStep] = useState<'details' | 'signature'>('details')
+    const [signature, setSignature] = useState('')
 
-    const [step, setStep] = useState<'otp' | 'signature'>('otp')
-    const [otp, setOtp] = useState('')
-    const [loading, setLoading] = useState(false)
-
-    // In a real app we would client-side fetch the order details to display here
-    // For now, we focus on the delivery completion flow.
-
-    const handleVerifyOtp = () => {
-        if (otp.length === 4) {
-            // In a real app we might verify OTP against server first before signature, 
-            // but the action does both. Let's ask for signature next.
-            setStep('signature')
-        } else {
-            toast({
-                title: "Invalid Code",
-                description: "Please enter a 4-digit code.",
-                variant: "destructive"
-            })
-        }
-    }
-
-    const handleCompleteDelivery = async (signatureData: string) => {
-        setLoading(true)
-        try {
-            await verifyDelivery(params.id as string, otp, signatureData)
-            toast({
-                title: "Success",
-                description: "Order marked as delivered.",
-                variant: "default" // success
-            })
-            router.push('/driver')
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Invalid code or delivery failed.",
-                variant: "destructive"
-            })
-            setStep('otp') // Reset if failed
-        } finally {
+    useEffect(() => {
+        async function load() {
+            if (!params.id) return
+            const { data } = await getOrder(params.id as string)
+            setOrder(data)
             setLoading(false)
         }
+        load()
+    }, [params.id])
+
+    const handleOpenWaze = () => {
+        if (!order) return
+        // Use stored coordinates or fallback to Cartagena default
+        const lat = order.location_lat || 10.391
+        const lng = order.location_lng || -75.479
+        window.open(`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`, '_blank')
     }
 
+    const handleOpenMaps = () => {
+        if (!order) return
+        const lat = order.location_lat || 10.391
+        const lng = order.location_lng || -75.479
+        window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank')
+    }
+
+    const handleComplete = async () => {
+        if (!signature) return alert('Debes firmar primero')
+        await completeOrder(order.id, signature)
+        router.push('/driver') // Back to list
+    }
+
+    if (loading) return <div className="p-10 text-center">Cargando orden...</div>
+    if (!order) return <div className="p-10 text-center">Orden no encontrada</div>
+
     return (
-        <div className="min-h-screen bg-black text-white p-4">
-            <Link href="/driver" className="flex items-center text-zinc-400 mb-6 hover:text-white">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Orders
-            </Link>
+        <div className="min-h-screen bg-gray-50 p-4 flex flex-col gap-6">
+            {/* Header */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wide">
+                            {order.status}
+                        </span>
+                        <h1 className="text-3xl font-black mt-2">${Number(order.amount).toLocaleString()}</h1>
+                    </div>
+                    <div className="text-right text-sm text-gray-500">
+                        #{order.id.slice(0, 4)}
+                    </div>
+                </div>
 
-            <Card className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-md mx-auto">
-                <CardHeader>
-                    <CardTitle>Complete Delivery</CardTitle>
-                    <CardDescription className="text-zinc-500">Order ID: {params.id}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+                <div className="flex items-center gap-2 text-gray-600 bg-gray-50 p-3 rounded-lg">
+                    <MapPin size={18} />
+                    <span className="text-sm font-medium">Distancia: {order.distance_km || 5} km</span>
+                </div>
+            </div>
 
-                    {step === 'otp' && (
-                        <div className="space-y-4">
-                            <Label htmlFor="otp">Enter Client Delivery Code</Label>
-                            <Input
-                                id="otp"
-                                placeholder="0000"
-                                maxLength={4}
-                                className="bg-zinc-950 border-zinc-700 text-center text-2xl tracking-widest h-14"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
-                            />
-                            <Button
-                                onClick={handleVerifyOtp}
-                                className="w-full bg-emerald-600 hover:bg-emerald-700"
-                                disabled={otp.length !== 4}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    )}
+            {/* Navigation Actions */}
+            {step === 'details' && (
+                <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">Navegación</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <ActionButton
+                            onClick={handleOpenWaze}
+                            color="bg-blue-500 hover:bg-blue-600"
+                            icon={Navigation}
+                            label="Waze"
+                        />
+                        <ActionButton
+                            onClick={handleOpenMaps}
+                            color="bg-green-500 hover:bg-green-600"
+                            icon={MapPin}
+                            label="Maps"
+                        />
+                    </div>
+                    {/* WhatsApp Button */}
+                    <ActionButton
+                        onClick={() => {
+                            // Prioritize order-specific phone, then fallback to profile, then generic
+                            const phone = order.client_phone || order.client?.phone || '573000000000'
+                            const text = `Hola, soy tu conductor de Cartagena Concierge. Voy en camino.`
+                            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank')
+                        }}
+                        color="bg-emerald-500 hover:bg-emerald-600"
+                        // Using a simple text label or importing a MessageCircle/Phone icon if available
+                        // We'll use MapPin as placeholder or add MessageCircle icon import
+                        icon={MessageCircle}
+                        label="WhatsApp Client"
+                        disabled={!order.client_phone && !order.client?.phone} // Optional: Disable if no phone found at all, or leave enabled with fallback
+                    />
 
-                    {step === 'signature' && (
-                        <div className="space-y-4">
-                            <Label>Client Signature</Label>
-                            <SignaturePad onSave={handleCompleteDelivery} />
-                            {loading && <div className="text-center text-zinc-400"><Loader2 className="animate-spin inline mr-2" /> Processing...</div>}
-                        </div>
-                    )}
+                    <div className="h-4"></div> {/* Spacer */}
 
-                </CardContent>
-            </Card>
+                    <ActionButton
+                        onClick={() => setStep('signature')}
+                        color="bg-black hover:bg-zinc-800"
+                        label="Finalizar Entrega"
+                        icon={CheckCircle}
+                    />
+                </div>
+            )}
+
+            {/* Signature Step */}
+            {step === 'signature' && (
+                <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 text-center">
+                        <p className="text-sm text-gray-400 mb-2">Firma del Cliente (Simulada)</p>
+                        {/* Simple Text Area for Signature in MVP */}
+                        <textarea
+                            className="w-full h-32 bg-gray-50 rounded-lg p-2 text-2xl font-handwriting text-center"
+                            placeholder="Escribe tu nombre..."
+                            value={signature}
+                            onChange={(e) => setSignature(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <button onClick={() => setStep('details')} className="text-gray-500 font-medium">Cancelar</button>
+                        <ActionButton
+                            onClick={handleComplete}
+                            color="bg-black"
+                            label="Confirmar"
+                            disabled={!signature}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

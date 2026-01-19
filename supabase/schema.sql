@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   full_name TEXT,
+  phone TEXT, -- Added for "Remember Me" functionality
   role TEXT CHECK (role IN ('user', 'driver', 'admin')) DEFAULT 'user',
   avatar_url TEXT,
   updated_at TIMESTAMP WITH TIME ZONE
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS orders (
   location_lat FLOAT,
   location_lng FLOAT,
   distance_km FLOAT,
+  client_phone TEXT, -- Contact number for this specific order
   signature_url TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
