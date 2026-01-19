@@ -100,18 +100,14 @@ export default function VerifyPage() {
             if (updateError) throw updateError
 
             setStatus('pending')
-            toast({
-                title: "Verificación Enviada",
-                description: "Revisaremos tus documentos pronto.",
-            })
+            // User Feedback & Redirect
+            alert("✅ Documentos enviados correctamente.")
+            router.refresh()
+            router.push('/dashboard')
 
         } catch (error: any) {
             console.error(error)
-            toast({
-                title: "Error",
-                description: error.message || "No se pudieron subir los documentos.",
-                variant: "destructive"
-            })
+            alert("❌ Error al subir: " + (error.message || "Error desconocido"))
         } finally {
             setUploading(false)
         }
@@ -230,7 +226,7 @@ export default function VerifyPage() {
                             disabled={!idFile || !selfieFile || uploading}
                         >
                             {uploading ? <Loader2 className="animate-spin mr-2" /> : null}
-                            {uploading ? "Enviando..." : "Enviar Documentos"}
+                            {uploading ? "Subiendo Documentos... ⏳" : "Enviar Documentos"}
                         </Button>
 
                     </CardContent>
