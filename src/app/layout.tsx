@@ -27,8 +27,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "https://cdn-icons-png.flaticon.com/512/2910/2910768.png", // Temporary shield icon
-    apple: "https://cdn-icons-png.flaticon.com/512/2910/2910768.png",
+    icon: "/icon-512.png",
+    apple: "/icon-512.png",
   },
   manifest: "/manifest.json",
   appleWebApp: {

@@ -4,16 +4,17 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getOrder, completeOrder, verifyDelivery } from '@/app/actions'
 import { MapPin, Navigation, CheckCircle, MessageCircle, Lock } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
-// Simple button component for consistency
-const ActionButton = ({ onClick, color, icon: Icon, label, disabled }: any) => (
+// Update ActionButton to handle loading
+const ActionButton = ({ onClick, color, icon: Icon, label, disabled, loading }: any) => (
     <button
         onClick={onClick}
-        disabled={disabled}
-        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-95 ${disabled ? 'bg-gray-300' : color
+        disabled={disabled || loading}
+        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-95 ${disabled || loading ? 'bg-zinc-700 cursor-not-allowed' : color
             }`}
     >
-        {Icon && <Icon size={20} />}
+        {loading ? <span className="animate-spin">🔄</span> : (Icon && <Icon size={20} />)}
         {label}
     </button>
 )
@@ -23,6 +24,8 @@ export default function DriverOrderPage() {
     const router = useRouter()
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const { toast } = useToast()
+    const [submitting, setSubmitting] = useState(false)
     const [step, setStep] = useState<'details' | 'signature'>('details') // Keeping 'signature' as step name for minimal refactoring impact, or rename to 'verify'
     const [pin, setPin] = useState('')
 
@@ -52,15 +55,20 @@ export default function DriverOrderPage() {
     }
 
     const handleComplete = async () => {
-        if (!pin || pin.length < 4) return alert('Ingresa el código de seguridad de 4 dígitos')
+        if (!pin || pin.length < 4) {
+            toast({ title: "❌ Error", description: "Ingresa el código de 4 dígitos", variant: "destructive" })
+            return
+        }
 
+        setSubmitting(true)
         const result = await verifyDelivery(order.id, pin)
+        setSubmitting(false)
 
         if (!result.success) {
-            alert("❌ " + result.message)
+            toast({ title: "❌ Error", description: result.message, variant: "destructive" })
             setPin('') // Clear input on error
         } else {
-            alert("✅ " + result.message)
+            toast({ title: "✅ Éxito", description: "Entrega completada correctamente." })
             router.push('/driver')
         }
     }
@@ -140,9 +148,10 @@ export default function DriverOrderPage() {
                 <ActionButton
                     onClick={handleComplete}
                     color="bg-black hover:bg-zinc-800"
-                    label="Finalizar Entrega"
+                    label={submitting ? "Verificando..." : "Finalizar Entrega"}
                     icon={CheckCircle}
                     disabled={pin.length !== 4}
+                    loading={submitting}
                 />
             </div>
 

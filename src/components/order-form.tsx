@@ -298,7 +298,7 @@ export function OrderForm() {
                                             placeholder="Apt 201, Building Name, Color..."
                                             value={addressDetails}
                                             onChange={(e) => setAddressDetails(e.target.value)}
-                                            className="h-12 border-zinc-200 bg-zinc-50 rounded-xl focus:ring-black"
+                                            className="h-12 border-zinc-200 bg-zinc-50 rounded-xl focus:ring-black text-base"
                                         />
                                     </div>
 
@@ -310,7 +310,7 @@ export function OrderForm() {
                                             placeholder="300 123 4567"
                                             value={phone}
                                             onChange={(e) => setPhone(e.target.value)}
-                                            className="h-12 border-zinc-200 bg-zinc-50 rounded-xl focus:ring-black"
+                                            className="h-12 border-zinc-200 bg-zinc-50 rounded-xl focus:ring-black text-base"
                                         />
                                     </div>
 

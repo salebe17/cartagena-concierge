@@ -152,8 +152,8 @@ export async function verifyDelivery(orderId: string, inputCode: string) {
 }
 
 export async function validateOrderCode(orderId: string, inputCode: string) {
-    console.log("🔍 VALIDATING ORDER:", orderId)
-    console.log("🔑 INPUT CODE:", inputCode, "| TYPE:", typeof inputCode)
+    // console.log("🔍 VALIDATING ORDER:", orderId)
+    // console.log("🔑 INPUT CODE:", inputCode, "| TYPE:", typeof inputCode)
 
     const supabase = await createClient()
 
@@ -169,18 +169,18 @@ export async function validateOrderCode(orderId: string, inputCode: string) {
         return { valid: false, message: "Order not found" }
     }
 
-    console.log("💾 STORED CODE:", data.delivery_code, "| TYPE:", typeof data.delivery_code)
+    // console.log("💾 STORED CODE:", data.delivery_code, "| TYPE:", typeof data.delivery_code)
 
     // Normalize both to strings and trim whitespace
     const isValid = String(data.delivery_code).trim() === String(inputCode).trim()
 
-    console.log("✅ MATCH RESULT:", isValid)
+    // console.log("✅ MATCH RESULT:", isValid)
 
     return { valid: isValid }
 }
 
 export async function completeOrder(orderId: string, signature: string) {
-    console.log("🚀 FORCE COMPLETING ORDER:", orderId)
+    // console.log("🚀 FORCE COMPLETING ORDER:", orderId)
 
     const supabase = await createClient()
 
@@ -199,7 +199,7 @@ export async function completeOrder(orderId: string, signature: string) {
         return { error: error.message }
     }
 
-    console.log("✅ ORDER DELIVERED")
+    // console.log("✅ ORDER DELIVERED")
     revalidatePath('/driver')
     revalidatePath('/dashboard')
     return { success: true }

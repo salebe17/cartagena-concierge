@@ -37,7 +37,7 @@ export default function DashboardUI({ user, order }: DashboardUIProps) {
                 table: 'orders',
                 filter: `id=eq.${order.id}`
             }, (payload) => {
-                console.log('Change received!', payload)
+                // console.log('Change received!', payload)
                 router.refresh() // Refresh server data instantly
             })
             .subscribe()
@@ -67,7 +67,7 @@ export default function DashboardUI({ user, order }: DashboardUIProps) {
 
             if (audioUrl) {
                 const audio = new Audio(audioUrl)
-                audio.play().catch(e => console.log("Audio play failed interaction", e))
+                audio.play().catch(e => console.error("Audio error:", e))
             }
 
             if (message) {
