@@ -165,8 +165,8 @@ export default function DashboardUI({ user, order }: DashboardUIProps) {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h2 className="text-2xl font-bold">Delivery Complete</h2>
-                                    <p className="text-emerald-100/80 text-sm">Order #{order.id.slice(0, 8)} has been successfully delivered.</p>
+                                    <h2 className="text-2xl font-bold">Service Fulfilled</h2>
+                                    <p className="text-emerald-100/80 text-sm">Order #{order.id.slice(0, 8)} has been successfully fulfilled.</p>
                                 </div>
 
                                 <Link href="/" className="block">

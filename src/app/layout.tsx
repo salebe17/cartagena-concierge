@@ -8,11 +8,11 @@ import { LogoutButton } from "@/components/logout-button";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cartagena Concierge | Private Cash Delivery",
-  description: "Servicio exclusivo de entrega de efectivo a domicilio en Cartagena. Seguro, rápido y discreto. 24/7.",
+  title: "Cartagena Concierge | Private Logistics",
+  description: "Servicio exclusivo de logística a domicilio en Cartagena. Seguro, rápido y discreto. 24/7.",
   openGraph: {
     title: "Cartagena Concierge | Private Service",
-    description: "Solicita efectivo a domicilio en minutos. Seguridad y discreción garantizada.",
+    description: "Solicita asistencia a domicilio en minutos. Seguridad y discreción garantizada.",
     url: "https://cartagena-concierge.vercel.app",
     siteName: "Cartagena Concierge",
     images: [

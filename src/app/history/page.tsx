@@ -8,7 +8,7 @@ import { ArrowLeft, Calendar, Check, DollarSign, MapPin } from 'lucide-react'
 
 export const metadata = {
     title: 'Order History | Cartagena Luxury Concierge',
-    description: 'View your past cash delivery requests.',
+    description: 'View your past service requests.',
 }
 
 export default async function HistoryPage() {

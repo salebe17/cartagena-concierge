@@ -13,7 +13,7 @@ export const translations: Record<LanguageCode, any> = {
         security_code_instruction: "Entrégalo solo al recibir el dinero."
     },
     en: {
-        title: "Request Cash",
+        title: "Request Credits",
         subtitle: "Your Private Concierge in Cartagena",
         phone_label: "Phone Number (WhatsApp)",
         location_label: "Location Details (Building/Apt)",
@@ -33,7 +33,7 @@ export const translations: Record<LanguageCode, any> = {
         alert_error: "⚠️ Dados obrigatórios faltando"
     },
     fr: {
-        title: "Demander du Cash",
+        title: "Demander Service",
         subtitle: "Votre Concierge Privé à Carthagène",
         phone_label: "Numéro de Portable (WhatsApp)",
         location_label: "Détails de l'emplacement (Bâtiment/Apt)",

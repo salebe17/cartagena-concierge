@@ -16,9 +16,9 @@ import LocationPicker from '@/components/location-picker'
 import { useLanguage } from '@/hooks/useLanguage'
 
 const CASH_PACKS = [
-    { value: '200000', label: '$200.000', sub: 'COP' },
-    { value: '500000', label: '$500.000', sub: 'COP' },
-    { value: '1000000', label: '$1.000.000', sub: 'COP' },
+    { value: '200000', label: '200k', sub: 'Credits' },
+    { value: '500000', label: '500k', sub: 'Credits' },
+    { value: '1000000', label: '1M', sub: 'Credits' },
 ]
 
 // Mock neighborhoods with distances from "Alto Bosque"
@@ -221,11 +221,11 @@ export function OrderForm() {
                                             <span>${(Number(amount) * 0.10).toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-zinc-500">
-                                            <span>Domicilio:</span>
+                                            <span>Logística:</span>
                                             <span>$15,000</span>
                                         </div>
                                         <div className="pt-3 border-t border-zinc-200 flex justify-between items-center">
-                                            <span className="font-bold text-zinc-900">TOTAL A PAGAR:</span>
+                                            <span className="font-bold text-zinc-900">Total Credits:</span>
                                             <span className="text-2xl font-black text-zinc-900">
                                                 ${(Number(amount) + (Number(amount) * 0.10) + 15000).toLocaleString()}
                                             </span>
@@ -379,7 +379,7 @@ export function OrderForm() {
                                     </div>
                                     {addressDetails && (
                                         <div className="mt-4 pt-4 border-t border-zinc-200 text-xs text-zinc-500">
-                                            <p className="font-bold mb-1">Delivery Attempt At:</p>
+                                            <p className="font-bold mb-1">Service Location:</p>
                                             <p>{addressDetails}</p>
                                         </div>
                                     )}

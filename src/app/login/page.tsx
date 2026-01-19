@@ -4,7 +4,7 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
     title: 'Login | Cartagena Luxury Concierge',
-    description: 'Exclusive access to premium cash delivery services.',
+    description: 'Exclusive access to premium concierge logistics.',
 }
 
 export default function LoginPage() {
@@ -24,7 +24,7 @@ export default function LoginPage() {
                         Privacy, Speed, <br /> and <span className="text-[#D4AF37]">Exclusivity.</span>
                     </h2>
                     <p className="text-lg text-zinc-300 max-w-md">
-                        Experience the ultimate convenience. Secure cash delivery to your villa, yacht, or hotel suite in minutes.
+                        Experience the ultimate convenience. Premium lifestyle logistics for your villa, yacht, or hotel suite in minutes.
                     </p>
                 </div>
 
