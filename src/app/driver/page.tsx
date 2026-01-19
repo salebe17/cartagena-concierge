@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { MapPin, DollarSign } from 'lucide-react'
 
+import { LogoutButton } from '@/components/logout-button'
+
 export default async function DriverPage() {
     const supabase = createClient()
 
@@ -19,7 +21,10 @@ export default async function DriverPage() {
 
     return (
         <div className="min-h-screen bg-black text-white p-4">
-            <h1 className="text-3xl font-bold mb-6 text-emerald-400">Driver Console</h1>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-emerald-400">Driver Console</h1>
+                <LogoutButton />
+            </div>
 
             <div className="grid gap-4">
                 {orders?.map((order) => (
