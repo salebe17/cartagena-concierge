@@ -87,92 +87,64 @@ export default function DriverOrderPage() {
                 </div>
             </div>
 
-            {/* Navigation Actions */}
-            {step === 'details' && (
-                <div className="space-y-3">
-                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">Navegación</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <ActionButton
-                            onClick={handleOpenWaze}
-                            color="bg-blue-500 hover:bg-blue-600"
-                            icon={Navigation}
-                            label="Waze"
-                        />
-                        <ActionButton
-                            onClick={handleOpenMaps}
-                            color="bg-green-500 hover:bg-green-600"
-                            icon={MapPin}
-                            label="Maps"
-                        />
-                    </div>
-                    {/* WhatsApp Button */}
+            <div className="space-y-3">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider ml-1">Navegación</h3>
+                <div className="grid grid-cols-2 gap-3">
                     <ActionButton
-                        onClick={() => {
-                            // Prioritize order-specific phone, then fallback to profile, then generic
-                            const phone = order.client_phone || order.client?.phone || '573000000000'
-                            const text = `Hola, soy tu conductor de Cartagena Concierge. Voy en camino.`
-                            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank')
-                        }}
-                        color="bg-emerald-500 hover:bg-emerald-600"
-                        // Using a simple text label or importing a MessageCircle/Phone icon if available
-                        // We'll use MapPin as placeholder or add MessageCircle icon import
-                        icon={MessageCircle}
-                        label="WhatsApp Client"
-                        disabled={!order.client_phone && !order.client?.phone} // Optional: Disable if no phone found at all, or leave enabled with fallback
+                        onClick={handleOpenWaze}
+                        color="bg-blue-500 hover:bg-blue-600"
+                        icon={Navigation}
+                        label="Waze"
                     />
-
-                    <div className="h-4"></div> {/* Spacer */}
-
                     <ActionButton
-                        onClick={() => setStep('signature')}
-                        color="bg-black hover:bg-zinc-800"
-                        label="Finalizar Entrega"
-                        icon={CheckCircle}
+                        onClick={handleOpenMaps}
+                        color="bg-green-500 hover:bg-green-600"
+                        icon={MapPin}
+                        label="Maps"
                     />
                 </div>
-            )}
+                {/* WhatsApp Button */}
+                <ActionButton
+                    onClick={() => {
+                        const phone = order.client_phone || order.client?.phone || '573000000000'
+                        const text = `Hola, soy tu conductor de Cartagena Concierge. Voy en camino.`
+                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank')
+                    }}
+                    color="bg-emerald-500 hover:bg-emerald-600"
+                    icon={MessageCircle}
+                    label="WhatsApp Client"
+                    disabled={!order.client_phone && !order.client?.phone}
+                />
 
-            {/* PIN Verification Step */}
-            {step === 'pin' && (
-                <div className="space-y-4">
-                    <div className="bg-white p-6 rounded-xl border-2 border-dashed border-gray-300 text-center space-y-6">
+                <div className="h-4"></div> {/* Spacer */}
 
-                        {/* Security PIN Input */}
-                        <div className="space-y-4">
-                            <div className="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2">
-                                <Lock className="text-emerald-600 w-8 h-8" />
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest block mb-2">Código de Seguridad</label>
-                                <p className="text-xs text-gray-400 mb-4">Pídele el código de 4 dígitos al cliente para finalizar.</p>
-                            </div>
-
-                            <div className="flex justify-center">
-                                <input
-                                    type="text"
-                                    maxLength={4}
-                                    placeholder="0000"
-                                    value={pin}
-                                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                                    className="w-48 text-center text-4xl font-mono font-bold border-b-2 border-gray-300 focus:border-black outline-none bg-transparent tracking-[0.4em] placeholder-gray-200 py-2"
-                                />
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <button onClick={() => setStep('details')} className="text-gray-500 font-medium">Cancelar</button>
-                        <ActionButton
-                            onClick={handleComplete}
-                            color="bg-black"
-                            label="Verificar y Finalizar"
-                            disabled={pin.length < 4}
-                        />
-                    </div>
+                {/* PIN Input Section - Explicitly Requested UI */}
+                <div className="bg-gray-900 p-4 rounded-xl mb-4 border border-gray-700">
+                    <label className="block text-center text-gray-400 mb-2 text-sm">
+                        Pide el código al cliente para finalizar
+                    </label>
+                    <input
+                        type="text"
+                        pattern="\d*"
+                        maxLength={4}
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
+                        className="w-full text-center text-4xl tracking-[1rem] font-bold bg-black text-yellow-500 border-b-2 border-yellow-500 focus:outline-none py-2 mb-4 placeholder-gray-800"
+                        placeholder="0000"
+                    />
                 </div>
-            )}
+
+                <ActionButton
+                    onClick={handleComplete}
+                    color="bg-black hover:bg-zinc-800"
+                    label="Finalizar Entrega"
+                    icon={CheckCircle}
+                    disabled={pin.length !== 4}
+                />
+            </div>
+
+
+            {/* Remove unused 'pin' step or keep empty if state persists, but user asked to rebuild completion section */}
         </div>
     )
 }
