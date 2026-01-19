@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { cancelOrder } from '@/app/actions'
+import { cancelOrder, approveUser } from '@/app/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, DollarSign, Package, Users, XCircle, AlertCircle } from 'lucide-react'
+import { Loader2, DollarSign, Package, Users, ShieldCheck, CheckCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 
@@ -23,12 +23,23 @@ interface Order {
     driver_name: string
 }
 
-interface AdminDashboardClientProps {
-    initialOrders: Order[]
+interface PendingUser {
+    id: string
+    full_name: string
+    email: string
+    kyc_id_url: string
+    kyc_selfie_url: string
+    kyc_status: string
 }
 
-export default function AdminDashboardClient({ initialOrders }: AdminDashboardClientProps) {
+interface AdminDashboardClientProps {
+    initialOrders: Order[]
+    initialPendingUsers?: PendingUser[]
+}
+
+export default function AdminDashboardClient({ initialOrders, initialPendingUsers = [] }: AdminDashboardClientProps) {
     const [orders, setOrders] = useState<Order[]>(initialOrders)
+    const [pendingUsers, setPendingUsers] = useState<PendingUser[]>(initialPendingUsers)
     const { toast } = useToast()
     const router = useRouter()
     const [isRefreshing, setIsRefreshing] = useState(false)
@@ -42,6 +53,18 @@ export default function AdminDashboardClient({ initialOrders }: AdminDashboardCl
         } else {
             toast({ title: 'Cancelada', description: 'La orden ha sido cancelada.' })
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o))
+            router.refresh()
+        }
+    }
+
+    const handleApproveKYC = async (userId: string) => {
+        if (!confirm('Approve this user?')) return
+        const res = await approveUser(userId)
+        if (res?.error) {
+            toast({ title: 'Error', description: res.error, variant: 'destructive' })
+        } else {
+            toast({ title: 'Approved', description: 'User KYC verified.' })
+            setPendingUsers(prev => prev.filter(u => u.id !== userId))
             router.refresh()
         }
     }
@@ -63,15 +86,17 @@ export default function AdminDashboardClient({ initialOrders }: AdminDashboardCl
         <div className="min-h-screen bg-black text-white p-8">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold font-serif text-[#D4AF37]">Admin Dashboard</h1>
-                <Button
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    variant="outline"
-                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                >
-                    {isRefreshing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                    Refresh Data
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        variant="outline"
+                        className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    >
+                        {isRefreshing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                        Refresh Data
+                    </Button>
+                </div>
             </div>
 
             {/* Stats Grid */}
@@ -105,14 +130,56 @@ export default function AdminDashboardClient({ initialOrders }: AdminDashboardCl
                 </Card>
             </div>
 
+            {/* KYC Pending Section */}
+            {pendingUsers.length > 0 && (
+                <div className="mb-10 space-y-4">
+                    <div className="flex items-center gap-2 text-yellow-500">
+                        <ShieldCheck className="w-6 h-6" />
+                        <h2 className="text-xl font-bold">Pending KYC Verifications ({pendingUsers.length})</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {pendingUsers.map(user => (
+                            <Card key={user.id} className="bg-zinc-900 border-yellow-500/30 overflow-hidden">
+                                <CardHeader className="bg-yellow-500/10 border-b border-yellow-500/10 pb-3">
+                                    <CardTitle className="text-sm font-bold text-yellow-500 flex justify-between">
+                                        {user.full_name || 'No Name'}
+                                        <span className="text-xs font-mono text-zinc-400">{user.email}</span>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-4 space-y-4">
+                                    <div className="flex gap-2 h-32">
+                                        {/* ID Image */}
+                                        <div className="flex-1 bg-black rounded-lg border border-zinc-800 relative group cursor-pointer" onClick={() => window.open(user.kyc_id_url, '_blank')}>
+                                            <img src={user.kyc_id_url} alt="ID" className="w-full h-full object-cover rounded-lg opacity-80 group-hover:opacity-100 transition-opacity" />
+                                            <span className="absolute bottom-1 right-1 bg-black/70 text-[10px] px-1 rounded text-white font-mono">ID</span>
+                                        </div>
+                                        {/* Selfie Image */}
+                                        <div className="flex-1 bg-black rounded-lg border border-zinc-800 relative group cursor-pointer" onClick={() => window.open(user.kyc_selfie_url, '_blank')}>
+                                            <img src={user.kyc_selfie_url} alt="Selfie" className="w-full h-full object-cover rounded-lg opacity-80 group-hover:opacity-100 transition-opacity" />
+                                            <span className="absolute bottom-1 right-1 bg-black/70 text-[10px] px-1 rounded text-white font-mono">SELFIE</span>
+                                        </div>
+                                    </div>
+                                    <Button onClick={() => handleApproveKYC(user.id)} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-xs h-10">
+                                        <CheckCircle className="w-4 h-4 mr-2" /> Approve & Enable
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Orders Table */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
                 <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
                     <h2 className="font-bold text-lg">Live Orders</h2>
-                    <span className="text-zinc-500 text-xs uppercase tracking-widest flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        Real-time
-                    </span>
+                    <div className="flex items-center gap-4">
+                        <span className="text-zinc-500 text-xs uppercase tracking-widest flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Real-time
+                        </span>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">

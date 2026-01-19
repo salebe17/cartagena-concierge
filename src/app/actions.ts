@@ -103,7 +103,7 @@ export async function getProfile() {
     return profile
 }
 
-export async function verifyDelivery(orderId: string, inputCode: string, signatureDataUrl: string) {
+export async function verifyDelivery(orderId: string, inputCode: string) {
     const supabase = createClient()
 
     // 1. Fetch Order
@@ -122,12 +122,11 @@ export async function verifyDelivery(orderId: string, inputCode: string, signatu
         throw new Error('Invalid delivery code')
     }
 
-    // 3. Update Status & Save Signature
+    // 3. Update Status
     const { error: updateError } = await (await supabase)
         .from('orders')
         .update({
             status: 'delivered',
-            signature_url: signatureDataUrl, // In real app, upload to Storage and save URL. saving base64 for now as requested/implied.
             updated_at: new Date().toISOString()
         })
         .eq('id', orderId)
@@ -291,7 +290,7 @@ export async function getAdminData() {
     // Parallel Fetching
     const [ordersRes, profilesRes, { data: { users } }] = await Promise.all([
         adminDb.from('orders').select('*').order('created_at', { ascending: false }),
-        adminDb.from('profiles').select('id, full_name, role'),
+        adminDb.from('profiles').select('id, full_name, role, kyc_status, kyc_id_url, kyc_selfie_url'),
         adminDb.auth.admin.listUsers()
     ])
 
@@ -312,5 +311,45 @@ export async function getAdminData() {
         }
     })
 
-    return ordersWithProfiles
+    // Filter pending KYC users
+    const pendingUsers = profilesRes.data
+        .filter(p => p.kyc_status === 'pending')
+        .map(p => ({
+            ...p,
+            email: users.find(u => u.id === p.id)?.email || 'No Email'
+        }))
+
+    return { orders: ordersWithProfiles, pendingUsers }
+}
+
+export async function approveUser(userId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Auth Check
+    if (!user || user.email !== 'moisalebe@gmail.com') {
+        throw new Error('Unauthorized')
+    }
+
+    // Dynamic import to avoid build issues if not used
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!serviceRoleKey) throw new Error('Missing Service Key')
+
+    const adminDb = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+
+    const { error } = await adminDb
+        .from('profiles')
+        .update({ kyc_status: 'verified' })
+        .eq('id', userId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    revalidatePath('/order')
+    return { success: true }
 }

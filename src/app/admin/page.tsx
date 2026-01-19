@@ -6,15 +6,15 @@ import AdminDashboardClient from '@/components/admin-dashboard-client'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
-    let orders = []
+    let data = { orders: [], pendingUsers: [] }
 
     try {
-        orders = await getAdminData()
+        data = await getAdminData() as any
     } catch (error) {
         // Redirect unauthorized access or handle error
         console.error("Access Denied or DB Error:", error)
         redirect('/')
     }
 
-    return <AdminDashboardClient initialOrders={orders as any[]} />
+    return <AdminDashboardClient initialOrders={data.orders} initialPendingUsers={data.pendingUsers} />
 }

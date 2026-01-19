@@ -8,7 +8,9 @@ export const translations: Record<LanguageCode, any> = {
         location_label: "Detalles de Ubicación (Edificio/Apto)",
         amount_label: "Monto a Recibir (COP)",
         btn_submit: "Confirmar Pedido",
-        alert_error: "⚠️ Faltan datos obligatorios"
+        alert_error: "⚠️ Faltan datos obligatorios",
+        security_code_label: "Tu Código de Seguridad",
+        security_code_instruction: "Entrégalo solo al recibir el dinero."
     },
     en: {
         title: "Request Cash",
@@ -17,7 +19,9 @@ export const translations: Record<LanguageCode, any> = {
         location_label: "Location Details (Building/Apt)",
         amount_label: "Amount to Receive (COP)",
         btn_submit: "Confirm Order",
-        alert_error: "⚠️ Missing mandatory data"
+        alert_error: "⚠️ Missing mandatory data",
+        security_code_label: "Your Security PIN",
+        security_code_instruction: "Share only upon receipt."
     },
     pt: {
         title: "Solicitar Dinheiro",

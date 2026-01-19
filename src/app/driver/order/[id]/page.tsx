@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getOrder, completeOrder } from '@/app/actions'
-import { MapPin, Navigation, CheckCircle, MessageCircle } from 'lucide-react'
+import { getOrder, completeOrder, verifyDelivery } from '@/app/actions'
+import { MapPin, Navigation, CheckCircle, MessageCircle, Lock } from 'lucide-react'
 
 // Simple button component for consistency
 const ActionButton = ({ onClick, color, icon: Icon, label, disabled }: any) => (
@@ -23,8 +23,8 @@ export default function DriverOrderPage() {
     const router = useRouter()
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
-    const [step, setStep] = useState<'details' | 'signature'>('details')
-    const [signature, setSignature] = useState('')
+    const [step, setStep] = useState<'details' | 'signature'>('details') // Keeping 'signature' as step name for minimal refactoring impact, or rename to 'verify'
+    const [pin, setPin] = useState('')
 
     useEffect(() => {
         async function load() {
@@ -52,9 +52,14 @@ export default function DriverOrderPage() {
     }
 
     const handleComplete = async () => {
-        if (!signature) return alert('Debes firmar primero')
-        await completeOrder(order.id, signature)
-        router.push('/driver') // Back to list
+        if (!pin || pin.length < 4) return alert('Ingresa el código de seguridad de 4 dígitos')
+
+        try {
+            await verifyDelivery(order.id, pin)
+            router.push('/driver') // Back to list
+        } catch (error: any) {
+            alert(error.message || 'Error al verificar la entrega')
+        }
     }
 
     if (loading) return <div className="p-10 text-center">Cargando orden...</div>
@@ -127,18 +132,34 @@ export default function DriverOrderPage() {
                 </div>
             )}
 
-            {/* Signature Step */}
-            {step === 'signature' && (
+            {/* PIN Verification Step */}
+            {step === 'pin' && (
                 <div className="space-y-4">
-                    <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300 text-center">
-                        <p className="text-sm text-gray-400 mb-2">Firma del Cliente (Simulada)</p>
-                        {/* Simple Text Area for Signature in MVP */}
-                        <textarea
-                            className="w-full h-32 bg-gray-50 rounded-lg p-2 text-2xl font-handwriting text-center"
-                            placeholder="Escribe tu nombre..."
-                            value={signature}
-                            onChange={(e) => setSignature(e.target.value)}
-                        />
+                    <div className="bg-white p-6 rounded-xl border-2 border-dashed border-gray-300 text-center space-y-6">
+
+                        {/* Security PIN Input */}
+                        <div className="space-y-4">
+                            <div className="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <Lock className="text-emerald-600 w-8 h-8" />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-bold text-gray-500 uppercase tracking-widest block mb-2">Código de Seguridad</label>
+                                <p className="text-xs text-gray-400 mb-4">Pídele el código de 4 dígitos al cliente para finalizar.</p>
+                            </div>
+
+                            <div className="flex justify-center">
+                                <input
+                                    type="text"
+                                    maxLength={4}
+                                    placeholder="0000"
+                                    value={pin}
+                                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                                    className="w-48 text-center text-4xl font-mono font-bold border-b-2 border-gray-300 focus:border-black outline-none bg-transparent tracking-[0.4em] placeholder-gray-200 py-2"
+                                />
+                            </div>
+                        </div>
+
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -146,8 +167,8 @@ export default function DriverOrderPage() {
                         <ActionButton
                             onClick={handleComplete}
                             color="bg-black"
-                            label="Confirmar"
-                            disabled={!signature}
+                            label="Verificar y Finalizar"
+                            disabled={pin.length < 4}
                         />
                     </div>
                 </div>

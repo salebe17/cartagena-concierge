@@ -7,6 +7,7 @@ import { Plus, MapPin, Clock, CheckCircle2, RotateCcw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import TrackingMap from '@/components/tracking-map'
 import { Badge } from '@/components/ui/badge'
+import { useLanguage } from '@/hooks/useLanguage'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -18,6 +19,7 @@ interface DashboardUIProps {
 }
 
 export default function DashboardUI({ user, order }: DashboardUIProps) {
+    const { t } = useLanguage()
     const router = useRouter()
     const supabase = createClient()
     const [previousStatus, setPreviousStatus] = useState<string | null>(order?.status || null)
@@ -213,14 +215,14 @@ export default function DashboardUI({ user, order }: DashboardUIProps) {
 
                             {/* Details Footer */}
                             <div className="p-6 bg-zinc-900 text-white">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <p className="text-zinc-400 text-xs uppercase tracking-wider font-bold mb-1">Secure Code</p>
-                                        <p className="text-3xl font-mono tracking-[0.2em] font-bold text-[#D4AF37]">{order.delivery_code}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-zinc-500 text-xs">Show this to driver</p>
-                                    </div>
+                                <div className="flex flex-col items-center text-center gap-2">
+                                    <p className="text-zinc-400 text-xs uppercase tracking-wider font-bold mb-1">{t.security_code_label || "Security Code"}</p>
+                                    <p className="text-5xl font-mono tracking-[0.2em] font-bold text-[#D4AF37] select-all">
+                                        {order.delivery_code}
+                                    </p>
+                                    <p className="text-zinc-300 text-xs mt-2 font-medium bg-zinc-800/50 px-3 py-1 rounded-full border border-zinc-700">
+                                        ⚠️ {t.security_code_instruction || "Share only upon receipt."}
+                                    </p>
                                 </div>
                             </div>
                         </Card>
