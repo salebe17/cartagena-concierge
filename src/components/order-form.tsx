@@ -79,8 +79,20 @@ export function OrderForm() {
         )
     }
 
+    const isFormValid = phone.length >= 7 && addressDetails.trim().length > 0 && coordinates
+
     const handleCalculate = async () => {
         if (!amount || !coordinates) return
+
+        // Validation: Phone and Location Details required before review
+        if (!isFormValid) {
+            toast({
+                title: "Information Missing",
+                description: "Por favor ingresa un celular válido (mínimo 7 dígitos) y detalles de ubicación.",
+                variant: "destructive"
+            })
+            return
+        }
 
         setLoading(true)
         // Simple mock distance calc or fixed fallback since we don't have routing engine here
@@ -103,6 +115,16 @@ export function OrderForm() {
     }
 
     const handleCreateOrder = async () => {
+        // Double check validation
+        if (!isFormValid) {
+            toast({
+                title: "Information Missing",
+                description: "Por favor ingresa un celular válido y detalles de ubicación para continuar.",
+                variant: "destructive"
+            })
+            return
+        }
+
         setLoading(true)
         const distance = 5 // Mock
 
@@ -279,6 +301,7 @@ export function OrderForm() {
                                     <div className="space-y-2">
                                         <Label className="text-zinc-500 font-medium ml-1">Location Details</Label>
                                         <Input
+                                            required
                                             placeholder="Apt 201, Building Name, Color..."
                                             value={addressDetails}
                                             onChange={(e) => setAddressDetails(e.target.value)}
@@ -287,8 +310,9 @@ export function OrderForm() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-zinc-500 font-medium ml-1">Número de Celular</Label>
+                                        <Label className="text-zinc-500 font-medium ml-1">Número de Celular (WhatsApp)</Label>
                                         <Input
+                                            required
                                             type="tel"
                                             placeholder="300 123 4567"
                                             value={phone}
@@ -315,12 +339,21 @@ export function OrderForm() {
                                     </Button>
                                     <Button
                                         onClick={handleCalculate}
-                                        disabled={!coordinates || loading}
-                                        className="flex-1 h-14 text-lg bg-black hover:bg-zinc-800 text-white rounded-xl transition-all"
+                                        disabled={!isFormValid || loading}
+                                        style={{ opacity: !isFormValid ? 0.5 : 1 }}
+                                        className={`flex-1 h-14 text-lg rounded-xl transition-all ${!isFormValid
+                                                ? 'bg-zinc-200 text-zinc-500 cursor-not-allowed'
+                                                : 'bg-black hover:bg-zinc-800 text-white'
+                                            }`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : 'Review Details'}
+                                        {loading ? <Loader2 className="animate-spin" /> : (!isFormValid ? "⚠️ Completa Campos" : "Review Details")}
                                     </Button>
                                 </div>
+                                {!isFormValid && (
+                                    <p className="text-center text-xs text-orange-600 mt-3 font-medium animate-pulse">
+                                        ⚠️ Completa los campos (Celular y Ubicación) para continuar
+                                    </p>
+                                )}
                             </motion.div>
                         )}
 
@@ -373,10 +406,14 @@ export function OrderForm() {
                                     </Button>
                                     <Button
                                         onClick={handleCreateOrder}
-                                        disabled={loading}
-                                        className="flex-1 h-14 text-lg bg-[#D4AF37] hover:bg-[#b5952f] text-white rounded-xl font-bold shadow-lg shadow-orange-100 transition-all"
+                                        disabled={!isFormValid || loading}
+                                        style={{ opacity: !isFormValid ? 0.5 : 1 }}
+                                        className={`flex-1 h-14 text-lg rounded-xl font-bold shadow-lg transition-all ${!isFormValid
+                                                ? 'bg-zinc-200 text-zinc-500 cursor-not-allowed shadow-none'
+                                                : 'bg-[#D4AF37] hover:bg-[#b5952f] text-white shadow-orange-100'
+                                            }`}
                                     >
-                                        {loading ? <Loader2 className="animate-spin" /> : 'Confirm & Pay'}
+                                        {loading ? <Loader2 className="animate-spin" /> : (!isFormValid ? "⚠️ Completa Celular y Ubicación" : "Confirm & Pay")}
                                     </Button>
                                 </div>
                                 <p className="text-center text-xs text-zinc-300 mt-4">
