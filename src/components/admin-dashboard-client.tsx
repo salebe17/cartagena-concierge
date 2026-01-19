@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { cancelOrder, approveUser } from '@/app/actions'
+import { cancelOrder, approveUser, rejectUser } from '@/app/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Loader2, DollarSign, Package, Users, ShieldCheck, CheckCircle } from 'lucide-react'
+import { Loader2, DollarSign, Package, Users, ShieldCheck, CheckCircle, XCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 
@@ -64,6 +64,18 @@ export default function AdminDashboardClient({ initialOrders, initialPendingUser
             toast({ title: 'Error', description: res.error, variant: 'destructive' })
         } else {
             toast({ title: 'Approved', description: 'User KYC verified.' })
+            setPendingUsers(prev => prev.filter(u => u.id !== userId))
+            router.refresh()
+        }
+    }
+
+    const handleRejectKYC = async (userId: string) => {
+        if (!confirm('Reject this user?')) return
+        const res = await rejectUser(userId)
+        if (res?.error) {
+            toast({ title: 'Error', description: res.error, variant: 'destructive' })
+        } else {
+            toast({ title: 'Rejected', description: 'User KYC rejected.' })
             setPendingUsers(prev => prev.filter(u => u.id !== userId))
             router.refresh()
         }
@@ -160,9 +172,14 @@ export default function AdminDashboardClient({ initialOrders, initialPendingUser
                                             <span className="absolute bottom-1 right-1 bg-black/70 text-[10px] px-1 rounded text-white font-mono">SELFIE</span>
                                         </div>
                                     </div>
-                                    <Button onClick={() => handleApproveKYC(user.id)} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-xs h-10">
-                                        <CheckCircle className="w-4 h-4 mr-2" /> Approve & Enable
-                                    </Button>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button onClick={() => handleApproveKYC(user.id)} className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-xs h-10">
+                                            <CheckCircle className="w-4 h-4 mr-2" /> Approve
+                                        </Button>
+                                        <Button onClick={() => handleRejectKYC(user.id)} className="w-full bg-red-900/50 hover:bg-red-900 text-red-200 border border-red-800 font-bold text-xs h-10">
+                                            <XCircle className="w-4 h-4 mr-2" /> Reject
+                                        </Button>
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}

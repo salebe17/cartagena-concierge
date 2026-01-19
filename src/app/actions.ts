@@ -362,3 +362,31 @@ export async function approveUser(userId: string) {
     revalidatePath('/order')
     return { success: true }
 }
+
+export async function rejectUser(userId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user || user.email !== 'moisalebe@gmail.com') throw new Error('Unauthorized')
+
+    const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!serviceRoleKey) throw new Error('Missing Service Key')
+
+    const adminDb = createAdminClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+
+    const { error } = await adminDb
+        .from('profiles')
+        .update({ kyc_status: 'rejected' })
+        .eq('id', userId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin')
+    revalidatePath('/order')
+    return { success: true }
+}
