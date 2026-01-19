@@ -6,8 +6,28 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Cartagena Concierge",
-  description: "Secure Cash Delivery Service",
+  title: "Cartagena Concierge | Private Cash Delivery",
+  description: "Servicio exclusivo de entrega de efectivo a domicilio en Cartagena. Seguro, rápido y discreto. 24/7.",
+  openGraph: {
+    title: "Cartagena Concierge | Private Service",
+    description: "Solicita efectivo a domicilio en minutos. Seguridad y discreción garantizada.",
+    url: "https://cartagena-concierge.vercel.app",
+    siteName: "Cartagena Concierge",
+    images: [
+      {
+        url: "https://images.unsplash.com/photo-1621504450168-b8c437532b3a?q=80&w=1200&auto=format&fit=crop", // Abstract Black/Gold Texture
+        width: 1200,
+        height: 630,
+        alt: "Cartagena Concierge Premium Service",
+      },
+    ],
+    locale: "es_CO",
+    type: "website",
+  },
+  icons: {
+    icon: "https://cdn-icons-png.flaticon.com/512/2910/2910768.png", // Temporary shield icon
+    apple: "https://cdn-icons-png.flaticon.com/512/2910/2910768.png",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
