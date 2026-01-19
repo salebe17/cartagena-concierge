@@ -106,44 +106,46 @@ export async function getProfile() {
 export async function verifyDelivery(orderId: string, inputCode: string) {
     try {
         const supabase = createClient()
+        const { data: { user } } = await (await supabase).auth.getUser()
 
-        // 1. Fetch Order
+        // 1. Fetch Order (Select * to get driver_id etc)
         const { data: order, error: fetchError } = await (await supabase)
             .from('orders')
-            .select('delivery_code, status')
+            .select('*')
             .eq('id', orderId)
             .single()
 
         if (fetchError || !order) {
-            return { success: false, message: 'Orden no encontrada' }
+            return { success: false, message: 'Orden no encontrada en DB' }
         }
 
         // 2. Verify Code
-        // Allow 'SKIPPED' bypass or exact match
         if (inputCode !== 'SKIPPED' && order.delivery_code !== inputCode) {
-            return { success: false, message: 'PIN Incorrecto. Intenta de nuevo.' }
+            return { success: false, message: `PIN Incorrecto. Esperaba: ${order.delivery_code}, Recibí: ${inputCode}` }
         }
 
-        // 3. Update Status
+        // 3. Update Status (FORCE UPDATE with Auto-Claim)
         const { error: updateError } = await (await supabase)
             .from('orders')
             .update({
                 status: 'delivered',
+                driver_id: order.driver_id || user?.id, // Auto-claim if null
                 updated_at: new Date().toISOString()
             })
             .eq('id', orderId)
 
         if (updateError) {
-            return { success: false, message: 'Error al actualizar la orden' }
+            console.error("Update Error:", updateError)
+            return { success: false, message: "DB Error: " + updateError.message }
         }
 
         revalidatePath('/driver')
         revalidatePath('/dashboard')
         return { success: true, message: 'Entrega Exitosa' }
 
-    } catch (error) {
-        console.error('Verification Error:', error)
-        return { success: false, message: 'Error técnico al verificar' }
+    } catch (error: any) {
+        console.error('Verification Crash:', error)
+        return { success: false, message: "Crash Error: " + (error.message || JSON.stringify(error)) }
     }
 }
 
