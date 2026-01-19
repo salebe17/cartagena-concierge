@@ -264,10 +264,7 @@ export async function cancelOrder(orderId: string) {
     revalidatePath('/dashboard')
     return { success: true }
 }
-revalidatePath('/admin')
-revalidatePath('/dashboard')
-return { success: true }
-}
+
 
 export async function getAdminData() {
     const supabase = await createClient() // Standard client for auth check
