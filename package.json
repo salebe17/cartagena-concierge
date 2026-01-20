@@ -29,7 +29,8 @@
     "react-leaflet": "^5.0.0",
     "react-signature-canvas": "^1.1.0-alpha.2",
     "stripe": "^20.2.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "thirdweb": "^5.117.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
