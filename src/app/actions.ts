@@ -275,6 +275,55 @@ export async function cancelOrder(orderId: string) {
     return { success: true }
 }
 
+export async function createWeb3Order(
+    amount: number,
+    serviceDetails: string,
+    locationAddress: string,
+    txHash: string
+) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        // Allow guest checkout or require login? 
+        // For now, let's require login as per our flow (user logs in with Google/Email first)
+        throw new Error('Unauthorized')
+    }
+
+    // 1. Calculate Fees (Reusing same logic)
+    const { serviceFee, deliveryFee, total } = await calculateOrderFee(amount, 5) // Mock distance 5km for now
+
+    // 2. Generate Code
+    const deliveryCode = Math.floor(1000 + Math.random() * 9000).toString()
+
+    // 3. Insert Order
+    const { data, error } = await supabase
+        .from('orders')
+        .insert({
+            user_id: user.id,
+            amount: amount, // The Token Amount (Credits)
+            service_fee: serviceFee,
+            delivery_fee: deliveryFee,
+            total_amount: total, // Logic might change for tokens, but keeping consistent structure
+            status: 'paid', // We assume it's paid since we have a txHash
+            delivery_code: deliveryCode,
+            service_details: serviceDetails,
+            location_address: locationAddress,
+            tx_hash: txHash,
+            network: 'Amoy'
+        })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error("Web3 Order Error:", error)
+        return { error: error.message }
+    }
+
+    revalidatePath('/dashboard')
+    return { success: true, orderId: data.id }
+}
+
 
 export async function getAdminData() {
     const supabase = await createClient() // Standard client for auth check

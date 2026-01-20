@@ -37,7 +37,8 @@ const contract = getContract({
 function TerminalContent() {
     const account = useActiveAccount();
     const [amount, setAmount] = useState("");
-    const { mutate: sendTransaction, isPending } = useSendTransaction();
+    const [serviceDetails, setServiceDetails] = useState("");
+    const [location, setLocation] = useState("");
 
     const { data: tokenName } = useReadContract({ contract, method: "function name() view returns (string)", params: [] });
     const { data: tokenSymbol } = useReadContract({ contract, method: "function symbol() view returns (string)", params: [] });
@@ -47,20 +48,8 @@ function TerminalContent() {
         params: [account?.address || "0x0000000000000000000000000000000000000000"]
     });
 
-    const handlePayment = () => {
-        if (!amount || !account) return;
-        const receiverAddress = "0x53502758255955178A3266847849925232824330";
-        const transaction = prepareContractCall({
-            contract,
-            method: "function transfer(address to, uint256 value)",
-            params: [receiverAddress, toUnits(amount, 18)],
-        });
-        sendTransaction(transaction);
-    };
-
     return (
         <div className="min-h-screen bg-black text-white font-sans">
-
             {/* NAVEGACIÓN */}
             <nav className="flex justify-between items-center p-6 border-b border-gray-800 bg-black/50 backdrop-blur-md sticky top-0 z-50">
                 <div className="flex items-center gap-3">
@@ -95,7 +84,7 @@ function TerminalContent() {
                     </h1>
 
                     <div className="bg-gray-900/80 p-6 rounded-2xl border border-gray-800">
-                        <p className="text-gray-500 text-xs uppercase tracking-[0.2em] mb-3">Tus Créditos VIP</p>
+                        <p className="text-gray-500  text-xs uppercase tracking-[0.2em] mb-3">Tus Créditos VIP</p>
                         {account ? (
                             <div className="flex flex-col">
                                 <span className="text-4xl font-mono font-bold text-white tracking-tighter">
@@ -111,35 +100,123 @@ function TerminalContent() {
 
                 <div className="relative group">
                     <div className="relative bg-gray-900/90 border border-white/5 p-8 rounded-2xl shadow-2xl backdrop-blur-sm">
-                        <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-4">
-                            <h3 className="text-xl font-medium text-white tracking-wide">Pagar Servicio</h3>
+                        <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+                            <h3 className="text-xl font-medium text-white tracking-wide">Solicitar & Pagar</h3>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-5">
+                            {/* INPUT: DETALLES */}
                             <div>
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">Cantidad de Créditos</label>
-                                <input
-                                    type="number"
-                                    placeholder="0.00"
-                                    className="w-full bg-black/50 border border-white/5 text-white text-4xl p-5 rounded-xl outline-none"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
+                                <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">¿Qué necesitas?</label>
+                                <textarea
+                                    placeholder="Ej: Traer 200k en efectivo..."
+                                    className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors h-24 resize-none"
+                                    value={serviceDetails}
+                                    onChange={(e) => setServiceDetails(e.target.value)}
                                 />
                             </div>
 
-                            <button
-                                className={`w-full py-5 rounded-xl font-bold text-sm uppercase tracking-[0.2em] transition-all shadow-lg ${isPending ? 'bg-gray-800 text-gray-400' : 'bg-gradient-to-r from-yellow-500 to-yellow-700 text-black hover:scale-[1.02]'}`}
-                                onClick={handlePayment}
-                                disabled={isPending || !account}
-                            >
-                                {!account ? "Inicia sesión para pagar" : isPending ? "Procesando..." : `Confirmar Pago`}
-                            </button>
+                            {/* INPUT: UBICACIÓN */}
+                            <div>
+                                <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">¿A dónde vamos?</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Hotel Santa Clara, Hab 202"
+                                    className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                />
+                            </div>
+
+                            {/* INPUT: CREDITS */}
+                            <div>
+                                <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">Monto (Créditos)</label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        placeholder="0.00"
+                                        className="w-full bg-black/50 border border-white/10 text-white text-2xl p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors font-mono"
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                    />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-yellow-500 font-bold">CARTAGENA</div>
+                                </div>
+                            </div>
+
+                            <TxButton
+                                account={account}
+                                amount={amount}
+                                serviceDetails={serviceDetails}
+                                location={location}
+                                contract={contract}
+                                client={client}
+                            />
                         </div>
                     </div>
                 </div>
             </main>
         </div>
     );
+}
+
+// Sub-component for clean transaction logic
+function TxButton({ account, amount, serviceDetails, location, contract, client }: any) {
+    const { mutateAsync: sendTransaction, isPending } = useSendTransaction();
+    const [status, setStatus] = useState("idle"); // idle, success, error
+
+    const handleClick = async () => {
+        if (!account) return alert("Inicia sesión");
+        if (!amount || !serviceDetails || !location) return alert("Faltan datos");
+
+        try {
+            setStatus("pending");
+
+            // 1. Prepared Call
+            const transaction = prepareContractCall({
+                contract,
+                method: "function transfer(address to, uint256 value)",
+                params: ["0x53502758255955178A3266847849925232824330", toUnits(amount, 18)],
+            });
+
+            // 2. Execute on Blockchain
+            const { transactionHash } = await sendTransaction(transaction);
+
+            // 3. Import dynamic action
+            const { createWeb3Order } = await import("@/app/actions");
+
+            // 4. Save to DB
+            const result = await createWeb3Order(Number(amount), serviceDetails, location, transactionHash);
+
+            if (result.success) {
+                setStatus("success");
+                alert("¡Orden Creada y Pagada! 🚀");
+                window.location.reload(); // Simple refresh for now
+            } else {
+                setStatus("error");
+                alert("Pago ok, pero error guardando orden: " + result.error);
+            }
+
+        } catch (e: any) {
+            console.error(e);
+            setStatus("error");
+            alert("Error: " + e.message);
+        } finally {
+            if (status !== "success") setStatus("idle");
+        }
+    };
+
+    return (
+        <button
+            className={`w-full py-5 rounded-xl font-bold text-sm uppercase tracking-[0.2em] transition-all shadow-lg 
+            ${!account ? 'bg-gray-800 text-gray-500' : 'bg-gradient-to-r from-yellow-500 to-yellow-700 text-black hover:scale-[1.02]'}
+            ${(isPending || status === 'pending') ? 'opacity-70 cursor-wait' : ''}
+            `}
+            onClick={handleClick}
+            disabled={isPending || status === 'pending' || !account}
+        >
+            {!account ? "Inicia Sesión" : (isPending || status === 'pending') ? "Procesando..." : status === 'success' ? "¡Éxito!" : "Solicitar Servicio"}
+        </button>
+    )
 }
 
 // COMPONENTE PRINCIPAL: Wrapper con Provider
