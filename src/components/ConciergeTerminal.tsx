@@ -17,7 +17,12 @@ const chain = defineChain(80002);
 const wallets = [
     inAppWallet({
         auth: {
-            options: ["google", "email", "apple", "facebook"],
+            options: ["google", "email"],
+        },
+        // Esto activa la billetera inteligente que "regala" el gas inicial
+        smartWallet: {
+            chain: chain,
+            sponsorGas: true, // <--- ¡ESTO ES LA CLAVE!
         },
     }),
 ];
