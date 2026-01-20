@@ -1,31 +1,37 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import Lottie from 'lottie-react'
+import Lottie from "lottie-react";
+import { useEffect, useState } from "react";
 
 export default function HeroAnimation() {
-    const [animationData, setAnimationData] = useState(null)
+    const [animationData, setAnimationData] = useState(null);
 
     useEffect(() => {
-        fetch('https://lottie.host/5e000958-6927-4402-9904-54736183592c/6uF6ZtYlqX.json')
-            .then(res => res.json())
-            .then(data => setAnimationData(data))
-            .catch(err => console.error("Animation failed to load", err))
-    }, [])
+        // Esta URL es de una Scooter de Delivery Premium (Estilo Uber/Rappi)
+        fetch("https://lottie.host/5e000958-6927-4402-9904-54736183592c/6uF6ZtYlqX.json")
+            .then((res) => {
+                if (!res.ok) throw new Error("Error loading animation");
+                return res.json();
+            })
+            .then((data) => setAnimationData(data))
+            .catch((err) => {
+                console.error("Error cargando la moto:", err);
+                // Fallback: Si falla la URL, intenta con esta otra de respaldo
+                fetch("https://assets5.lottiefiles.com/packages/lf20_6wjmzavt.json")
+                    .then(r => r.json())
+                    .then(d => setAnimationData(d));
+            });
+    }, []);
 
-    if (!animationData) {
-        return (
-            <div className="w-64 h-64 bg-zinc-900/10 rounded-full animate-pulse mx-auto blur-xl opacity-50"></div>
-        )
-    }
+    if (!animationData) return null; // O un spinner invisible
 
     return (
-        <div className="w-full max-w-[450px] mx-auto drop-shadow-2xl filter hover:scale-105 transition-transform duration-700 ease-in-out">
+        <div className="w-full max-w-[500px] mx-auto md:mr-0">
             <Lottie
                 animationData={animationData}
                 loop={true}
-                className="w-full h-full"
+                className="w-full h-auto drop-shadow-2xl filter"
             />
         </div>
-    )
+    );
 }
