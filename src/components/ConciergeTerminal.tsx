@@ -5,6 +5,7 @@ import { createThirdwebClient, getContract, defineChain, prepareContractCall } f
 import { inAppWallet } from "thirdweb/wallets";
 import { toUnits } from "thirdweb/utils";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 // 1. CONFIGURACIÓN DEL CLIENTE
 const client = createThirdwebClient({
@@ -163,6 +164,7 @@ function TerminalContent() {
 function TxButton({ account, amount, serviceDetails, location, contract, client }: any) {
     const { mutateAsync: sendTransaction, isPending } = useSendTransaction();
     const [status, setStatus] = useState("idle"); // idle, success, error
+    const router = useRouter();
 
     const handleClick = async () => {
         if (!account) return alert("Inicia sesión");
@@ -189,8 +191,8 @@ function TxButton({ account, amount, serviceDetails, location, contract, client 
 
             if (result.success) {
                 setStatus("success");
-                alert("¡Orden Creada y Pagada! 🚀");
-                window.location.reload(); // Simple refresh for now
+                // alert("¡Orden Creada y Pagada! 🚀");
+                router.push(`/order/${result.orderId}`);
             } else {
                 setStatus("error");
                 alert("Pago ok, pero error guardando orden: " + result.error);
