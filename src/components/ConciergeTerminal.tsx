@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadContract, useActiveAccount, useSendTransaction, ConnectButton } from "thirdweb/react";
+import { useReadContract, useActiveAccount, useSendTransaction, ConnectButton, ThirdwebProvider } from "thirdweb/react";
 import { createThirdwebClient, getContract, defineChain, prepareContractCall } from "thirdweb";
 import { inAppWallet } from "thirdweb/wallets";
 import { toUnits } from "thirdweb/utils";
@@ -28,7 +28,8 @@ const contract = getContract({
     address: "0x7b9a5cE25723936F5D26A5caA18EB15ad08aA935",
 });
 
-export default function ConciergeTerminal() {
+// COMPONENTE INTERNO: USA LOS HOOKS (Consumidor)
+function TerminalContent() {
     const account = useActiveAccount();
     const [amount, setAmount] = useState("");
     const { mutate: sendTransaction, isPending } = useSendTransaction();
@@ -55,7 +56,7 @@ export default function ConciergeTerminal() {
     return (
         <div className="min-h-screen bg-black text-white font-sans">
 
-            {/* NAVEGACIÓN CON LOGIN FÁCIL */}
+            {/* NAVEGACIÓN */}
             <nav className="flex justify-between items-center p-6 border-b border-gray-800 bg-black/50 backdrop-blur-md sticky top-0 z-50">
                 <div className="flex items-center gap-3">
                     <div className="w-3 h-10 bg-gradient-to-b from-yellow-400 to-yellow-700"></div>
@@ -133,5 +134,14 @@ export default function ConciergeTerminal() {
                 </div>
             </main>
         </div>
+    );
+}
+
+// COMPONENTE PRINCIPAL: Wrapper con Provider
+export default function ConciergeTerminal() {
+    return (
+        <ThirdwebProvider>
+            <TerminalContent />
+        </ThirdwebProvider>
     );
 }

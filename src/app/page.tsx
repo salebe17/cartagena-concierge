@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { ThirdwebProvider } from "thirdweb/react";
 
 // Importamos el componente de forma dinámica y DESACTIVAMOS SSR
 // Esto previene errores de "window not defined" o hidratación con Thirdweb
@@ -16,8 +15,6 @@ const ConciergeTerminal = dynamic(() => import('@/components/ConciergeTerminal')
 
 export default function Home() {
   return (
-    <ThirdwebProvider>
-      <ConciergeTerminal />
-    </ThirdwebProvider>
+    <ConciergeTerminal />
   );
 }
