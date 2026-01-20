@@ -151,6 +151,7 @@ function TerminalContent() {
                                 location={location}
                                 contract={contract}
                                 client={client}
+                                balance={balance}
                             />
                         </div>
                     </div>
@@ -161,7 +162,7 @@ function TerminalContent() {
 }
 
 // Sub-component for clean transaction logic
-function TxButton({ account, amount, serviceDetails, location, contract, client }: any) {
+function TxButton({ account, amount, serviceDetails, location, contract, client, balance }: any) {
     const { mutateAsync: sendTransaction, isPending } = useSendTransaction();
     const [status, setStatus] = useState("idle"); // idle, success, error
     const router = useRouter();
@@ -169,6 +170,13 @@ function TxButton({ account, amount, serviceDetails, location, contract, client 
     const handleClick = async () => {
         if (!account) return alert("Inicia sesión");
         if (!amount || !serviceDetails || !location) return alert("Faltan datos");
+
+        // Validation: Insufficient Balance
+        const currentBalance = Number(balance) / 10 ** 18;
+        if (Number(amount) > currentBalance) {
+            alert(`❌ Saldo Insuficiente. Tienes ${currentBalance.toLocaleString()} créditos, pero intentas enviar ${Number(amount).toLocaleString()}.`);
+            return;
+        }
 
         try {
             setStatus("pending");
