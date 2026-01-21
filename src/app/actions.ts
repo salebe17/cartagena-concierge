@@ -275,11 +275,40 @@ export async function cancelOrder(orderId: string) {
     return { success: true }
 }
 
+export async function updateOrderStatus(orderId: string, newStatus: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: "Unauthorized" }
+
+    // Optional: Add strict check if user is driver (policy already covers this generally)
+
+    const updateData: any = { status: newStatus, updated_at: new Date().toISOString() }
+
+    // Auto-assign driver if moving to 'assigned'
+    if (newStatus === 'assigned') {
+        updateData.driver_id = user.id
+    }
+
+    const { error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', orderId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/driver')
+    revalidatePath('/dashboard')
+    return { success: true }
+}
+
 export async function createWeb3Order(
     amount: number,
     serviceDetails: string,
     locationAddress: string,
-    txHash: string
+    txHash: string,
+    clientPhone: string = "",
+    lat: number | null = null,
+    lng: number | null = null
 ) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -310,7 +339,10 @@ export async function createWeb3Order(
             service_details: serviceDetails,
             location_address: locationAddress,
             tx_hash: txHash,
-            network: 'Amoy'
+            network: 'Amoy',
+            client_phone: clientPhone,
+            location_lat: lat,
+            location_lng: lng
         })
         .select('id')
         .single()

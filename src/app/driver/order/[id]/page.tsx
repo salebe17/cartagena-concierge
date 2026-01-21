@@ -73,8 +73,29 @@ export default function DriverOrderPage() {
         }
     }
 
+    const handleUpdateStatus = async (newStatus: string) => {
+        setSubmitting(true)
+        // Import dynamic action here or at top
+        const { updateOrderStatus } = await import('@/app/actions')
+        const result = await updateOrderStatus(order.id, newStatus)
+        setSubmitting(false)
+
+        if (result.success) {
+            toast({ title: "✅ Estado Actualizado", description: `Orden pasa a: ${newStatus}` })
+            // Refresh local state roughly (revalidation handles real refresh)
+            setOrder((prev: any) => ({ ...prev, status: newStatus }))
+        } else {
+            toast({ title: "❌ Error", description: result.error, variant: "destructive" })
+        }
+    }
+
     if (loading) return <div className="p-10 text-center">Cargando orden...</div>
     if (!order) return <div className="p-10 text-center">Orden no encontrada</div>
+
+    // STATUS BASED ACTIONS
+    const isUnassigned = order.status === 'paid' || order.status === 'pending'
+    const isAssigned = order.status === 'assigned'
+    const isInTransit = order.status === 'in_transit'
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 flex flex-col gap-6">
@@ -82,8 +103,11 @@ export default function DriverOrderPage() {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wide">
-                            {order.status}
+                        <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase tracking-wide
+                            ${order.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                order.status === 'in_transit' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-yellow-100 text-yellow-800'}`}>
+                            {order.status.replace('_', ' ')}
                         </span>
                         <h1 className="text-3xl font-black mt-2">${Number(order.amount).toLocaleString()}</h1>
                     </div>
@@ -129,34 +153,63 @@ export default function DriverOrderPage() {
 
                 <div className="h-4"></div> {/* Spacer */}
 
-                {/* PIN Input Section - Explicitly Requested UI */}
-                <div className="bg-gray-900 p-4 rounded-xl mb-4 border border-gray-700">
-                    <label className="block text-center text-gray-400 mb-2 text-sm">
-                        Pide el código al cliente para finalizar
-                    </label>
-                    <input
-                        type="text"
-                        pattern="\d*"
-                        maxLength={4}
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value)}
-                        className="w-full text-center text-4xl tracking-[1rem] font-bold bg-black text-yellow-500 border-b-2 border-yellow-500 focus:outline-none py-2 mb-4 placeholder-gray-800"
-                        placeholder="0000"
-                    />
-                </div>
+                {/* DYNAMIC ACTION BUTTONS */}
+                {isUnassigned && (
+                    <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 mb-4">
+                        <p className="text-sm text-yellow-800 mb-2 font-bold text-center">¿Aceptas esta orden?</p>
+                        <ActionButton
+                            onClick={() => handleUpdateStatus('assigned')}
+                            color="bg-black hover:bg-zinc-800"
+                            label={submitting ? "Procesando..." : "ACEPTAR VIAJE"}
+                            icon={CheckCircle}
+                            loading={submitting}
+                        />
+                    </div>
+                )}
 
-                <ActionButton
-                    onClick={handleComplete}
-                    color="bg-black hover:bg-zinc-800"
-                    label={submitting ? "Verificando..." : "Finalizar Entrega"}
-                    icon={CheckCircle}
-                    disabled={pin.length !== 4}
-                    loading={submitting}
-                />
+                {isAssigned && (
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mb-4">
+                        <p className="text-sm text-blue-800 mb-2 font-bold text-center">¿Ya vas saliendo?</p>
+                        <ActionButton
+                            onClick={() => handleUpdateStatus('in_transit')}
+                            color="bg-blue-600 hover:bg-blue-700"
+                            label={submitting ? "Procesando..." : "VOY EN CAMINO 🚗"}
+                            icon={Navigation}
+                            loading={submitting}
+                        />
+                    </div>
+                )}
+
+
+                {/* PIN Input Section - Only when IN TRANSIT */}
+                {isInTransit && (
+                    <>
+                        <div className="bg-gray-900 p-4 rounded-xl mb-4 border border-gray-700">
+                            <label className="block text-center text-gray-400 mb-2 text-sm">
+                                Pide el código al cliente para finalizar
+                            </label>
+                            <input
+                                type="text"
+                                pattern="\d*"
+                                maxLength={4}
+                                value={pin}
+                                onChange={(e) => setPin(e.target.value)}
+                                className="w-full text-center text-4xl tracking-[1rem] font-bold bg-black text-yellow-500 border-b-2 border-yellow-500 focus:outline-none py-2 mb-4 placeholder-gray-800"
+                                placeholder="0000"
+                            />
+                        </div>
+
+                        <ActionButton
+                            onClick={handleComplete}
+                            color="bg-black hover:bg-zinc-800"
+                            label={submitting ? "Verificando..." : "Finalizar Entrega"}
+                            icon={CheckCircle}
+                            disabled={pin.length !== 4}
+                            loading={submitting}
+                        />
+                    </>
+                )}
             </div>
-
-
-            {/* Remove unused 'pin' step or keep empty if state persists, but user asked to rebuild completion section */}
         </div>
     )
 }

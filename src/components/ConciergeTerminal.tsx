@@ -40,6 +40,9 @@ function TerminalContent() {
     const [amount, setAmount] = useState("");
     const [serviceDetails, setServiceDetails] = useState("");
     const [location, setLocation] = useState("");
+    const [phone, setPhone] = useState(""); // WhatsApp
+    const [coords, setCoords] = useState<{ lat: number | null, lng: number | null }>({ lat: null, lng: null });
+    const [gpsLoading, setGpsLoading] = useState(false);
 
     const { data: tokenName } = useReadContract({ contract, method: "function name() view returns (string)", params: [] });
     const { data: tokenSymbol } = useReadContract({ contract, method: "function symbol() view returns (string)", params: [] });
@@ -48,6 +51,24 @@ function TerminalContent() {
         method: "function balanceOf(address) view returns (uint256)",
         params: [account?.address || "0x0000000000000000000000000000000000000000"]
     });
+
+    const handleGPS = () => {
+        if (!navigator.geolocation) return alert("GPS no soportado");
+        setGpsLoading(true);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                setGpsLoading(false);
+                // Optionally inverse geocode here if we had an API, but for now we trust the text + coords
+                if (!location) setLocation(`GPS: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+            },
+            (err) => {
+                console.error(err);
+                alert("Error obteniendo ubicación. Por favor escríbela manual.");
+                setGpsLoading(false);
+            }
+        );
+    };
 
     return (
         <div className="min-h-screen bg-black text-white font-sans">
@@ -105,28 +126,50 @@ function TerminalContent() {
                             <h3 className="text-xl font-medium text-white tracking-wide">Solicitar & Pagar</h3>
                         </div>
 
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {/* INPUT: DETALLES */}
                             <div>
                                 <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">¿Qué necesitas?</label>
                                 <textarea
                                     placeholder="Ej: Traer 200k en efectivo..."
-                                    className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors h-24 resize-none"
+                                    className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors h-20 resize-none"
                                     value={serviceDetails}
                                     onChange={(e) => setServiceDetails(e.target.value)}
                                 />
                             </div>
 
-                            {/* INPUT: UBICACIÓN */}
+                            {/* INPUT: WHATSAPP */}
+                            <div>
+                                <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">Tu WhatsApp (Obligatorio)</label>
+                                <input
+                                    type="tel"
+                                    placeholder="+57 300 000 0000"
+                                    className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
+                            </div>
+
+                            {/* INPUT: UBICACIÓN + GPS */}
                             <div>
                                 <label className="text-[10px] uppercase tracking-[0.3em] text-gray-500 mb-2 block font-bold">¿A dónde vamos?</label>
-                                <input
-                                    type="text"
-                                    placeholder="Ej: Hotel Santa Clara, Hab 202"
-                                    className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Ej: Hotel Santa Clara, Hab 202"
+                                        className="w-full bg-black/50 border border-white/10 text-white text-sm p-4 rounded-xl outline-none focus:border-yellow-500/50 transition-colors"
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                    />
+                                    <button
+                                        onClick={handleGPS}
+                                        className="px-4 bg-gray-800 text-yellow-500 rounded-xl border border-gray-700 hover:bg-gray-700 transition-colors"
+                                        title="Usar mi ubicación actual"
+                                    >
+                                        {gpsLoading ? "..." : "📍"}
+                                    </button>
+                                </div>
+                                {coords.lat && <p className="text-[10px] text-green-500 mt-1">GPS: {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</p>}
                             </div>
 
                             {/* INPUT: CREDITS */}
@@ -149,6 +192,8 @@ function TerminalContent() {
                                 amount={amount}
                                 serviceDetails={serviceDetails}
                                 location={location}
+                                phone={phone}
+                                coords={coords}
                                 contract={contract}
                                 client={client}
                                 balance={balance}
@@ -162,7 +207,7 @@ function TerminalContent() {
 }
 
 // Sub-component for clean transaction logic
-function TxButton({ account, amount, serviceDetails, location, contract, client, balance }: any) {
+function TxButton({ account, amount, serviceDetails, location, phone, coords, contract, client, balance }: any) {
     const { mutateAsync: sendTransaction, isPending } = useSendTransaction();
     const [status, setStatus] = useState("idle"); // idle, success, error
     const router = useRouter();
@@ -170,6 +215,7 @@ function TxButton({ account, amount, serviceDetails, location, contract, client,
     const handleClick = async () => {
         if (!account) return alert("Inicia sesión");
         if (!amount || !serviceDetails || !location) return alert("Faltan datos");
+        if (!phone) return alert("WhatsApp es obligatorio para contactarte");
 
         // Validation: Insufficient Balance
         const currentBalance = Number(balance) / 10 ** 18;
@@ -194,8 +240,16 @@ function TxButton({ account, amount, serviceDetails, location, contract, client,
             // 3. Import dynamic action
             const { createWeb3Order } = await import("@/app/actions");
 
-            // 4. Save to DB
-            const result = await createWeb3Order(Number(amount), serviceDetails, location, transactionHash);
+            // 4. Save to DB with Extra Data
+            const result = await createWeb3Order(
+                Number(amount),
+                serviceDetails,
+                location,
+                transactionHash,
+                phone,
+                coords?.lat,
+                coords?.lng
+            );
 
             if (result.success) {
                 setStatus("success");
