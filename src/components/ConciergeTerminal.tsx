@@ -1,18 +1,12 @@
 "use client";
 
 import { useReadContract, useActiveAccount, useSendTransaction, ConnectButton, ThirdwebProvider } from "thirdweb/react";
-import { createThirdwebClient, getContract, defineChain, prepareContractCall } from "thirdweb";
+import { prepareContractCall } from "thirdweb";
 import { inAppWallet } from "thirdweb/wallets";
 import { toUnits } from "thirdweb/utils";
+import { client, chain, tokenContract, TARGET_WALLET_ADDRESS } from "@/lib/thirdweb";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-// 1. CONFIGURACIÓN DEL CLIENTE
-const client = createThirdwebClient({
-    clientId: "63857cb90adaf65ae3dde1e59baba96a",
-});
-
-const chain = defineChain(80002);
 
 // CONFIGURACIÓN DE BILLETERA FÁCIL (Email/Google)
 const wallets = [
@@ -28,12 +22,6 @@ const wallets = [
     }),
 ];
 
-const contract = getContract({
-    client,
-    chain,
-    address: "0x7b9a5cE25723936F5D26A5caA18EB15ad08aA935",
-});
-
 // COMPONENTE INTERNO: USA LOS HOOKS (Consumidor)
 function TerminalContent() {
     const account = useActiveAccount();
@@ -44,10 +32,10 @@ function TerminalContent() {
     const [coords, setCoords] = useState<{ lat: number | null, lng: number | null }>({ lat: null, lng: null });
     const [gpsLoading, setGpsLoading] = useState(false);
 
-    const { data: tokenName } = useReadContract({ contract, method: "function name() view returns (string)", params: [] });
-    const { data: tokenSymbol } = useReadContract({ contract, method: "function symbol() view returns (string)", params: [] });
+    const { data: tokenName } = useReadContract({ contract: tokenContract, method: "function name() view returns (string)", params: [] });
+    const { data: tokenSymbol } = useReadContract({ contract: tokenContract, method: "function symbol() view returns (string)", params: [] });
     const { data: balance } = useReadContract({
-        contract,
+        contract: tokenContract,
         method: "function balanceOf(address) view returns (uint256)",
         params: [account?.address || "0x0000000000000000000000000000000000000000"]
     });
@@ -194,7 +182,7 @@ function TerminalContent() {
                                 location={location}
                                 phone={phone}
                                 coords={coords}
-                                contract={contract}
+                                contract={tokenContract}
                                 client={client}
                                 balance={balance}
                             />
@@ -231,7 +219,7 @@ function TxButton({ account, amount, serviceDetails, location, phone, coords, co
             const transaction = prepareContractCall({
                 contract,
                 method: "function transfer(address to, uint256 value)",
-                params: ["0x53502758255955178A3266847849925232824330", toUnits(amount, 18)],
+                params: [TARGET_WALLET_ADDRESS, toUnits(amount, 18)],
             });
 
             // 2. Execute on Blockchain

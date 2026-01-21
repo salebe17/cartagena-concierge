@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getRpcClient, eth_getTransactionReceipt } from "thirdweb";
+import { client, chain, TARGET_WALLET_ADDRESS } from "@/lib/thirdweb";
 
 export async function calculateOrderFee(amount: number, distanceKm: number) {
     // Service Fee = 10% of amount
@@ -319,11 +321,43 @@ export async function createWeb3Order(
         throw new Error('Unauthorized')
     }
 
+    // 0. SECURITY: VERIFY TRANSACTION ON-CHAIN
+    try {
+        const rpcRequest = getRpcClient({ client, chain });
+        const receipt = await eth_getTransactionReceipt(rpcRequest, { hash: txHash as `0x${string}` });
+
+        if (!receipt) {
+            throw new Error("Transaction not found on chain");
+        }
+
+        if (receipt.status !== "success") {
+            throw new Error("Transaction failed on chain");
+        }
+
+        // Check against duplicate usage of same hash
+        // Note: We need to ensure we don't block the first legitimate use if we were just retrying, but typically this is fine.
+        // Ideally we'd have a unique constraint in DB, but this check helps.
+        const { data: existing } = await supabase.from('orders').select('id').eq('tx_hash', txHash).single();
+        if (existing) {
+            throw new Error("Transaction hash already used");
+        }
+
+    } catch (e: any) {
+        console.error("Tx Verification Failed:", e);
+        return { error: "Security Alert: Invalid Transaction. " + e.message };
+    }
+
     // 1. Calculate Fees (Reusing same logic)
     const { serviceFee, deliveryFee, total } = await calculateOrderFee(amount, 5) // Mock distance 5km for now
 
     // 2. Generate Code
     const deliveryCode = Math.floor(1000 + Math.random() * 9000).toString()
+
+    // 2.5. Persistence: Save Phone to Profile
+    if (clientPhone) {
+        // Upsert phone to profile. We use auth.users trigger usually, but here we update incomplete profiles.
+        await supabase.from('profiles').update({ phone: clientPhone }).eq('id', user.id);
+    }
 
     // 3. Insert Order
     const { data, error } = await supabase
