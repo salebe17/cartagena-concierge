@@ -50,4 +50,20 @@ export default async function AdminPage() {
     return (
         <AdminDashboardView requests={requests} bookings={bookings} />
     );
+} catch (error: any) {
+    console.error("Admin Page Crash:", error);
+    return (
+        <div className="p-10 flex flex-col items-center justify-center min-h-screen text-center">
+            <div className="bg-red-50 p-6 rounded-xl border border-red-100 max-w-lg">
+                <h1 className="text-red-600 font-bold text-xl mb-2">Error de Carga (Dashboard)</h1>
+                <p className="text-gray-600 mb-4">El sistema encontró un error inesperado.</p>
+                <div className="bg-white p-3 rounded text-left text-xs text-red-500 font-mono overflow-auto max-h-40 border border-gray-200">
+                    {error.message || JSON.stringify(error)}
+                </div>
+                <p className="text-xs text-gray-400 mt-4">Digest: {error.digest}</p>
+                <a href="/admin" className="mt-4 inline-block px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium">Reintentar</a>
+            </div>
+        </div>
+    );
+}
 }
