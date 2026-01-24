@@ -1,8 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { HostCatalog } from '@/components/HostCatalog';
-import { LogoutButton } from '@/components/logout-button';
-import { KYCBanner } from '@/components/kyc-banner';
+import { DashboardView } from '@/components/DashboardView';
+import { getUserPropertiesBySession } from '@/app/actions';
 
 export default async function DashboardPage() {
     const supabase = await createClient();
@@ -11,36 +10,23 @@ export default async function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect('/login');
 
-    // 2. Profile Check
+    // 2. Fetch User Profile Name (or fallback to metadata)
     const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('full_name')
         .eq('id', user.id)
         .single();
 
-    const status = profile?.kyc_status || 'unverified';
+    const userName = profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Anfitrión";
 
-    // 🛑 Security Gates
-    if (status === 'unverified') redirect('/verify');
+    // 3. Fetch Properties (Session Based)
+    const properties = await getUserPropertiesBySession();
 
-    if (status === 'pending') {
-        return (
-            <div className="flex flex-col h-screen items-center justify-center bg-gray-950 text-white p-4 text-center">
-                <h1 className="text-3xl font-bold mb-4 text-yellow-500">⏳ Verificación en Proceso</h1>
-                <p className="mb-6 text-gray-400">Tus documentos están siendo revisados.</p>
-                <LogoutButton />
-            </div>
-        );
-    }
-
-    if (status === 'rejected') {
-        return <div className="p-10 text-white">❌ Tu solicitud fue rechazada.</div>;
-    }
-
-    // ✅ Dashboard for Verified Users
+    // 4. Render View
     return (
-        <div className="min-h-screen bg-gray-50">
-            <HostCatalog />
-        </div>
+        <DashboardView
+            userName={userName}
+            properties={properties}
+        />
     );
 }
