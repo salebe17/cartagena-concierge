@@ -84,14 +84,24 @@ async function syncPropertyCalendarInternal(supabase: any, propertyId: string) {
 
 // --- EXPORTED ACTIONS ---
 
+// ... imports
+import { createClient, createAdminClient } from '@/lib/supabase/server';
+
+// ... (helpers)
+
+// --- EXPORTED ACTIONS ---
+
 export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
     try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const adminSupabase = await createAdminClient(); // Service Role Client
 
+        // 1. Auth Check (Always use User Client for this)
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        const { data: profile } = await supabase
+        // 2. Role Check (Verify user is admin)
+        const { data: profile } = await adminSupabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
@@ -99,7 +109,8 @@ export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
 
         if (profile?.role !== 'admin') return [];
 
-        const { data, error } = await supabase
+        // 3. Data Fetch (Use Admin Client to bypass RLS)
+        const { data, error } = await adminSupabase
             .from('service_requests')
             .select(`
                 *,
@@ -132,11 +143,12 @@ export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
 export async function getAllBookings(): Promise<any[]> {
     try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const adminSupabase = await createAdminClient();
 
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        const { data: profile } = await supabase
+        const { data: profile } = await adminSupabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
@@ -144,7 +156,7 @@ export async function getAllBookings(): Promise<any[]> {
 
         if (profile?.role !== 'admin') return [];
 
-        const { data, error } = await supabase
+        const { data, error } = await adminSupabase
             .from('bookings')
             .select(`
                 *,
@@ -166,11 +178,12 @@ export async function getAllBookings(): Promise<any[]> {
 export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
     try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const adminSupabase = await createAdminClient();
 
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return { success: false, error: "No autorizado" };
 
-        const { data: profile } = await supabase
+        const { data: profile } = await adminSupabase // Safe to check profile with admin client too
             .from('profiles')
             .select('role')
             .eq('id', user.id)
@@ -178,7 +191,7 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
 
         if (profile?.role !== 'admin') return { success: false, error: "Requiere admin" };
 
-        const { error } = await supabase
+        const { error } = await adminSupabase
             .from('service_requests')
             .update({ status: newStatus })
             .eq('id', requestId);
@@ -195,13 +208,13 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
 
 export async function forceSyncAllCalendars(): Promise<ActionResponse> {
     try {
-        // Authenticate as normal user first
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const adminSupabase = await createAdminClient();
 
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return { success: false, error: "No autorizado" };
 
-        const { data: profile } = await supabase
+        const { data: profile } = await adminSupabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
@@ -209,9 +222,8 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
 
         if (profile?.role !== 'admin') return { success: false, error: "Requiere admin" };
 
-        // Fetch properties using User Client (RLS allows admin to see all if configured correctly)
-        // If not, we might need a specific policy for "admin can see all properties"
-        const { data: properties } = await supabase
+        // Use Admin Client to see ALL properties regardless of RLS
+        const { data: properties } = await adminSupabase
             .from('properties')
             .select('id, title')
             .not('ical_url', 'is', null);
@@ -220,12 +232,15 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
             return { success: true, message: "No hay propiedades con iCal configurado." };
         }
 
-        // Parallel Sync with Timeout
         const TIMEOUT_MS = 9000;
         const syncPromises = properties.map(async (prop) => {
             try {
-                // Pass the authenticated client
-                await syncPropertyCalendarInternal(supabase, prop.id);
+                // Pass admin client to internal sync if you update it to use one,
+                // OR ensure 'syncPropertyCalendarInternal' creates its own admin handling.
+                // For now, let's keep internal logic but note it might fail RLS if not passed.
+                // Fix: Inline the logic or pass supabase client?
+                // The internal function uses `supabase` passed to it. We pass `adminSupabase`.
+                await syncPropertyCalendarInternal(adminSupabase, prop.id);
                 return { id: prop.id, title: prop.title, success: true };
             } catch (err: any) {
                 console.error(`Sync error ${prop.title}:`, err);
@@ -233,6 +248,7 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
             }
         });
 
+        // ... (rest of logic same) ...
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve('TIMEOUT'), TIMEOUT_MS)
         );
@@ -245,10 +261,8 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
 
         const results = result as any[];
         const successCount = results.filter(r => r.success).length;
-        // Include error message in failed list
         const failed = results.filter(r => !r.success)
             .map(r => `${r.title} (${r.error || 'Unknown'})`);
-
         const succeeded = results.filter(r => r.success).map(r => r.title);
 
         let msg = `Sincronizadas: ${successCount} de ${properties.length}.`;
@@ -259,24 +273,11 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         return { success: true, message: msg };
 
     } catch (e: any) {
-        const errorMessage = e instanceof Error ? e.message : "Unknown error";
-        return { success: false, error: "Error crítico: " + errorMessage };
+        return { success: false, error: "Error crítico: " + e.message };
     }
 }
 
-export async function debugEnvVars() {
-    // SECURITY: Return ONLY names, never values
-    const keys = Object.keys(process.env).filter(k => k.startsWith('NEXT_') || k.startsWith('SUPABASE_'));
-    const serviceKeyExists = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const serviceKeyLength = process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0;
-
-    return {
-        keys,
-        hasServiceKey: serviceKeyExists,
-        keyLength: serviceKeyLength,
-        nodeEnv: process.env.NODE_ENV
-    };
-}
+// ... debugEnvVars ...
 
 export async function adminCreateServiceRequest(data: {
     property_id: string;
@@ -285,13 +286,14 @@ export async function adminCreateServiceRequest(data: {
     requested_date: string; // ISO string
 }): Promise<ActionResponse<any>> {
     const supabase = await createClient();
+    const adminSupabase = await createAdminClient();
 
     // 1. Auth Check
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: "No autenticado" };
 
     // 2. Role Check
-    const { data: profile } = await supabase
+    const { data: profile } = await adminSupabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
@@ -301,8 +303,8 @@ export async function adminCreateServiceRequest(data: {
         return { success: false, error: "No tiene permisos de administrador" };
     }
 
-    // 3. Create Request
-    const { data: newRequest, error } = await supabase
+    // 3. Create Request (Bypass RLS)
+    const { data: newRequest, error } = await adminSupabase
         .from('service_requests')
         .insert({
             property_id: data.property_id,

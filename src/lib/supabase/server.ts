@@ -43,4 +43,35 @@ export async function createClient() {
       },
     }
   )
+  )
+}
+
+export async function createAdminClient() {
+  const cookieStore = await cookies();
+
+  // Safety check for Service Key
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("SUPABASE_SERVICE_ROLE_KEY missing - Admin actions will fail");
+    throw new Error("Service Configuration Error");
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/^=/, '').trim();
+
+  return createServerClient(
+    supabaseUrl,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll() },
+        setAll(cookiesToSet) {
+          // Admin client shouldn't set auth cookies usually, but we implement interface
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch { }
+        },
+      },
+    }
+  );
 }
