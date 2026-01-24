@@ -16,7 +16,7 @@ interface DashboardViewProps {
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
-export function DashboardView({ userName, properties }: DashboardViewProps) {
+export function DashboardView({ userName, properties, serviceHistory }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
 
