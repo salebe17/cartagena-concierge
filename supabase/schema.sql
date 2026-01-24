@@ -110,6 +110,52 @@ CREATE POLICY "Users can manage requests for own properties" ON service_requests
 -- =========================================================
 -- ALERTS TABLE (Notificaciones)
 -- =========================================================
+-- =========================================================
+-- BOOKINGS TABLE (Reservas Internas + Sync)
+-- =========================================================
+CREATE TABLE IF NOT EXISTS bookings (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    property_id UUID REFERENCES properties(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- Si es una reserva interna directa
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status TEXT DEFAULT 'confirmed', -- 'confirmed', 'cancelled', 'blocked'
+    platform TEXT DEFAULT 'Direct', -- 'Airbnb', 'Booking', 'Direct', 'iCal Sync'
+    guest_name TEXT, -- "Juan Perez" (importante para iCal)
+    external_id TEXT, -- UID del evento ical para evitar duplicados
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view bookings for own properties" ON bookings;
+CREATE POLICY "Users can view bookings for own properties" ON bookings FOR SELECT USING (
+    property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+DROP POLICY IF EXISTS "Users can insert bookings for own properties" ON bookings;
+CREATE POLICY "Users can insert bookings for own properties" ON bookings FOR INSERT WITH CHECK (
+    property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+DROP POLICY IF EXISTS "Users can update bookings for own properties" ON bookings;
+CREATE POLICY "Users can update bookings for own properties" ON bookings FOR UPDATE USING (
+    property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+DROP POLICY IF EXISTS "Users can delete bookings for own properties" ON bookings;
+CREATE POLICY "Users can delete bookings for own properties" ON bookings FOR DELETE USING (
+    property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
+
+
+-- =========================================================
+-- ALERTS TABLE (Notificaciones)
+-- =========================================================
 CREATE TABLE IF NOT EXISTS alerts (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
