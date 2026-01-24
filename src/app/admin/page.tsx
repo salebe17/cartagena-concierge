@@ -1,4 +1,4 @@
-import { getAdminData } from '@/app/actions'
+import { getAdminData } from '@/app/admin/actions'
 import { redirect } from 'next/navigation'
 import AdminDashboardClient from '@/components/admin-dashboard-client'
 
