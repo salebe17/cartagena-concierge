@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { DashboardView } from '@/components/DashboardView';
 import { getUserPropertiesBySession } from '@/app/actions';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
     const supabase = await createClient();
 
