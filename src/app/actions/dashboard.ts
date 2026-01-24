@@ -90,26 +90,15 @@ export async function submitServiceRequest(propertyId: string, serviceType: stri
 
         if (authError || !user) return { error: "No autorizado" };
 
-        const { error } = await supabase.from('orders').insert({
-            user_id: user.id,
-            service_details: `[${serviceType.toUpperCase()}] ${notes} (Fecha: ${date}) - Propiedad: ${propertyId}`,
-            amount: 0,
-            total_amount: 0,
-            service_fee: 0,
-            delivery_fee: 0,
-            status: 'pending',
-            delivery_code: 'REQ-' + Math.floor(Math.random() * 1000),
-            client_phone: user.user_metadata?.phone || '',
+        const { error } = await supabase.from('service_requests').insert({
+            property_id: propertyId,
+            service_type: serviceType,
+            notes: notes,
+            requested_date: date,
+            status: 'pending'
         });
 
         if (error) throw error;
-
-        await supabase.from('alerts').insert({
-            user_id: user.id,
-            title: 'Solicitud Recibida',
-            message: `Hemos recibido tu solicitud de ${serviceType}. Coordinaremos la visita para el ${date}.`,
-            type: 'info'
-        });
 
         revalidatePath('/dashboard');
         return { success: true };
