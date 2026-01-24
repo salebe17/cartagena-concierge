@@ -152,17 +152,35 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
             return { success: true, message: "No hay propiedades con iCal configurado." };
         }
 
-        let syncedCount = 0;
-        for (const prop of properties) {
-            await syncPropertyCalendar(prop.id);
-            syncedCount++;
+        // Optimización: Paralelismo controlado para evitar Timeout de Vercel (10s)
+        const TIMEOUT_MS = 8000; // 8 segundos de seguridad
+        const syncPromises = properties.map(async (prop) => {
+            try {
+                await syncPropertyCalendar(prop.id);
+                return { id: prop.id, success: true };
+            } catch (err) {
+                console.error(`Error syncing prop ${prop.id}:`, err);
+                return { id: prop.id, success: false };
+            }
+        });
+
+        // Race between sync and timeout
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve('TIMEOUT'), TIMEOUT_MS)
+        );
+
+        const result = await Promise.race([Promise.all(syncPromises), timeoutPromise]);
+
+        if (result === 'TIMEOUT') {
+            return { success: true, message: "Sincronización parcial (Tiempo límite excedido). Recargue en unos segundos." };
         }
 
+        const successes = (result as any[]).filter(r => r.success).length;
         revalidatePath('/admin');
-        return { success: true, message: `Sincronizadas ${syncedCount} propiedades.` };
+        return { success: true, message: `Sincronizadas ${successes} de ${properties.length} propiedades.` };
 
     } catch (e: any) {
-        console.error("Force Sync Error:", e);
-        return { success: false, error: "Error de sincronización: " + e.message };
+        console.error("Force Sync Critical Error:", e);
+        return { success: false, error: "Error crítico: " + e.message };
     }
 }
