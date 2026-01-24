@@ -23,6 +23,7 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
         max_guests: 2,
         address: "",
         bedrooms: 1,
+        beds: 1,
         bathrooms: 1,
         wifi_network: "",
         wifi_password: "",
