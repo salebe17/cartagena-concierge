@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { OrderForm } from '@/components/order-form';
+import { HostCatalog } from '@/components/HostCatalog';
 import { LogoutButton } from '@/components/logout-button';
 import { KYCBanner } from '@/components/kyc-banner';
 
@@ -39,24 +39,8 @@ export default async function DashboardPage() {
 
     // ✅ Dashboard for Verified Users
     return (
-        <div className="min-h-screen bg-black text-white p-4">
-            <header className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-                <div>
-                    <h1 className="text-xl font-bold tracking-tighter">Cartagena Concierge</h1>
-                    <p className="text-xs text-gray-500">Hola, {profile.full_name?.split(' ')[0] || 'Usuario'}</p>
-                </div>
-                <div className="transform scale-90 origin-right">
-                    <LogoutButton />
-                </div>
-            </header>
-
-            <main className="max-w-md mx-auto pb-20">
-                <div className="mb-6">
-                    <KYCBanner status={status} />
-                </div>
-
-                <OrderForm />
-            </main>
+        <div className="min-h-screen bg-gray-50">
+            <HostCatalog />
         </div>
     );
 }
