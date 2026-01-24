@@ -276,14 +276,26 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                         </AnimatePresence>
 
                         {requests.length === 0 && (
-                            <div className="bg-white rounded-3xl p-20 border border-gray-100 text-center space-y-4 shadow-sm">
+                            <div className="bg-white rounded-3xl p-12 border border-gray-100 text-center space-y-4 shadow-sm">
                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
                                     <CheckCircle2 size={32} />
                                 </div>
-                                <div>
+                                <div className="space-y-1">
                                     <h3 className="text-xl font-bold text-gray-900">Todo al día</h3>
-                                    <p className="text-sm text-gray-400">No hay solicitudes pendientes de gestión.</p>
+                                    <p className="text-sm text-gray-400 max-w-xs mx-auto">No hay solicitudes pendientes de gestión.</p>
                                 </div>
+
+                                {bookings.length > 0 && (
+                                    <div className="pt-4">
+                                        <Button
+                                            onClick={() => setActiveTab('calendar')}
+                                            variant="outline"
+                                            className="gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+                                        >
+                                            <CalendarIcon size={16} /> Ver mis {bookings.length} Reservas
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
