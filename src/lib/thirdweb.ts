@@ -12,8 +12,10 @@ export const TARGET_WALLET_ADDRESS = "0x53502758255955178A3266847849925232824330
 // Contract for Token (Configured in Terminal)
 export const TOKEN_CONTRACT_ADDRESS = "0x7b9a5cE25723936F5D26A5caA18EB15ad08aA935";
 
-export const tokenContract = getContract({
-    client,
-    chain,
-    address: TOKEN_CONTRACT_ADDRESS,
-});
+export function getTokenContract() {
+    return getContract({
+        client,
+        chain,
+        address: TOKEN_CONTRACT_ADDRESS,
+    });
+}
