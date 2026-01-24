@@ -843,9 +843,6 @@ export async function getUserAlertsBySession() {
         return [];
     }
 }
-return [];
-    }
-}
 
 export async function markAlertAsRead(alertId: string) {
     const supabase = await getAdminClient();
