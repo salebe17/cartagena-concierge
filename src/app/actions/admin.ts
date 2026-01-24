@@ -1,9 +1,25 @@
+'use server'
+
 import { ActionResponse, ServiceRequest } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { fetchICalEvents } from '@/lib/ical-sync';
 
-// Helper to get Admin Client (Duplicated here to avoid importing from actions.ts)
+// --- HELPERS ---
+
+// Helper for BigInt serialization
+function serialize<T>(data: T): T {
+    try {
+        return JSON.parse(JSON.stringify(data, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        ));
+    } catch (e) {
+        console.error("Serialization Error:", e);
+        return data; // Return original if serialization fails
+    }
+}
+
+// Dedicated Admin Client Helper (Avoids circular deps with actions.ts)
 async function getSupabaseAdmin() {
     const { createClient } = await import('@supabase/supabase-js');
     // Sanitize URL
@@ -15,11 +31,11 @@ async function getSupabaseAdmin() {
     );
 }
 
-// Internal Sync Function (Inline to avoid circular deps)
+// Internal Sync Logic (Isolated)
 async function syncPropertyCalendarInternal(propertyId: string) {
     const supabase = await getSupabaseAdmin();
 
-    // 1. Get Property iCal URL
+    // 1. Get Property
     const { data: property, error: propError } = await supabase
         .from('properties')
         .select('ical_url, owner_id, title')
@@ -77,14 +93,85 @@ async function syncPropertyCalendarInternal(propertyId: string) {
     return { success: true };
 }
 
-export async function forceSyncAllCalendars(): Promise<ActionResponse> {
+// --- EXPORTED ACTIONS ---
+
+export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
     try {
-        const supabase = await createClient(); // Regular client for auth check
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return [];
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') return [];
+
+        const { data, error } = await supabase
+            .from('service_requests')
+            .select(`
+                *,
+                properties (
+                    id,
+                    title,
+                    address,
+                    owner_id
+                )
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return serialize(data || []);
+    } catch (e) {
+        console.error("Admin Fetch Error:", e);
+        return [];
+    }
+}
+
+export async function getAllBookings(): Promise<any[]> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return [];
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') return [];
+
+        const { data, error } = await supabase
+            .from('bookings')
+            .select(`
+                *,
+                properties (
+                    title,
+                    address
+                )
+            `)
+            .order('start_date', { ascending: true });
+
+        if (error) throw error;
+        return serialize(data || []);
+    } catch (e) {
+        console.error("Admin Bookings Fetch Error:", e);
+        return [];
+    }
+}
+
+export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) return { success: false, error: "No autorizado" };
 
-        // Verify admin
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -93,7 +180,38 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
 
         if (profile?.role !== 'admin') return { success: false, error: "Requiere admin" };
 
-        // Fetch properties
+        const { error } = await supabase
+            .from('service_requests')
+            .update({ status: newStatus })
+            .eq('id', requestId);
+
+        if (error) throw error;
+
+        revalidatePath('/admin');
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: "Error al actualizar el estado." };
+    }
+}
+
+export async function forceSyncAllCalendars(): Promise<ActionResponse> {
+    try {
+        // Authenticate as normal user first
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return { success: false, error: "No autorizado" };
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') return { success: false, error: "Requiere admin" };
+
+        // Fetch properties using Admin Client (bypass RLS)
         const adminSupabase = await getSupabaseAdmin();
         const { data: properties } = await adminSupabase
             .from('properties')
@@ -104,7 +222,7 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
             return { success: true, message: "No hay propiedades con iCal configurado." };
         }
 
-        // Parallel Sync
+        // Parallel Sync with Timeout
         const TIMEOUT_MS = 9000;
         const syncPromises = properties.map(async (prop) => {
             try {
