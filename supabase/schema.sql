@@ -50,9 +50,7 @@ CREATE POLICY "Users can insert orders." ON orders FOR INSERT WITH CHECK (auth.u
 -- Simplification: Allow all authenticated users to update (Security risk in real app, but allows demo driver flow).
 CREATE POLICY "Authenticated users can update orders." ON orders FOR UPDATE USING (auth.uid() = user_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'driver'));
 
--- 🏡 Real Estate SaaS Tables
-
--- Properties Table
+-- Properties Table (Soporta múltiples propiedades por usuario)
 CREATE TABLE IF NOT EXISTS properties (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   owner_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
@@ -62,15 +60,24 @@ CREATE TABLE IF NOT EXISTS properties (
   bathrooms INT DEFAULT 1,
   size_sqm INT,
   image_url TEXT,
-  ical_url TEXT, -- For Calendar Sync
+  ical_url TEXT, -- Para sincronización de Airbnb/Booking
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Habilitar RLS
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 
+-- Políticas de Seguridad (Multi-tenancy)
+DROP POLICY IF EXISTS "Users can view own properties" ON properties;
 CREATE POLICY "Users can view own properties" ON properties FOR SELECT USING (auth.uid() = owner_id);
+
+DROP POLICY IF EXISTS "Users can insert own properties" ON properties;
 CREATE POLICY "Users can insert own properties" ON properties FOR INSERT WITH CHECK (auth.uid() = owner_id);
+
+DROP POLICY IF EXISTS "Users can update own properties" ON properties;
 CREATE POLICY "Users can update own properties" ON properties FOR UPDATE USING (auth.uid() = owner_id);
+
+DROP POLICY IF EXISTS "Users can delete own properties" ON properties;
 CREATE POLICY "Users can delete own properties" ON properties FOR DELETE USING (auth.uid() = owner_id);
 
 -- Bookings Table (Calendar)

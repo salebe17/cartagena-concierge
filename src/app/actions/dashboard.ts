@@ -17,7 +17,6 @@ export async function getUserPropertiesBySession() {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !user) {
-            // console.warn("Session check failed:", authError);
             return [];
         }
 
@@ -29,7 +28,6 @@ export async function getUserPropertiesBySession() {
         return serialize(data || []);
     } catch (e) {
         console.error("Critical Error in getUserPropertiesBySession:", e);
-        // Return empty array to prevent UI crash
         return [];
     }
 }
@@ -56,18 +54,18 @@ export async function getUserAlertsBySession() {
 }
 
 export async function registerProperty(formData: FormData) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return { error: "Debes iniciar sesión" };
-
-    const title = formData.get('title') as string;
-    const address = formData.get('address') as string;
-    const ical_url = formData.get('ical_url') as string;
-
-    if (!title || !address) return { error: "Faltan datos obligatorios" };
-
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return { error: "Debes iniciar sesión" };
+
+        const title = formData.get('title') as string;
+        const address = formData.get('address') as string;
+        const ical_url = formData.get('ical_url') as string;
+
+        if (!title || !address) return { error: "Faltan datos obligatorios" };
+
         const { error } = await supabase.from('properties').insert({
             owner_id: user.id,
             title,
@@ -77,44 +75,35 @@ export async function registerProperty(formData: FormData) {
 
         if (error) throw error;
 
-        // Revalidate to update dashboard immediately
-        // We use a hacky revalidatePath('/') or specific path
-        // But since we are in `use server`, revalidatePath needs imports
+        revalidatePath('/dashboard');
+        return { success: true };
     } catch (e: any) {
+        console.error("Register Property Error:", e);
         return { error: e.message };
     }
-
-    return { success: true };
 }
 
 export async function submitServiceRequest(propertyId: string, serviceType: string, date: string, notes: string) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return { error: "Unauthorized" };
-
     try {
-        // Reuse ORDERS table for services as it has payment/status logic
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) return { error: "No autorizado" };
+
         const { error } = await supabase.from('orders').insert({
             user_id: user.id,
-            // We store property_id in metadata or description for now if no column
-            // Ideal: Add property_id to orders. 
-            // Workaround: Add to service_details
             service_details: `[${serviceType.toUpperCase()}] ${notes} (Fecha: ${date}) - Propiedad: ${propertyId}`,
-            amount: 0, // Quote pending
+            amount: 0,
             total_amount: 0,
             service_fee: 0,
             delivery_fee: 0,
             status: 'pending',
             delivery_code: 'REQ-' + Math.floor(Math.random() * 1000),
-            client_phone: user.user_metadata?.phone || '', // Fallback
-            // If we have property_id column in orders (we verified we don't, only properties table has owner_id)
-            // Ideally we should LINK them.
+            client_phone: user.user_metadata?.phone || '',
         });
 
         if (error) throw error;
 
-        // Also create an ALERT for the admin/user
         await supabase.from('alerts').insert({
             user_id: user.id,
             title: 'Solicitud Recibida',
@@ -122,11 +111,12 @@ export async function submitServiceRequest(propertyId: string, serviceType: stri
             type: 'info'
         });
 
+        revalidatePath('/dashboard');
+        return { success: true };
     } catch (e: any) {
+        console.error("Service Request Error:", e);
         return { error: e.message };
     }
-
-    return { success: true };
 }
 
 export async function signOut() {
