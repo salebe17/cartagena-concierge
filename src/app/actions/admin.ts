@@ -1,7 +1,7 @@
 'use server'
 
 import { ActionResponse, ServiceRequest } from '@/lib/types';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 // import { fetchICalEvents } from '@/lib/ical-sync'; // <-- Removed to avoid build-time eval
 
@@ -85,7 +85,7 @@ async function syncPropertyCalendarInternal(supabase: any, propertyId: string) {
 // --- EXPORTED ACTIONS ---
 
 // ... imports
-import { createClient, createAdminClient } from '@/lib/supabase/server';
+
 
 // ... (helpers)
 

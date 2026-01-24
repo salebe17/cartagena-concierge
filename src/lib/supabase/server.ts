@@ -43,7 +43,6 @@ export async function createClient() {
       },
     }
   )
-  )
 }
 
 export async function createAdminClient() {
