@@ -54,8 +54,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (error) {
+    console.error("RootLayout: Supabase init failed", error);
+    // Fail gracefully: User remains null, app continues to render
+  }
 
   return (
     <html lang="en">
