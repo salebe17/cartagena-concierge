@@ -1,83 +1,55 @@
-:root {
-  /* Airbnb Design Tokens - Primary Palette */
-  --airbnb-red: #FF5A5F;
-  --airbnb-red-dark: #E31C5F;
-  /* More vibrant rose-red for hover */
+@import "tailwindcss";
 
-  /* Neutral Palette (Tailored HSL) */
-  --text-primary: #222222;
-  --text-secondary: #717171;
-  --bg-light: #F7F7F7;
-  --border-light: #EBEBEB;
-  --white: #FFFFFF;
+@theme {
+  /* Airbnb Design Tokens - Primary Palette */
+  --color-airbnb-red: #FF5A5F;
+  --color-airbnb-red-dark: #E31C5F;
+
+  /* Neutral Palette */
+  --color-text-primary: #222222;
+  --color-text-secondary: #717171;
+  --color-bg-light: #F7F7F7;
+  --color-border-light: #EBEBEB;
+  --color-white: #FFFFFF;
 
   /* Premium Surface Tokens */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.4);
-  --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  --hero-shadow: 0 10px 30px -10px rgba(255, 90, 95, 0.3);
+  --color-glass-bg: rgba(255, 255, 255, 0.7);
+  --color-glass-border: rgba(255, 255, 255, 0.4);
 
-  /* Next.js defaults mapped */
-  --background: var(--white);
-  --foreground: var(--text-primary);
-}
+  /* Shadows */
+  --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-hero: 0 10px 30px -10px rgba(255, 90, 95, 0.3);
 
-@theme inline {
-  --color-airbnb: var(--airbnb-red);
-  --color-airbnb-dark: var(--airbnb-red-dark);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-text-secondary: var(--text-secondary);
-  --color-border-light: var(--border-light);
-  --color-bg-light: var(--bg-light);
-
+  /* Fonts */
   --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
-
-  /* Custom Utilities */
-  --shadow-airbnb: var(--card-shadow);
-  --shadow-hero: var(--hero-shadow);
 }
 
-@layer base {
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-  }
-}
-
+/* Utilities Layer */
 @layer utilities {
   .glass {
-    background: var(--glass-bg);
+    background: var(--color-glass-bg);
     backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--color-glass-border);
   }
 
   .btn-primary {
-    @apply bg-[var(--airbnb-red)] text-white font-bold rounded-xl transition-all active:scale-95;
+    @apply bg-[var(--color-airbnb-red)] text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95;
 
     &:hover {
-      background-color: var(--airbnb-red-dark);
-      box-shadow: 0 8px 24px rgba(255, 90, 95, 0.4);
+      @apply bg-[var(--color-airbnb-red-dark)] shadow-[var(--shadow-hero)];
     }
+  }
+
+  .btn-secondary {
+    @apply border border-gray-900 text-gray-900 font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition-all transform active:scale-95;
+  }
+
+  .card-hover {
+    @apply transition-shadow duration-200 hover:shadow-xl;
   }
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-}
-
-/* Utilities */
-.btn-primary {
-  @apply bg-[var(--airbnb-red)] text-white font-bold py-3 px-6 rounded-lg hover:bg-[var(--airbnb-red-dark)] transition-all transform active:scale-95;
-}
-
-.btn-secondary {
-  @apply border border-gray-900 text-gray-900 font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition-all transform active:scale-95;
-}
-
-.card-hover {
-  @apply transition-shadow duration-200 hover:shadow-xl;
 }
