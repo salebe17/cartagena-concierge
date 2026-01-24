@@ -1,13 +1,19 @@
 "use client";
 
-import { Search, Star, Home, Truck, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { LucideIcon, Search, Star, Home, Truck, ShieldCheck, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Navbar from "./Navbar";
 
 // Placeholder Category Component
-const CategoryBox = ({ icon: Icon, label, selected }: any) => (
+interface CategoryBoxProps {
+    icon: LucideIcon;
+    label: string;
+    selected?: boolean;
+}
+
+const CategoryBox = ({ icon: Icon, label, selected }: CategoryBoxProps) => (
     <div className={`
     flex flex-col items-center justify-center gap-2 p-3 border-b-2 hover:text-gray-800 transition cursor-pointer min-w-24
     ${selected ? 'border-black text-black' : 'border-transparent text-gray-500'}
@@ -18,7 +24,15 @@ const CategoryBox = ({ icon: Icon, label, selected }: any) => (
 );
 
 // Placeholder Service Card
-const ServiceCard = ({ title, desc, price, rating, image }: any) => (
+interface ServiceCardProps {
+    title: string;
+    desc: string;
+    price: string;
+    rating: string;
+    image: string;
+}
+
+const ServiceCard = ({ title, desc, price, rating, image }: ServiceCardProps) => (
     <div className="group cursor-pointer">
         <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-200 mb-3">
             {/* Placeholder for real images using a nice gradient or generated asset later */}

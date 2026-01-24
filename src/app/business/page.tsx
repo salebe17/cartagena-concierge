@@ -13,10 +13,6 @@ const wallets = [
         auth: {
             options: ["google", "apple", "email"],
         },
-        smartWallet: {
-            chain: chain,
-            sponsorGas: true,
-        },
     }),
 ];
 
