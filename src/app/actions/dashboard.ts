@@ -11,12 +11,15 @@ function serialize<T>(data: T): T {
 }
 
 export async function getUserPropertiesBySession() {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return [];
-
     try {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            // console.warn("Session check failed:", authError);
+            return [];
+        }
+
         const { data } = await supabase
             .from('properties')
             .select('*')
@@ -24,18 +27,19 @@ export async function getUserPropertiesBySession() {
 
         return serialize(data || []);
     } catch (e) {
-        console.error("Get Properties By Session Error:", e);
+        console.error("Critical Error in getUserPropertiesBySession:", e);
+        // Return empty array to prevent UI crash
         return [];
     }
 }
 
 export async function getUserAlertsBySession() {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return [];
-
     try {
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) return [];
+
         const { data } = await supabase
             .from('alerts')
             .select('*, properties(title)')
@@ -45,7 +49,7 @@ export async function getUserAlertsBySession() {
 
         return serialize(data || []);
     } catch (e) {
-        console.error("Get Alerts By Session Error:", e);
+        console.error("Critical Error in getUserAlertsBySession:", e);
         return [];
     }
 }
