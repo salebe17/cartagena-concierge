@@ -12,6 +12,7 @@ import { CalendarGrid } from "./admin/CalendarGrid";
 import { createServiceRequest } from "@/app/actions/dashboard";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
 
 interface DashboardViewProps {
     userName: string;
