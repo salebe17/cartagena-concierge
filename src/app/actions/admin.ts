@@ -22,11 +22,21 @@ function serialize<T>(data: T): T {
 // Dedicated Admin Client Helper (Avoids circular deps with actions.ts)
 async function getSupabaseAdmin() {
     const { createClient } = await import('@supabase/supabase-js');
+
+    const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const rawKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!rawUrl) throw new Error("Falta NEXT_PUBLIC_SUPABASE_URL en variables de entorno.");
+    if (!rawKey) throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY en Vercel. Verifique que no tenga espacios extra.");
+
     // Sanitize URL
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/^=/, '').trim();
+    const supabaseUrl = rawUrl.replace(/^=/, '').trim();
+    // Sanitize Key (remove accidental quotes or spaces)
+    const supabaseKey = rawKey.replace(/^["']|["']$/g, '').trim();
+
     return createClient(
         supabaseUrl,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        supabaseKey,
         { auth: { autoRefreshToken: false, persistSession: false } }
     );
 }
