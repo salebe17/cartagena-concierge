@@ -145,7 +145,7 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         // Fetch all properties with iCal URLs
         const { data: properties } = await supabase
             .from('properties')
-            .select('id')
+            .select('id, title')
             .not('ical_url', 'is', null);
 
         if (!properties || properties.length === 0) {
@@ -157,10 +157,10 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         const syncPromises = properties.map(async (prop) => {
             try {
                 await syncPropertyCalendar(prop.id);
-                return { id: prop.id, success: true };
+                return { id: prop.id, title: prop.title, success: true };
             } catch (err) {
-                console.error(`Error syncing prop ${prop.id}:`, err);
-                return { id: prop.id, success: false };
+                console.error(`Error syncing prop ${prop.title}:`, err);
+                return { id: prop.id, title: prop.title, success: false };
             }
         });
 
@@ -175,9 +175,17 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
             return { success: true, message: "Sincronización parcial (Tiempo límite excedido). Recargue en unos segundos." };
         }
 
-        const successes = (result as any[]).filter(r => r.success).length;
+        const results = result as any[];
+        const successCount = results.filter(r => r.success).length;
+        const failed = results.filter(r => !r.success).map(r => r.title);
+        const succeeded = results.filter(r => r.success).map(r => r.title);
+
+        let msg = `Sincronizadas: ${successCount} de ${properties.length}.`;
+        if (succeeded.length > 0) msg += ` (${succeeded.join(', ')})`;
+        if (failed.length > 0) msg += ` Fallaron: ${failed.join(', ')}.`;
+
         revalidatePath('/admin');
-        return { success: true, message: `Sincronizadas ${successes} de ${properties.length} propiedades.` };
+        return { success: true, message: msg };
 
     } catch (e: any) {
         console.error("Force Sync Critical Error:", e);
