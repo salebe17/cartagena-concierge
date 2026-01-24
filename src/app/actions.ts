@@ -780,8 +780,30 @@ export async function syncPropertyCalendar(propertyId: string) {
             }
         }
 
+        // 6. Recalculate Occupancy Status
+        // Check if TODAY is within any confirmed booking
+        const today = new Date().toISOString().split('T')[0];
+        const { data: activeBooking } = await supabase
+            .from('bookings')
+            .select('id')
+            .eq('property_id', propertyId)
+            .lte('start_date', today)
+            .gte('end_date', today)
+            .eq('status', 'confirmed') // Only confirmed bookings count
+            .maybeSingle();
+
+        const newStatus = activeBooking ? 'occupied' : 'vacant';
+
+        // Update property status
+        await supabase
+            .from('properties')
+            .update({ status: newStatus })
+            .eq('id', propertyId);
+
         revalidatePath('/business');
-        return { success: true, processed: externalEvents.length, new: newBookingsCount };
+        revalidatePath('/dashboard'); // Update client dashboard too
+
+        return { success: true, processed: externalEvents.length, new: newBookingsCount, status: newStatus };
 
     } catch (e: any) {
         console.error("Calendar Sync Error:", e);
