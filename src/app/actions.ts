@@ -816,7 +816,7 @@ export async function getUserPropertiesBySession() {
             .select('*')
             .eq('owner_id', user.id);
 
-        return data || [];
+        return JSON.parse(JSON.stringify(data || []));
     } catch (e) {
         console.error("Get Properties By Session Error:", e);
         return [];
@@ -837,7 +837,7 @@ export async function getUserAlertsBySession() {
             .eq('status', 'unread')
             .order('created_at', { ascending: false });
 
-        return data || [];
+        return JSON.parse(JSON.stringify(data || []));
     } catch (e) {
         console.error("Get Alerts By Session Error:", e);
         return [];
