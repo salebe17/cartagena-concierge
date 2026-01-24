@@ -188,7 +188,9 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         return { success: true, message: msg };
 
     } catch (e: any) {
-        console.error("Force Sync Critical Error:", e);
-        return { success: false, error: "Error crítico: " + e.message };
+        // Return a clean error object, do not throw.
+        // Console error locally is fine, but ensure we return a JSON safe object
+        const errorMessage = e instanceof Error ? e.message : "Unknown error";
+        return { success: false, error: "Error crítico de sincronización: " + errorMessage };
     }
 }
