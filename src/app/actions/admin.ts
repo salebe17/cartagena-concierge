@@ -184,7 +184,7 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         if (succeeded.length > 0) msg += ` (${succeeded.join(', ')})`;
         if (failed.length > 0) msg += ` Fallaron: ${failed.join(', ')}.`;
 
-        revalidatePath('/admin');
+        // revalidatePath('/admin'); // <-- COMENTADO TEMPORALMENTE PARA DIAGNOSTICO
         return { success: true, message: msg };
 
     } catch (e: any) {
