@@ -166,7 +166,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                                     <p className="text-xs font-medium text-gray-600 italic">"{req.notes}"</p>
                                                     {req.requested_date && (
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                                                            Agenda: {new Date(req.requested_date).toLocaleString()}
+                                                            Agenda: {new Date(req.requested_date).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
                                                         </p>
                                                     )}
                                                 </div>
@@ -258,7 +258,8 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                                 </span>
                                             </div>
                                             <p className="text-sm text-gray-500 font-medium">
-                                                {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
+                                                {/* Use string manipulation to avoid hydration mismatch from timezones */}
+                                                {booking.start_date} - {booking.end_date}
                                             </p>
                                             <div className="flex items-center gap-3 text-xs text-gray-400 pt-1">
                                                 <span className="flex items-center gap-1"><User size={12} /> {booking.guest_name || booking.profiles?.full_name || "Huésped"}</span>
