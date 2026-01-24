@@ -1,24 +1,37 @@
-import { getAdminData } from '@/app/admin/actions'
-import { redirect } from 'next/navigation'
-import AdminDashboardClient from '@/components/admin-dashboard-client'
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { AdminDashboardView } from '@/components/AdminDashboardView';
+import { getAllServiceRequests } from '@/app/actions/admin';
 
-// Force dynamic to ensure we always get fresh data
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-    let data = { orders: [], pendingUsers: [] }
+    const supabase = await createClient();
 
-    try {
-        const rawData = await getAdminData() as any
-        // Serialize BigInts to strings to avoid "Do not know how to serialize a BigInt" or related TypeErrors during build/render
-        data = JSON.parse(JSON.stringify(rawData, (key, value) =>
-            typeof value === 'bigint' ? value.toString() : value
-        ));
-    } catch (error) {
-        // Redirect unauthorized access or handle error
-        console.error("Access Denied or DB Error:", error)
-        redirect('/')
+    // 1. Auth & Role Check
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect('/login');
+        return null;
     }
 
-    return <AdminDashboardClient initialOrders={data.orders} initialPendingUsers={data.pendingUsers} />
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        redirect('/dashboard'); // Only admins allowed
+        return null;
+    }
+
+    // 2. Fetch Global Data
+    const requests = await getAllServiceRequests();
+
+    // 3. Render View
+    return (
+        <AdminDashboardView requests={requests} />
+    );
 }

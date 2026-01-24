@@ -66,10 +66,11 @@ CREATE TABLE IF NOT EXISTS properties (
 
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own properties" ON properties FOR SELECT USING (auth.uid() = owner_id);
-CREATE POLICY "Users can insert own properties" ON properties FOR INSERT WITH CHECK (auth.uid() = owner_id);
-CREATE POLICY "Users can update own properties" ON properties FOR UPDATE USING (auth.uid() = owner_id);
-CREATE POLICY "Users can delete own properties" ON properties FOR DELETE USING (auth.uid() = owner_id);
+-- MASTER PROPERTIES TABLE (1 Host -> N Properties)
+CREATE POLICY "Users can view own properties" ON properties FOR SELECT USING (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Users can insert own properties" ON properties FOR INSERT WITH CHECK (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Users can update own properties" ON properties FOR UPDATE USING (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+CREATE POLICY "Users can delete own properties" ON properties FOR DELETE USING (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- =========================================================
 -- SERVICE REQUESTS TABLE (Limpieza, Mantenimiento)
@@ -87,5 +88,6 @@ CREATE TABLE IF NOT EXISTS service_requests (
 ALTER TABLE service_requests ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can manage requests for own properties" ON service_requests FOR ALL USING (
-    property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid())
+    property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
