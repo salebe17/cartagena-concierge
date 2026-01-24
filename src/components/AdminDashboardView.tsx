@@ -15,11 +15,12 @@ import {
     Check,
     X
 } from "lucide-react";
-import { adminUpdateServiceStatus } from "@/app/actions/admin";
+import { adminUpdateServiceStatus, forceSyncAllCalendars } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
 import { ServiceRequest } from "@/lib/types";
+import { RefreshCw } from "lucide-react";
 
 interface AdminDashboardViewProps {
     requests: ServiceRequest[];
@@ -29,9 +30,22 @@ interface AdminDashboardViewProps {
 export function AdminDashboardView({ requests: initialRequests, bookings = [] }: AdminDashboardViewProps) {
     const [requests, setRequests] = useState(initialRequests || []);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [activeTab, setActiveTab] = useState<'requests' | 'calendar'>('requests');
     const [filterPropertyId, setFilterPropertyId] = useState<string | null>(null);
     const { toast } = useToast();
+
+    const handleSync = async () => {
+        setIsSyncing(true);
+        const res = await forceSyncAllCalendars();
+        setIsSyncing(false);
+
+        if (res.success) {
+            toast({ title: "Sincronización Completada", description: res.message || "Calendarios actualizados." });
+        } else {
+            toast({ title: "Error de Sincronización", description: res.error, variant: "destructive" });
+        }
+    };
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         setUpdatingId(id);
@@ -87,6 +101,15 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                             {requests.length} Solicitudes | {bookings.length} Reservas
                         </p>
                     </div>
+                    <Button
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        variant="outline"
+                        className="gap-2"
+                    >
+                        <RefreshCw size={16} className={isSyncing ? "animate-spin" : ""} />
+                        {isSyncing ? "Sincronizando..." : "Sincronizar Calendarios"}
+                    </Button>
                 </div>
 
                 <div className="flex justify-between items-end border-b border-gray-200 mb-6">

@@ -122,3 +122,47 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
         return { success: false, error: "Error al actualizar el estado." };
     }
 }
+
+export async function forceSyncAllCalendars(): Promise<ActionResponse> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return { success: false, error: "No autorizado" };
+
+        // Verify admin role
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') return { success: false, error: "Requiere privilegios de Admin" };
+
+        // We need the sync logic. Dynamically import to avoid top-level circular deps if any.
+        const { syncPropertyCalendar } = await import('@/app/actions');
+
+        // Fetch all properties with iCal URLs
+        const { data: properties } = await supabase
+            .from('properties')
+            .select('id')
+            .not('ical_url', 'is', null);
+
+        if (!properties || properties.length === 0) {
+            return { success: true, message: "No hay propiedades con iCal configurado." };
+        }
+
+        let syncedCount = 0;
+        for (const prop of properties) {
+            await syncPropertyCalendar(prop.id);
+            syncedCount++;
+        }
+
+        revalidatePath('/admin');
+        return { success: true, message: `Sincronizadas ${syncedCount} propiedades.` };
+
+    } catch (e: any) {
+        console.error("Force Sync Error:", e);
+        return { success: false, error: "Error de sincronización: " + e.message };
+    }
+}
