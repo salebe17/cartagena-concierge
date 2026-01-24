@@ -68,10 +68,18 @@ export default function HostLanding() {
 
             {/* Categories Bar (Pseudo-Sticky) */}
             <div className="pt-24 pb-4 px-4 md:px-20 border-b border-gray-100 flex items-center gap-8 overflow-x-auto no-scrollbar justify-start md:justify-center bg-white/80 backdrop-blur-md sticky top-0 z-40">
-                <CategoryBox icon={Home} label="Limpieza" selected />
-                <CategoryBox icon={Truck} label="Logística" />
-                <CategoryBox icon={ShieldCheck} label="Mantenimiento" />
-                <CategoryBox icon={Star} label="Guest VIP" />
+                <Link href="/login">
+                    <CategoryBox icon={Home} label="Limpieza" selected />
+                </Link>
+                <Link href="/login">
+                    <CategoryBox icon={Truck} label="Logística" />
+                </Link>
+                <Link href="/login">
+                    <CategoryBox icon={ShieldCheck} label="Mantenimiento" />
+                </Link>
+                <Link href="/login">
+                    <CategoryBox icon={Star} label="Guest VIP" />
+                </Link>
             </div>
 
             {/* Main Content Grid */}
@@ -180,7 +188,7 @@ export default function HostLanding() {
                     </div>
                 </div>
             </main>
-            <div className="text-[10px] text-gray-300 text-center pb-4 opacity-50">v1.1.4-ssr</div>
+            <div className="text-[10px] text-gray-300 text-center pb-4 opacity-50">v1.1.6-categories</div>
         </div>
     );
 }
