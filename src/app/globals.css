@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Airbnb Design Tokens - Primary Palette */
@@ -23,6 +23,27 @@
   /* Fonts */
   --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
+}
+
+/* LUXURY UX TWEAKS */
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+
+  /* Premium Buttons */
+  .btn-luxury {
+    @apply transition-all duration-200 active:scale-95 shadow-md;
+  }
+
+  /* Smooth Inputs */
+  .input-luxury {
+    @apply transition-all duration-200 focus:ring-2 focus:ring-offset-1 focus:ring-black/10 outline-none;
+  }
 }
 
 /* Utilities Layer */
@@ -51,5 +72,10 @@
 
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
