@@ -31,6 +31,15 @@ export interface ServiceRequest {
     status: ServiceStatus;
     created_at: string;
     properties?: Pick<Property, 'title' | 'address' | 'owner_id' | 'id'>;
+    service_logs?: {
+        id: string;
+        started_at: string;
+        ended_at?: string;
+        staff_name?: string;
+        notes?: string;
+        start_photos?: string[];
+        end_photos?: string[];
+    }[];
 }
 
 export interface UserProfile {
