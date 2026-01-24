@@ -27,11 +27,19 @@ export default async function AdminPage() {
         return null;
     }
 
-    // 2. Fetch Global Data (Parallel)
-    const [requests, bookings] = await Promise.all([
-        getAllServiceRequests(),
-        getAllBookings()
-    ]);
+    // 2. Fetch Global Data (Safe Mode)
+    let requests = [];
+    let bookings = [];
+
+    try {
+        [requests, bookings] = await Promise.all([
+            getAllServiceRequests(),
+            getAllBookings()
+        ]);
+    } catch (error) {
+        console.error("Critical Admin Page Data Fetch Error:", error);
+        // Fallback to empty arrays to allow UI to render (Safe Mode)
+    }
 
     // 3. Render View
     return (

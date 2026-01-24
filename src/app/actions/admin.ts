@@ -74,10 +74,6 @@ export async function getAllBookings(): Promise<any[]> {
                 properties (
                     title,
                     address
-                ),
-                profiles (
-                    full_name,
-                    phone
                 )
             `)
             .order('start_date', { ascending: true }); // Future bookings first? No, list all sorted by date.
