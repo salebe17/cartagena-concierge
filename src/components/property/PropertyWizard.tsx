@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { User, MapPin, Home, Key, Wifi, CheckCircle } from "lucide-react";
+import { fetchICalEvents } from "@/lib/ical-sync";
+import { User, MapPin, Home, Key, Wifi, CheckCircle, Globe } from "lucide-react";
 import { createProperty } from "@/app/actions";
 import { useActiveAccount } from "thirdweb/react";
 
@@ -25,7 +26,8 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
         bathrooms: 1,
         wifi_network: "",
         wifi_password: "",
-        access_instructions: ""
+        access_instructions: "",
+        ical_url: ""
     });
 
     const handleChange = (field: string, value: any) => {
@@ -200,6 +202,21 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                                 value={data.access_instructions}
                                 onChange={(e) => handleChange("access_instructions", e.target.value)}
                             />
+                        </div>
+
+                        <div>
+                            <label className="text-xs uppercase text-gray-500 font-bold mb-2 block flex items-center gap-2">
+                                <Globe className="w-3 h-3" />
+                                URL de Calendario iCal (Airbnb/VRBO)
+                            </label>
+                            <input
+                                type="url"
+                                placeholder="https://www.airbnb.com/calendar/ical/..."
+                                className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all"
+                                value={data.ical_url}
+                                onChange={(e) => handleChange("ical_url", e.target.value)}
+                            />
+                            <p className="text-[10px] text-gray-400 mt-2">Permite sincronizar reservas externas automáticamente.</p>
                         </div>
                     </div>
                 )}

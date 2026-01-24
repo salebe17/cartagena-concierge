@@ -1,16 +1,23 @@
-@import "tailwindcss";
-
 :root {
-  /* Airbnb Design Tokens */
-  --airbnb-red: #FF5A5F;        /* Rausch */
-  --airbnb-red-dark: #D93B3E;   /* Darker interaction state */
-  --text-primary: #222222;      /* Black/Charcoal */
-  --text-secondary: #717171;    /* Grey */
-  --bg-light: #F7F7F7;          /* Light Grey Backgrounds */
-  --border-light: #DDDDDD;      /* Dividers */
+  /* Airbnb Design Tokens - Primary Palette */
+  --airbnb-red: #FF5A5F;
+  --airbnb-red-dark: #E31C5F;
+  /* More vibrant rose-red for hover */
+
+  /* Neutral Palette (Tailored HSL) */
+  --text-primary: #222222;
+  --text-secondary: #717171;
+  --bg-light: #F7F7F7;
+  --border-light: #EBEBEB;
   --white: #FFFFFF;
 
-  /* Base Variables */
+  /* Premium Surface Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --hero-shadow: 0 10px 30px -10px rgba(255, 90, 95, 0.3);
+
+  /* Next.js defaults mapped */
   --background: var(--white);
   --foreground: var(--text-primary);
 }
@@ -23,16 +30,43 @@
   --color-text-secondary: var(--text-secondary);
   --color-border-light: var(--border-light);
   --color-bg-light: var(--bg-light);
-  
-  --font-sans: var(--font-geist-sans);
+
+  --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
+
+  /* Custom Utilities */
+  --shadow-airbnb: var(--card-shadow);
+  --shadow-hero: var(--hero-shadow);
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .btn-primary {
+    @apply bg-[var(--airbnb-red)] text-white font-bold rounded-xl transition-all active:scale-95;
+
+    &:hover {
+      background-color: var(--airbnb-red-dark);
+      box-shadow: 0 8px 24px rgba(255, 90, 95, 0.4);
+    }
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Utilities */

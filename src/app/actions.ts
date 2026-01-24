@@ -1,5 +1,7 @@
 'use server'
 
+import { fetchICalEvents } from '@/lib/ical-sync'
+
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -515,7 +517,7 @@ export async function signOut() {
 }
 
 // Helper to get Admin Client
-async function getAdminClient() {
+export async function getAdminClient() {
     const { createClient } = await import('@supabase/supabase-js')
     return createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -632,7 +634,7 @@ export async function calculateCleaningQuote(propertyId: string) {
 
 export async function createServiceOrder(
     propertyId: string,
-    serviceType: 'cleaning' | 'maintenance' | 'laundry',
+    serviceType: 'cleaning' | 'maintenance' | 'laundry' | 'furniture' | 'grocery' | 'inspection',
     details: any,
     walletAddress?: string
 ) {
@@ -643,7 +645,6 @@ export async function createServiceOrder(
     if (walletAddress) {
         userId = await getUserIdFromWallet(walletAddress);
     } else {
-        // Fallback or Error if we strictly require wallet/auth
         return { error: "User identity required" }
     }
 
@@ -652,11 +653,10 @@ export async function createServiceOrder(
     let serviceDetailsStr = "";
 
     if (serviceType === 'cleaning') {
-        // Re-calculate to be safe
         const quote = await calculateCleaningQuote(propertyId);
         if ((quote as any).error) return { error: (quote as any).error };
         amount = (quote as any).total;
-        serviceDetailsStr = `Limpieza General`;
+        serviceDetailsStr = `Aseo & Limpieza`;
     }
     else if (serviceType === 'laundry') {
         const PRICE_PER_BAG = 35000;
@@ -665,9 +665,20 @@ export async function createServiceOrder(
         serviceDetailsStr = `Lavandería: ${bags} Bolsas`;
     }
     else if (serviceType === 'maintenance') {
-        // Maintenance is "Quote on Site" or Base Fee
-        amount = 50000; // Base visit fee
-        serviceDetailsStr = `Mantenimiento: ${details.description} (${details.urgency})`;
+        amount = 50000; // Base visit/diagnosis fee
+        serviceDetailsStr = `Mantenimiento: ${details.category} - ${details.description} (${details.urgency})`;
+    }
+    else if (serviceType === 'furniture') {
+        amount = details.total || 0;
+        serviceDetailsStr = `Lavado de Muebles: ${details.type} (${details.quantity})`;
+    }
+    else if (serviceType === 'grocery') {
+        amount = 15000; // Base delivery fee, ticket paid on site
+        serviceDetailsStr = `Mercado & Insumos: ${details.list}`;
+    }
+    else if (serviceType === 'inspection') {
+        amount = 40000;
+        serviceDetailsStr = `Visita Técnica / Inspección`;
     }
 
     // Create Order
@@ -753,6 +764,102 @@ export async function blockPropertyRange(propertyId: string, startDate: Date, en
 export async function deleteBooking(bookingId: string) {
     const supabase = await getAdminClient();
     await supabase.from('bookings').delete().eq('id', bookingId);
+    revalidatePath('/business');
+    return { success: true };
+}
+export async function syncPropertyCalendar(propertyId: string) {
+    const supabase = await getAdminClient();
+
+    // 1. Get Property iCal URL and Owner ID
+    const { data: property, error: propError } = await supabase
+        .from('properties')
+        .select('ical_url, owner_id, title')
+        .eq('id', propertyId)
+        .single();
+
+    if (propError || !property?.ical_url) {
+        return { error: "No iCal URL configured for this property" };
+    }
+
+    try {
+        // 2. Fetch External Events
+        const externalEvents = await fetchICalEvents(property.ical_url);
+        let newBookingsCount = 0;
+
+        for (const event of externalEvents) {
+            const startIso = event.start.toISOString().split('T')[0];
+            const endIso = event.end.toISOString().split('T')[0];
+
+            // 3. Duplicate Detection (by external_id)
+            const { data: existing } = await supabase
+                .from('bookings')
+                .select('id')
+                .eq('property_id', propertyId)
+                .eq('external_id', event.uid)
+                .single();
+
+            if (!existing) {
+                // 4. Create Booking
+                const { data: newBooking, error: bookingError } = await supabase
+                    .from('bookings')
+                    .insert({
+                        property_id: propertyId,
+                        start_date: startIso,
+                        end_date: endIso,
+                        guest_name: event.summary,
+                        external_id: event.uid,
+                        platform: 'iCal Sync',
+                        status: 'confirmed'
+                    })
+                    .select('id')
+                    .single();
+
+                if (!bookingError && newBooking) {
+                    newBookingsCount++;
+
+                    // 5. Generate Alert "Servicio Pendiente"
+                    await supabase.from('alerts').insert({
+                        user_id: property.owner_id,
+                        property_id: propertyId,
+                        booking_id: newBooking.id,
+                        title: "Servicio Pendiente",
+                        message: `Nueva reserva detectada via iCal: ${event.summary} (${startIso} al ${endIso}). Por favor agenda limpieza.`,
+                        type: 'pending_service'
+                    });
+                }
+            }
+        }
+
+        revalidatePath('/business');
+        return { success: true, processed: externalEvents.length, new: newBookingsCount };
+
+    } catch (e: any) {
+        console.error("Calendar Sync Error:", e);
+        return { error: "Sync failed: " + e.message };
+    }
+}
+
+export async function getUserAlerts(walletAddress: string) {
+    if (!walletAddress) return [];
+    try {
+        const supabase = await getAdminClient();
+        const userId = await getUserIdFromWallet(walletAddress);
+        const { data } = await supabase
+            .from('alerts')
+            .select('*, properties(title)')
+            .eq('user_id', userId)
+            .eq('status', 'unread')
+            .order('created_at', { ascending: false });
+        return data || [];
+    } catch (e) {
+        console.error("Get Alerts Error:", e);
+        return [];
+    }
+}
+
+export async function markAlertAsRead(alertId: string) {
+    const supabase = await getAdminClient();
+    await supabase.from('alerts').update({ status: 'read' }).eq('id', alertId);
     revalidatePath('/business');
     return { success: true };
 }

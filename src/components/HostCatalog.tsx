@@ -1,206 +1,158 @@
 "use client";
 
 import { useActiveAccount } from "thirdweb/react";
-import { Sparkles, Wrench, Shirt, Box, PlusCircle, Building, Search, User, LogOut, CalendarDays, Key, ShoppingCart, Armchair } from "lucide-react";
+import { Sparkles, Wrench, Shirt, Box, PlusCircle, Building, Search, User, LogOut, CalendarDays, Key, ShoppingCart, Armchair, CheckCircle2, Star, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getUserProperties, createServiceOrder } from "@/app/actions";
 import { PropertyWizard } from "./property/PropertyWizard";
 import { PropertyCalendar } from "./dashboard/PropertyCalendar";
 import { HostProfile } from "./dashboard/HostProfile";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Cleaning Modal (Enhanced)
-function CleaningModal({ amount, breakdown, onClose, propertyName, onConfirm }: any) {
-    if (!amount) return null;
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-gray-100 rounded-2xl w-full max-w-sm p-6 space-y-6 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Sparkles className="w-6 h-6 text-rose-500" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">Limpieza Tipo Hotel</h3>
-                    <p className="text-xs text-gray-500 uppercase tracking-widest">{propertyName}</p>
-                </div>
-
-                <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100 space-y-2">
-                    <p className="text-xs font-bold text-rose-600 uppercase tracking-wide mb-2">⭐ Incluye Pack Premium:</p>
-                    <ul className="text-xs text-gray-600 space-y-1 ml-4 list-disc">
-                        <li>Insumos (Jabón, Papel, Bolsas)</li>
-                        <li>Reporte Fotográfico (Estado Inicial/Final)</li>
-                        <li>Chequeo de Inventario & Daños</li>
-                        <li>Aromaterapia de Bienvenida</li>
-                    </ul>
-                </div>
-
-                <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>Tarifa Base</span>
-                        <span>${breakdown.base.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>Habitaciones</span>
-                        <span>+ ${breakdown.bedrooms.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>Baños</span>
-                        <span>+ ${breakdown.bathrooms.toLocaleString()}</span>
-                    </div>
-                    <div className="h-px bg-gray-200 my-2"></div>
-                    <div className="flex justify-between text-lg font-bold text-gray-900">
-                        <span>Total</span>
-                        <span className="text-rose-500">${amount.toLocaleString()} COP</span>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button onClick={onClose} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs uppercase transition-colors">
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={() => onConfirm()}
-                        className="px-4 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs uppercase transition-colors shadow-lg shadow-rose-500/30"
-                    >
-                        Agendar
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
+// Unified Service Wizard
+interface WizardStepProps {
+    title: string;
+    subtitle?: string;
+    icon: any;
+    iconColor: string;
+    iconBg: string;
+    onClose: () => void;
+    children: React.ReactNode;
+    footer?: React.ReactNode;
 }
 
-// Maintenance Modal (Light)
-function MaintenanceModal({ onClose, onSubmit, isSubmitting }: any) {
+function WizardStep({ title, subtitle, icon: Icon, iconColor, iconBg, onClose, children, footer }: WizardStepProps) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="glass rounded-[32px] w-full max-w-md p-8 space-y-8 shadow-airbnb border border-white/40"
+        >
+            <div className="text-center relative">
+                <button onClick={onClose} className="absolute -top-4 -right-4 p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-400">
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" style={{ display: 'block', fill: 'none', height: '16px', width: '16px', stroke: 'currentColor', strokeWidth: 3, overflow: 'visible' }}><path d="m6 6 20 20M26 6 6 26"></path></svg>
+                </button>
+                <div className={`w-16 h-16 ${iconBg} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner`}>
+                    <Icon className={`w-8 h-8 ${iconColor}`} />
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 tracking-tight">{title}</h3>
+                {subtitle && <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{subtitle}</p>}
+            </div>
+
+            <div className="min-h-[200px] flex flex-col justify-center">
+                {children}
+            </div>
+
+            {footer && (
+                <div className="pt-4">
+                    {footer}
+                </div>
+            )}
+        </motion.div>
+    );
+}
+
+
+
+// Maintenance Wizard Content
+function MaintenanceWizardContent({ onClose, onSubmit, isSubmitting }: any) {
+    const [step, setStep] = useState(1);
     const [details, setDetails] = useState({ description: "", category: "Aire Acondicionado", urgency: "Normal" });
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-gray-100 rounded-2xl w-full max-w-md p-6 space-y-6 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Wrench className="w-6 h-6 text-blue-500" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">Solicitud de Mantenimiento</h3>
-                    <p className="text-sm text-gray-500">Diagnóstico técnico especializado</p>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block">Categoría</label>
+    if (step === 1) {
+        return (
+            <WizardStep
+                title="Soporte Técnico"
+                subtitle="Mano de Obra Certificada"
+                icon={Wrench}
+                iconColor="text-blue-500"
+                iconBg="bg-blue-50"
+                onClose={onClose}
+                footer={
+                    <button
+                        onClick={() => setStep(2)}
+                        disabled={!details.description}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                    >
+                        Siguiente: Revisar
+                    </button>
+                }
+            >
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Especialidad</label>
                         <select
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm text-gray-900 focus:border-blue-500 outline-none"
+                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl p-4 text-sm text-gray-900 focus:border-blue-500 outline-none transition-all"
                             value={details.category}
                             onChange={(e) => setDetails({ ...details, category: e.target.value })}
                         >
                             <option value="Aire Acondicionado">Aire Acondicionado</option>
-                            <option value="Cerrajería">Cerrajería (Tradicional/Electrónica)</option>
-                            <option value="Electrodomésticos">Electrodomésticos (TV/Nevera/Estufa)</option>
+                            <option value="Cerrajería">Cerrajería</option>
+                            <option value="Electrodomésticos">Electrodomésticos</option>
                             <option value="Piscinas">Piscinas & Jacuzzis</option>
-                            <option value="Redes">Redes (Eléctrica/Hidráulica)</option>
+                            <option value="Redes">Eléctrica/Hidráulica</option>
                             <option value="Otros">Otros</option>
                         </select>
                     </div>
 
-                    <div>
-                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block">Detalle del Problema</label>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Detalle del Reporte</label>
                         <textarea
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm text-gray-900 focus:border-blue-500 outline-none h-24 resize-none placeholder:text-gray-400"
-                            placeholder="Describe el daño o requerimiento..."
+                            className="w-full bg-gray-50/50 border border-gray-100 rounded-xl p-4 text-sm text-gray-900 focus:border-blue-500 outline-none h-28 resize-none placeholder:text-gray-300 transition-all font-sans"
+                            placeholder="Describe el daño..."
                             value={details.description}
                             onChange={(e) => setDetails({ ...details, description: e.target.value })}
                         />
                     </div>
-
-                    <div>
-                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block">Prioridad</label>
-                        <div className="flex gap-2">
-                            {['Normal', 'Alta', 'Emergencia'].map(p => (
-                                <button
-                                    key={p}
-                                    onClick={() => setDetails({ ...details, urgency: p })}
-                                    className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all
-                                        ${details.urgency === p
-                                            ? 'bg-gray-900 text-white border-gray-900'
-                                            : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
-                                        }
-                                    `}
-                                >
-                                    {p}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs uppercase transition-colors">
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={() => onSubmit(details)}
-                        disabled={!details.description || isSubmitting}
-                        className="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase transition-colors disabled:opacity-50 shadow-lg shadow-blue-500/30"
-                    >
-                        {isSubmitting ? "Enviando..." : "Solicitar Visita"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-// Laundry Modal (Light)
-function LaundryModal({ onClose, onSubmit, isSubmitting }: any) {
-    const [bags, setBags] = useState(1);
-    const PRICE_PER_BAG = 35000;
+            </WizardStep>
+        );
+    }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-gray-100 rounded-2xl w-full max-w-sm p-6 space-y-6 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Shirt className="w-6 h-6 text-indigo-500" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">Lavandería Express</h3>
-                    <p className="text-sm text-gray-500">Recogida, lavado, secado y doblado</p>
-                </div>
-
-                <div className="space-y-6 py-4">
-                    <div className="flex items-center justify-center gap-6">
-                        <button onClick={() => setBags(Math.max(1, bags - 1))} className="w-12 h-12 rounded-full border border-gray-200 text-gray-600 flex items-center justify-center font-bold text-xl hover:bg-gray-50">-</button>
-                        <div className="text-center">
-                            <span className="text-5xl font-bold text-gray-900">{bags}</span>
-                            <p className="text-xs text-gray-400 uppercase font-bold mt-2">Bolsas (Aprox 5kg)</p>
-                        </div>
-                        <button onClick={() => setBags(bags + 1)} className="w-12 h-12 rounded-full border border-gray-200 text-gray-600 flex items-center justify-center font-bold text-xl hover:bg-gray-50">+</button>
-                    </div>
-
-                    <div className="text-center bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <p className="text-gray-400 text-xs font-bold uppercase mb-1">Total Estimado</p>
-                        <p className="text-3xl font-bold text-gray-900">${(bags * PRICE_PER_BAG).toLocaleString()} <span className="text-sm font-normal text-gray-500">COP</span></p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs uppercase transition-colors">
-                        Cancelar
-                    </button>
+        <WizardStep
+            title="Revisar Solicitud"
+            subtitle="Paso final"
+            icon={Wrench}
+            iconColor="text-blue-500"
+            iconBg="bg-blue-50"
+            onClose={onClose}
+            footer={
+                <div className="flex flex-col gap-3">
                     <button
-                        onClick={() => onSubmit({ bags })}
+                        onClick={() => onSubmit(details)}
                         disabled={isSubmitting}
-                        className="px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase transition-colors disabled:opacity-50 shadow-lg shadow-indigo-500/30"
+                        className="w-full py-4 bg-gray-900 hover:bg-black text-white font-bold rounded-2xl transition-all shadow-xl"
                     >
-                        {isSubmitting ? "Enviando..." : "Solicitar"}
+                        {isSubmitting ? "Enviando..." : "Confirmar Visita"}
                     </button>
+                    <button onClick={() => setStep(1)} className="text-gray-400 text-xs font-bold uppercase tracking-widest hover:text-gray-600 transition-colors">Atrás</button>
+                </div>
+            }
+        >
+            <div className="space-y-4 bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                <div className="flex justify-between">
+                    <span className="text-sm text-gray-500 font-medium">Categoría</span>
+                    <span className="text-sm font-bold text-gray-900">{details.category}</span>
+                </div>
+                <div>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Reporte</span>
+                    <p className="text-sm text-gray-700 mt-1 italic">"{details.description}"</p>
+                </div>
+                <div className="h-px bg-blue-200/30 my-2"></div>
+                <div className="flex justify-between items-end">
+                    <span className="text-sm text-gray-500 font-medium font-bold">Costo Base</span>
+                    <span className="text-2xl font-black text-gray-900">$50.000 <span className="text-[10px] text-gray-400 font-black">COP</span></span>
                 </div>
             </div>
-        </div>
-    )
+        </WizardStep>
+    );
 }
 
-// Furniture Wash Modal
-function FurnitureModal({ onClose, onSubmit, isSubmitting }: any) {
-    const [details, setDetails] = useState({ type: "Sofá 2 Puestos", quantity: 1 });
-
+// Furniture Wizard Content
+function FurnitureWizardContent({ onClose, onSubmit, isSubmitting }: any) {
+    const [details, setDetails] = useState({ type: "Sofá (por puesto)", quantity: 1 });
     const TYPES = [
         { label: "Sofá (por puesto)", price: 35000 },
         { label: "Colchón Sencillo", price: 60000 },
@@ -208,146 +160,191 @@ function FurnitureModal({ onClose, onSubmit, isSubmitting }: any) {
         { label: "Silla Comedor", price: 15000 },
         { label: "Alfombra (m2)", price: 12000 },
     ];
-
     const price = TYPES.find(t => t.label === details.type)?.price || 0;
     const total = price * details.quantity;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-gray-100 rounded-2xl w-full max-w-sm p-6 space-y-6 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-cyan-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Box className="w-6 h-6 text-cyan-500" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">Lavado de Muebles</h3>
-                    <p className="text-sm text-gray-500">Inyección y Succión Profunda</p>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block">Tipo de Mueble</label>
-                        <select
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm text-gray-900 outline-none"
-                            value={details.type}
-                            onChange={(e) => setDetails({ ...details, type: e.target.value })}
-                        >
-                            {TYPES.map(t => <option key={t.label} value={t.label}>{t.label} - ${t.price.toLocaleString()}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block">Cantidad</label>
-                        <div className="flex items-center gap-4">
-                            <button onClick={() => setDetails(d => ({ ...d, quantity: Math.max(1, d.quantity - 1) }))} className="w-10 h-10 border rounded-lg text-lg font-bold hover:bg-gray-50 text-gray-900">-</button>
-                            <span className="flex-1 text-center font-bold text-xl text-gray-900">{details.quantity}</span>
-                            <button onClick={() => setDetails(d => ({ ...d, quantity: d.quantity + 1 }))} className="w-10 h-10 border rounded-lg text-lg font-bold hover:bg-gray-50 text-gray-900">+</button>
-                        </div>
-                    </div>
-                    <div className="text-center bg-gray-50 p-4 rounded-xl border border-gray-100 mt-4">
-                        <p className="text-gray-400 text-xs font-bold uppercase mb-1">Total Estimado</p>
-                        <p className="text-3xl font-bold text-gray-900">${total.toLocaleString()}</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs uppercase transition-colors">
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={() => onSubmit({ ...details, total })}
-                        disabled={isSubmitting}
-                        className="px-4 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs uppercase transition-colors disabled:opacity-50 shadow-lg shadow-cyan-500/30"
+        <WizardStep
+            title="Lavado Profundo"
+            subtitle="Inyección & Succión Industrial"
+            icon={Box}
+            iconColor="text-cyan-500"
+            iconBg="bg-cyan-50"
+            onClose={onClose}
+            footer={
+                <button
+                    onClick={() => onSubmit({ ...details, total })}
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50"
+                >
+                    {isSubmitting ? "Solicitando..." : "Confirmar Servicio"}
+                </button>
+            }
+        >
+            <div className="space-y-6">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tipo de Mueble</label>
+                    <select
+                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl p-4 text-sm text-gray-900 outline-none focus:border-cyan-500 transition-all"
+                        value={details.type}
+                        onChange={(e) => setDetails({ ...details, type: e.target.value })}
                     >
-                        Solicitar
-                    </button>
+                        {TYPES.map(t => <option key={t.label} value={t.label}>{t.label}</option>)}
+                    </select>
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Cantidad / Unidades</label>
+                    <div className="flex items-center gap-6 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                        <button onClick={() => setDetails(d => ({ ...d, quantity: Math.max(1, d.quantity - 1) }))} className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center font-bold text-xl hover:bg-white">-</button>
+                        <span className="flex-1 text-center font-bold text-xl text-gray-900">{details.quantity}</span>
+                        <button onClick={() => setDetails(d => ({ ...d, quantity: d.quantity + 1 }))} className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center font-bold text-xl hover:bg-white">+</button>
+                    </div>
+                </div>
+
+                <div className="text-center pt-2 bg-cyan-50/50 p-4 rounded-xl">
+                    <p className="text-cyan-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Estimado</p>
+                    <p className="text-4xl font-black text-cyan-900">${total.toLocaleString()} <span className="text-sm font-bold opacity-30">COP</span></p>
                 </div>
             </div>
-        </div>
-    )
+        </WizardStep>
+    );
 }
 
-// Grocery Modal
-function GroceryModal({ onClose, onSubmit, isSubmitting }: any) {
+// Grocery Wizard Content
+function GroceryWizardContent({ onClose, onSubmit, isSubmitting }: any) {
     const [list, setList] = useState("");
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-gray-100 rounded-2xl w-full max-w-sm p-6 space-y-6 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <ShoppingCart className="w-6 h-6 text-emerald-500" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">Mercado & Insumos</h3>
-                    <p className="text-sm text-gray-500">Enviamos lo que necesites</p>
-                </div>
-
-                <div>
-                    <label className="text-xs uppercase font-bold text-gray-400 mb-2 block">Lista de Compras</label>
+        <WizardStep
+            title="Mercado & Insumos"
+            subtitle="Restock Inmediato"
+            icon={ShoppingCart}
+            iconColor="text-emerald-500"
+            iconBg="bg-emerald-50"
+            onClose={onClose}
+            footer={
+                <button
+                    onClick={() => onSubmit({ list })}
+                    disabled={!list || isSubmitting}
+                    className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                >
+                    {isSubmitting ? "Enviando..." : "Confirmar Pedido"}
+                </button>
+            }
+        >
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Lista de Requerimientos</label>
                     <textarea
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm text-gray-900 h-32 resize-none placeholder:text-gray-400 outline-none focus:border-emerald-500"
+                        className="w-full bg-gray-50/50 border border-gray-100 rounded-xl p-4 text-sm text-gray-900 h-36 resize-none placeholder:text-gray-300 outline-none focus:border-emerald-500 transition-all font-sans"
                         placeholder="Ej: 2 Papel Higiénico, 1 Jabón Loza, 6 Cervezas..."
                         value={list}
                         onChange={(e) => setList(e.target.value)}
                     />
-                    <p className="text-[10px] text-gray-400 mt-2 text-center">Cobramos el valor del ticket + $15.000 Domicilio</p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs uppercase transition-colors">
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={() => onSubmit({ list })}
-                        disabled={!list || isSubmitting}
-                        className="px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase transition-colors disabled:opacity-50 shadow-lg shadow-emerald-500/30"
-                    >
-                        Enviar Lista
-                    </button>
+                <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                    <p className="text-[10px] text-emerald-600 uppercase font-black tracking-widest text-center mb-1">Tarifa de Domicilio</p>
+                    <p className="text-2xl font-black text-emerald-900 text-center">$15.000 <span className="text-xs opacity-40">COP</span></p>
+                    <p className="text-[9px] text-gray-400 mt-2 text-center">* Valor de productos se paga contra entrega con ticket físico.</p>
                 </div>
             </div>
-        </div>
-    )
+        </WizardStep>
+    );
 }
 
-// Inspection Modal (Empty House)
-function InspectionModal({ onClose, onSubmit, isSubmitting }: any) {
+// Inspection Wizard Content
+function InspectionWizardContent({ onClose, onSubmit, isSubmitting }: any) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white border border-gray-100 rounded-2xl w-full max-w-sm p-6 space-y-6 animate-in zoom-in-95 duration-200 shadow-2xl">
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Key className="w-6 h-6 text-amber-500" />
+        <WizardStep
+            title="Visita Técnica"
+            subtitle="Control de Propiedad"
+            icon={Key}
+            iconColor="text-amber-500"
+            iconBg="bg-amber-50"
+            onClose={onClose}
+            footer={
+                <button
+                    onClick={() => onSubmit({ type: 'Empty House Inspection' })}
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                >
+                    {isSubmitting ? "Agendando..." : "Confirmar Visita"}
+                </button>
+            }
+        >
+            <div className="space-y-6">
+                <div className="text-xs text-gray-600 space-y-3 bg-white p-6 rounded-2xl border border-gray-100 leading-relaxed shadow-sm">
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-amber-500" />
+                        <span className="font-medium">Ventilación y Control de Humedad</span>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">Visita Técnica</h3>
-                    <p className="text-sm text-gray-500">Para propiedades vacías</p>
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-amber-500" />
+                        <span className="font-medium">Encendido de Aires y Grifos</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-amber-500" />
+                        <span className="font-medium">Reporte Fotográfico de Estado</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-amber-500" />
+                        <span className="font-medium">Verificación de Cierres y Alarmas</span>
+                    </div>
                 </div>
 
-                <div className="text-sm text-gray-600 space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <p>Realizamos una visita completa que incluye:</p>
-                    <ul className="list-disc pl-4 space-y-1">
-                        <li>Ventilación de espacios</li>
-                        <li>Encendido de aires y electrodomésticos</li>
-                        <li>Descarga de inodoros y grifos</li>
-                        <li>Encendido de vehículo (si aplica)</li>
-                        <li>Reporte de novedades</li>
-                    </ul>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold text-xs uppercase transition-colors">
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={() => onSubmit({ type: 'Empty House Inspection' })} // Fixed price usually
-                        disabled={isSubmitting}
-                        className="px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs uppercase transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/30"
-                    >
-                        Solicitar ($40k)
-                    </button>
+                <div className="text-center bg-amber-50/80 p-4 rounded-xl border border-amber-100">
+                    <p className="text-amber-600 text-[10px] font-black uppercase tracking-widest mb-1">Costo por Visita</p>
+                    <p className="text-4xl font-black text-amber-900">$40.000 <span className="text-sm font-bold opacity-30">COP</span></p>
                 </div>
             </div>
-        </div>
-    )
+        </WizardStep>
+    );
 }
+
+// Laundry Wizard Content
+function LaundryWizardContent({ onClose, onSubmit, isSubmitting }: any) {
+    const [bags, setBags] = useState(1);
+    const PRICE_PER_BAG = 35000;
+
+    return (
+        <WizardStep
+            title="Lavandería Express"
+            subtitle="Recogida & Entrega 24h"
+            icon={Shirt}
+            iconColor="text-indigo-500"
+            iconBg="bg-indigo-50"
+            onClose={onClose}
+            footer={
+                <button
+                    onClick={() => onSubmit({ bags })}
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50"
+                >
+                    {isSubmitting ? "Enviando..." : "Confirmar Pedido"}
+                </button>
+            }
+        >
+            <div className="py-2">
+                <div className="flex items-center justify-center gap-8 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                    <button onClick={() => setBags(Math.max(1, bags - 1))} className="w-12 h-12 rounded-full border border-gray-200 text-gray-600 flex items-center justify-center font-bold text-2xl hover:bg-white transition-all">-</button>
+                    <div className="text-center">
+                        <span className="text-5xl font-black text-gray-900">{bags}</span>
+                        <p className="text-[10px] text-gray-400 uppercase font-bold mt-2 tracking-widest">Bolsas</p>
+                    </div>
+                    <button onClick={() => setBags(bags + 1)} className="w-12 h-12 rounded-full border border-gray-200 text-gray-600 flex items-center justify-center font-bold text-2xl hover:bg-white transition-all">+</button>
+                </div>
+
+                <div className="mt-8 text-center bg-indigo-50/50 p-4 rounded-xl">
+                    <p className="text-indigo-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Estimado</p>
+                    <p className="text-4xl font-black text-indigo-900">${(bags * PRICE_PER_BAG).toLocaleString()} <span className="text-sm font-bold opacity-30">COP</span></p>
+                </div>
+            </div>
+        </WizardStep>
+    );
+}
+
+// End of Modals
 
 export function HostCatalog() {
     const account = useActiveAccount();
@@ -355,6 +352,8 @@ export function HostCatalog() {
     const [loading, setLoading] = useState(true);
     const [showWizard, setShowWizard] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [alerts, setAlerts] = useState<any[]>([]);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // View State
     const [activeTab, setActiveTab] = useState<'services' | 'calendar' | 'profile'>('services');
@@ -381,9 +380,41 @@ export function HostCatalog() {
         }
     };
 
+    const fetchAlerts = async () => {
+        if (!account?.address) return;
+        try {
+            const { getUserAlerts } = await import("@/app/actions");
+            const data = await getUserAlerts(account.address);
+            setAlerts(data);
+        } catch (e) { console.error(e) }
+    };
+
     useEffect(() => {
-        if (account) fetchProperties();
+        if (account) {
+            fetchProperties();
+            fetchAlerts();
+        }
     }, [account]);
+
+    const handleSync = async () => {
+        if (!selectedPropertyId) return;
+        setIsSyncing(true);
+        try {
+            const { syncPropertyCalendar } = await import("@/app/actions");
+            const res = await syncPropertyCalendar(selectedPropertyId);
+            if ((res as any).error) alert((res as any).error);
+            else alert(`Sincronización exitosa: ${res.new} nuevas reservas.`);
+            fetchAlerts();
+        } catch (e) { console.error(e) } finally { setIsSyncing(false) }
+    };
+
+    const handleDismissAlert = async (id: string) => {
+        try {
+            const { markAlertAsRead } = await import("@/app/actions");
+            await markAlertAsRead(id);
+            fetchAlerts();
+        } catch (e) { console.error(e) }
+    };
 
     const handleServiceClick = async (serviceTitle: string) => {
         if (!selectedPropertyId) return alert("Selecciona una propiedad primero.");
@@ -508,56 +539,95 @@ export function HostCatalog() {
 
     return (
         <div className="animate-in fade-in zoom-in duration-500 relative min-h-screen bg-white">
-            {/* Modals */}
-            {activeService === 'cleaning' && quote && (
-                <CleaningModal
-                    amount={quote.total}
-                    breakdown={quote.breakdown}
-                    propertyName={selectedProperty?.title}
-                    onClose={() => { setQuote(null); setActiveService(null); }}
-                    onConfirm={() => handleCreateOrder({})}
-                />
-            )}
+            {/* Service Wizard Integration */}
+            <AnimatePresence>
+                {activeService && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+                        {activeService === 'cleaning' && quote && (
+                            <WizardStep
+                                title="Limpieza Extra"
+                                subtitle={selectedProperty?.title}
+                                icon={Sparkles}
+                                iconColor="text-rose-500"
+                                iconBg="bg-rose-50"
+                                onClose={() => { setQuote(null); setActiveService(null); }}
+                                footer={
+                                    <button
+                                        onClick={() => handleCreateOrder({})}
+                                        disabled={isSubmitting}
+                                        className="w-full py-4 bg-[var(--airbnb-red)] hover:bg-[var(--airbnb-red-dark)] text-white font-bold rounded-2xl transition-all shadow-hero transform active:scale-95 disabled:opacity-50"
+                                    >
+                                        {isSubmitting ? "Procesando..." : "Confirmar Reserva"}
+                                    </button>
+                                }
+                            >
+                                <div className="space-y-4 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500 font-medium">Tarifa Base</span>
+                                        <span className="text-sm font-bold text-gray-900">${quote.breakdown.base.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500 font-medium">Habitaciones</span>
+                                        <span className="text-sm font-bold text-gray-900">+ ${quote.breakdown.bedrooms.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-rose-600">
+                                        <span className="text-sm font-bold">Insumos Hotel</span>
+                                        <span className="text-xs font-black uppercase">Gratis</span>
+                                    </div>
+                                    <div className="h-px bg-gray-200/50 my-2"></div>
+                                    <div className="flex justify-between items-end">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Est.</span>
+                                            <span className="text-4xl font-black text-gray-900">${quote.total.toLocaleString()}</span>
+                                        </div>
+                                        <span className="text-xs font-black text-gray-400 pb-1.5 uppercase">COP</span>
+                                    </div>
+                                </div>
+                            </WizardStep>
+                        )}
 
-            {activeService === 'maintenance' && (
-                <MaintenanceModal
-                    onClose={() => setActiveService(null)}
-                    onSubmit={handleCreateOrder}
-                    isSubmitting={isSubmitting}
-                />
-            )}
+                        {activeService === 'maintenance' && (
+                            <MaintenanceWizardContent
+                                isSubmitting={isSubmitting}
+                                onClose={() => setActiveService(null)}
+                                onSubmit={handleCreateOrder}
+                            />
+                        )}
 
-            {activeService === 'laundry' && (
-                <LaundryModal
-                    onClose={() => setActiveService(null)}
-                    onSubmit={handleCreateOrder}
-                    isSubmitting={isSubmitting}
-                />
-            )}
+                        {activeService === 'laundry' && (
+                            <LaundryWizardContent
+                                isSubmitting={isSubmitting}
+                                onClose={() => setActiveService(null)}
+                                onSubmit={handleCreateOrder}
+                            />
+                        )}
 
-            {activeService === 'furniture' && (
-                <FurnitureModal
-                    onClose={() => setActiveService(null)}
-                    onSubmit={handleCreateOrder}
-                    isSubmitting={isSubmitting}
-                />
-            )}
+                        {activeService === 'furniture' && (
+                            <FurnitureWizardContent
+                                isSubmitting={isSubmitting}
+                                onClose={() => setActiveService(null)}
+                                onSubmit={handleCreateOrder}
+                            />
+                        )}
 
-            {activeService === 'grocery' && (
-                <GroceryModal
-                    onClose={() => setActiveService(null)}
-                    onSubmit={handleCreateOrder}
-                    isSubmitting={isSubmitting}
-                />
-            )}
+                        {activeService === 'grocery' && (
+                            <GroceryWizardContent
+                                isSubmitting={isSubmitting}
+                                onClose={() => setActiveService(null)}
+                                onSubmit={handleCreateOrder}
+                            />
+                        )}
 
-            {activeService === 'inspection' && (
-                <InspectionModal
-                    onClose={() => setActiveService(null)}
-                    onSubmit={handleCreateOrder}
-                    isSubmitting={isSubmitting}
-                />
-            )}
+                        {activeService === 'inspection' && (
+                            <InspectionWizardContent
+                                isSubmitting={isSubmitting}
+                                onClose={() => setActiveService(null)}
+                                onSubmit={handleCreateOrder}
+                            />
+                        )}
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6 border-b border-gray-100 pb-8 bg-white sticky top-0 z-40 py-6">
@@ -581,8 +651,55 @@ export function HostCatalog() {
                         <PlusCircle className="w-4 h-4" />
                         Nueva Propiedad
                     </button>
+                    {selectedPropertyId && selectedProperty?.ical_url && (
+                        <button
+                            onClick={handleSync}
+                            disabled={isSyncing}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold border transition-all
+                                ${isSyncing ? 'bg-gray-50 text-gray-400' : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50 shadow-sm'}
+                            `}
+                        >
+                            <Globe className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                            {isSyncing ? "Sincronizando..." : "Sincronizar Calendar"}
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Alerts Section */}
+            {alerts.length > 0 && (
+                <div className="mb-10 space-y-4 animate-in slide-in-from-left-4 duration-500">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-rose-500 flex items-center gap-2">
+                        <Star className="w-3 h-3 fill-rose-500" />
+                        Alertas de Operación
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {alerts.map((alert: any) => (
+                            <div key={alert.id} className="glass p-5 rounded-2xl border-rose-100 flex items-start gap-4 relative group">
+                                <div className="p-3 bg-rose-50 rounded-xl text-rose-600">
+                                    <Sparkles className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                        <h4 className="text-sm font-black text-gray-900">{alert.title}</h4>
+                                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{alert.properties?.title}</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{alert.message}</p>
+                                    <button
+                                        onClick={() => handleDismissAlert(alert.id)}
+                                        className="mt-3 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-700 transition-colors"
+                                    >
+                                        Marcar como leído
+                                    </button>
+                                </div>
+                                <div className="absolute top-4 right-4 text-rose-500 opacity-20 group-hover:opacity-100 transition-opacity">
+                                    <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Property Selector */}
             {properties.length > 0 && (

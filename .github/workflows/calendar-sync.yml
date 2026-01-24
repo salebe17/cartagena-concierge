@@ -1,0 +1,15 @@
+name: Hourly Calendar Sync
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Sync Endpoint
+        run: |
+          curl -X GET "${{ secrets.PRODUCTION_URL }}/api/cron/sync-calendars" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
