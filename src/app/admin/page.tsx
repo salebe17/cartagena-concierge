@@ -34,7 +34,18 @@ export default async function AdminPage() {
     const requests: any[] = [];
     const bookings: any[] = [];
 
+    // TEST: Logic worked, now render simple HTML to see if Component Import is the killer.
+    return (
+        <div className="p-10">
+            <h1 className="text-green-600 font-bold text-2xl">LOGIC CHECK PASSED</h1>
+            <p className="text-gray-600">User: {user.email}</p>
+            <p>Role: {profile?.role}</p>
+            <p>If you see this, Supabase Auth is fine. The problem IS the AdminDashboardView Import.</p>
+        </div>
+    );
+    /*
     return (
         <AdminDashboardView requests={requests} bookings={bookings} />
     );
+    */
 }
