@@ -23,6 +23,7 @@ import { Button } from "./ui/button";
 import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
 import { ServiceRequest } from "@/lib/types";
 import { CalendarGrid } from "./admin/CalendarGrid";
+import { LogDetailsModal } from "./dashboard/LogDetailsModal";
 
 interface AdminDashboardViewProps {
     requests: ServiceRequest[];
@@ -248,9 +249,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                             </div>
                                         )}
 
-                                        import {LogDetailsModal} from "./dashboard/LogDetailsModal";
 
-                                        // ... inside the component, near RequestDetailsModal
 
                                         <div className="flex gap-2 w-full">
                                             <RequestDetailsModal
