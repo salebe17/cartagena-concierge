@@ -804,6 +804,13 @@ export async function getUserAlerts(walletAddress: string) {
     }
 }
 
+// Helper for BigInt serialization
+function serialize<T>(data: T): T {
+    return JSON.parse(JSON.stringify(data, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+    ));
+}
+
 export async function getUserPropertiesBySession() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -816,7 +823,7 @@ export async function getUserPropertiesBySession() {
             .select('*')
             .eq('owner_id', user.id);
 
-        return JSON.parse(JSON.stringify(data || []));
+        return serialize(data || []);
     } catch (e) {
         console.error("Get Properties By Session Error:", e);
         return [];
@@ -837,7 +844,7 @@ export async function getUserAlertsBySession() {
             .eq('status', 'unread')
             .order('created_at', { ascending: false });
 
-        return JSON.parse(JSON.stringify(data || []));
+        return serialize(data || []);
     } catch (e) {
         console.error("Get Alerts By Session Error:", e);
         return [];
