@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
+import { ClientProviders } from "@/components/ClientProviders";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -59,13 +60,15 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {user && (
-          <div className="fixed top-4 right-4 z-50">
-            <LogoutButton />
-          </div>
-        )}
-        {children}
-        <Toaster />
+        <ClientProviders>
+          {user && (
+            <div className="fixed top-4 right-4 z-50">
+              <LogoutButton />
+            </div>
+          )}
+          {children}
+          <Toaster />
+        </ClientProviders>
       </body>
     </html>
   );
