@@ -273,3 +273,17 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         return { success: false, error: "Error crítico: " + errorMessage };
     }
 }
+
+export async function debugEnvVars() {
+    // SECURITY: Return ONLY names, never values
+    const keys = Object.keys(process.env).filter(k => k.startsWith('NEXT_') || k.startsWith('SUPABASE_'));
+    const serviceKeyExists = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceKeyLength = process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0;
+
+    return {
+        keys,
+        hasServiceKey: serviceKeyExists,
+        keyLength: serviceKeyLength,
+        nodeEnv: process.env.NODE_ENV
+    };
+}
