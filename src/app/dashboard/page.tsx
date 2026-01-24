@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { DashboardView } from '@/components/DashboardView';
-import { getUserPropertiesBySession } from '@/app/actions';
+import { getUserPropertiesBySession } from '@/app/actions/dashboard';
 
 export const dynamic = 'force-dynamic';
 
