@@ -367,7 +367,27 @@ export function HostCatalog() {
     const [activeService, setActiveService] = useState<'cleaning' | 'maintenance' | 'laundry' | 'furniture' | 'grocery' | 'inspection' | null>(null);
 
     const fetchProperties = async () => {
-        if (!account?.address) return;
+        // Try Session First (Email Login)
+        try {
+            const { getUserPropertiesBySession } = await import("@/app/actions");
+            const sessionProps = await getUserPropertiesBySession();
+
+            if (sessionProps && sessionProps.length > 0) {
+                setProperties(sessionProps);
+                setSelectedPropertyId(sessionProps[0].id);
+                setLoading(false);
+                return;
+            }
+        } catch (e) { console.error("Session Fetch Error", e); }
+
+        // Fallback to Wallet
+        if (!account?.address) {
+            // If no wallet and no session properties led to here, stop loading to show Empty State or Wizard
+            setLoading(false);
+            if (properties.length === 0) setShowWizard(true);
+            return;
+        }
+
         try {
             const props = await getUserProperties(account.address);
             setProperties(props);
@@ -390,10 +410,9 @@ export function HostCatalog() {
     };
 
     useEffect(() => {
-        if (account) {
-            fetchProperties();
-            fetchAlerts();
-        }
+        // Run on mount to check session, and whenever account changes
+        fetchProperties();
+        fetchAlerts();
     }, [account]);
 
     const handleSync = async () => {
