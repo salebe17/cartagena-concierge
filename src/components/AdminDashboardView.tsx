@@ -139,9 +139,44 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                     )}
                 </div>
 
+                import {CalendarGrid} from "./admin/CalendarGrid";
+                import {adminCreateServiceRequest} from "@/app/actions/admin";
+
+                // ... existing imports
+
+                export function AdminDashboardView({requests: initialRequests, bookings = [] }: AdminDashboardViewProps) {
+    // ... existing state
+
+    const handleScheduleCleaning = async (booking: any) => {
+        // Calculate cleanup date (End Date at 11:00 AM)
+        const cleanupDate = new Date(booking.end_date);
+                cleanupDate.setHours(11, 0, 0, 0);
+
+                const res = await adminCreateServiceRequest({
+                    property_id: booking.property_id,
+                service_type: 'cleaning',
+                notes: `Limpieza de salida. Huésped: ${booking.guest_name || 'Desconocido'}. (Auto-generado)`,
+                requested_date: cleanupDate.toISOString()
+        });
+
+                if (res.success) {
+                    toast({ title: "Limpieza Programada", description: `Para el ${booking.end_date} a las 11:00 AM.` });
+                // Optimistically add to list (optional, but revalidatePath handles it mostly)
+                // For now, we rely on server revalidate or page refresh, but we could append to state.
+                if (res.data) {
+                    setRequests(prev => [res.data, ...prev]);
+            }
+        } else {
+                    toast({ title: "Error", description: res.error, variant: "destructive" });
+        }
+    };
+
+                // ... existing render
+
                 {activeTab === 'requests' ? (
-                    /* 2. Requests Feed */
+                    /* ... Requests Feed ... */
                     <div className="space-y-4">
+                        {/* ... existing request list ... */}
                         <AnimatePresence mode="popLayout">
                             {requests.map((req, index) => (
                                 <motion.div
@@ -151,52 +186,9 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                     transition={{ delay: index * 0.05 }}
                                     className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row"
                                 >
-                                    {/* Left: Service Type Info */}
-                                    <div className="p-6 flex items-start gap-4 flex-1">
-                                        <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
-                                            {getIcon(req.service_type)}
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${getStatusColor(req.status)}`}>
-                                                        {req.status}
-                                                    </span>
-                                                    <span className="text-xs text-gray-400 font-medium">
-                                                        #{req.id.slice(0, 5)}
-                                                    </span>
-                                                </div>
-                                                <h3 className="text-lg font-bold text-gray-900 leading-none">
-                                                    {req.service_type === 'cleaning' ? 'Limpieza de Unidad' :
-                                                        req.service_type === 'maintenance' ? 'Ticket de Mantenimiento' : 'Concierge VIP'}
-                                                </h3>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                        <Home size={14} className="text-gray-400" />
-                                                        <span className="font-bold">{req.properties?.title}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                                                        <User size={14} />
-                                                        <span>Prop ID: {req.properties?.id.slice(0, 8)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-medium text-gray-600 italic">"{req.notes}"</p>
-                                                    {req.requested_date && (
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                                                            Agenda: {new Date(req.requested_date).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right: Admin Actions */}
+                                    {/* ... (keep existing request content) ... */}
                                     <div className="bg-gray-50/50 p-6 border-t md:border-t-0 md:border-l border-gray-100 flex flex-col justify-center gap-2 min-w-[200px]">
+                                        {/* ... (keep existing action buttons) ... */}
                                         {req.status === 'pending' && (
                                             <Button
                                                 onClick={() => handleStatusUpdate(req.id, 'confirmed')}
@@ -223,7 +215,6 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Atendido</span>
                                             </div>
                                         )}
-
 
                                         <RequestDetailsModal
                                             request={req}
@@ -254,48 +245,24 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                 ) : (
                     /* 3. Calendar View */
                     <div className="space-y-4">
-                        {filteredBookings.length === 0 ? (
-                            <div className="bg-white rounded-3xl p-16 text-center border border-gray-100">
-                                <p className="text-gray-500 font-medium">
-                                    {filterPropertyId
-                                        ? "Esta propiedad no tiene reservas futuras."
-                                        : "No hay reservas registradas en el sistema."}
-                                </p>
-                                {filterPropertyId && (
-                                    <Button variant="link" onClick={() => setFilterPropertyId(null)} className="mt-2 text-blue-600">
-                                        Ver todas las propiedades
-                                    </Button>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="grid gap-3">
-                                {filteredBookings.map((booking: any) => (
-                                    <div key={booking.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between gap-4">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2">
-                                                <h4 className="font-bold text-indigo-900">{booking.properties?.title || "Propiedad Desconocida"}</h4>
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                                                    {booking.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-500 font-medium">
-                                                {/* Use string manipulation to avoid hydration mismatch from timezones */}
-                                                {booking.start_date} - {booking.end_date}
-                                            </p>
-                                            <div className="flex items-center gap-3 text-xs text-gray-400 pt-1">
-                                                <span className="flex items-center gap-1"><User size={12} /> {booking.guest_name || booking.profiles?.full_name || "Huésped"}</span>
-                                                <span className="flex items-center gap-1 bg-gray-50 px-2 rounded-full border border-gray-100">
-                                                    Plataforma: {booking.platform}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <CalendarGrid
+                            bookings={filteredBookings}
+                            onScheduleCleaning={handleScheduleCleaning}
+                        />
+
+                        {/* Legend */}
+                        <div className="flex gap-4 justify-center text-xs text-gray-400 pt-4">
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span> Airbnb</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Directo</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500"></span> iCal Sync</span>
+                        </div>
                     </div>
                 )}
             </div>
         </div>
+    );
+}
+            </div >
+        </div >
     );
 }
