@@ -236,7 +236,10 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
 
         const results = result as any[];
         const successCount = results.filter(r => r.success).length;
-        const failed = results.filter(r => !r.success).map(r => r.title);
+        // Include error message in failed list
+        const failed = results.filter(r => !r.success)
+            .map(r => `${r.title} (${r.error || 'Unknown'})`);
+
         const succeeded = results.filter(r => r.success).map(r => r.title);
 
         let msg = `Sincronizadas: ${successCount} de ${properties.length}.`;
