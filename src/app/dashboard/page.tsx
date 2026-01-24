@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { DashboardView } from '@/components/DashboardView';
-// import { getUserPropertiesBySession } from '@/app/actions';
+import { getUserPropertiesBySession } from '@/app/actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,9 +21,9 @@ export default async function DashboardPage() {
 
     const userName = profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Anfitrión";
 
-    // 3. Fetch Properties (ISOLATION TEST: Mock Data)
-    // const properties = await getUserPropertiesBySession();
-    const properties = [{ id: "mock", title: "Test Property", address: "Isolation Mode", image: "" }];
+    // 3. Fetch Properties (Session Based)
+    const properties = await getUserPropertiesBySession();
+    // const properties = [{ id: "mock", title: "Test Property", address: "Isolation Mode", image: "" }];
 
     // 4. Render View
     // Safety Force: Serialize all props to prevent BigInt build errors
