@@ -122,3 +122,47 @@ export async function signOut() {
     }
     return redirect('/login');
 }
+
+export async function deleteProperty(propertyId: string) {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { error: "No autorizado" };
+
+        const { error } = await supabase
+            .from('properties')
+            .delete()
+            .eq('id', propertyId)
+            .eq('owner_id', user.id);
+
+        if (error) throw error;
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (e: any) {
+        console.error("Delete Property Error:", e);
+        return { error: e.message };
+    }
+}
+
+export async function updatePropertyStatus(propertyId: string, status: 'occupied' | 'vacant') {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { error: "No autorizado" };
+
+        const { error } = await supabase
+            .from('properties')
+            .update({ status })
+            .eq('id', propertyId)
+            .eq('owner_id', user.id);
+
+        if (error) throw error;
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (e: any) {
+        console.error("Update Status Error:", e);
+        return { error: e.message };
+    }
+}

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Wrench, Ship, MapPin, Plus, Home, Settings2 } from "lucide-react";
 import { RegisterPropertyModal } from "./RegisterPropertyModal";
 import { RequestServiceModal } from "./dashboard/RequestServiceModal";
+import { ManagePropertyModal } from "./ManagePropertyModal";
 import { Button } from "./ui/button";
 
 interface DashboardViewProps {
@@ -17,6 +18,7 @@ const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00
 export function DashboardView({ userName, properties }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
+    const [selectedManageProp, setSelectedManageProp] = useState<any>(null);
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] text-gray-900 font-sans p-4 md:p-8">
@@ -130,7 +132,10 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                                         />
                                     </div>
 
-                                    <button className="mt-2 w-full flex items-center justify-center font-bold px-4 py-2 bg-gray-900 hover:bg-black text-white text-[11px] uppercase tracking-widest h-10 rounded-lg transition-all active:scale-95 group/btn">
+                                    <button
+                                        onClick={() => setSelectedManageProp(prop)}
+                                        className="mt-2 w-full flex items-center justify-center font-bold px-4 py-2 bg-gray-900 hover:bg-black text-white text-[11px] uppercase tracking-widest h-10 rounded-lg transition-all active:scale-95 group/btn"
+                                    >
                                         <Settings2 size={14} className="mr-2 group-hover/btn:rotate-45 transition-transform" /> Gestionar Unidad
                                     </button>
                                 </div>
@@ -144,6 +149,14 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                     isOpen={isPropModalOpen}
                     onClose={() => setPropModalOpen(false)}
                 />
+
+                {selectedManageProp && (
+                    <ManagePropertyModal
+                        isOpen={!!selectedManageProp}
+                        onClose={() => setSelectedManageProp(null)}
+                        property={selectedManageProp}
+                    />
+                )}
 
             </div>
         </div>
