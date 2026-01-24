@@ -467,8 +467,11 @@ export async function signOut() {
 // Helper to get Admin Client
 export async function getAdminClient() {
     const { createClient } = await import('@supabase/supabase-js')
+    // Sanitize URL (Fix for common copy-paste error where '=' is included)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/^=/, '').trim();
+
     return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        supabaseUrl,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
         { auth: { autoRefreshToken: false, persistSession: false } }
     )
