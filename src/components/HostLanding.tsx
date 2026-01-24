@@ -180,7 +180,7 @@ export default function HostLanding() {
                     </div>
                 </div>
             </main>
-            <div className="text-[10px] text-gray-300 text-center pb-4 opacity-50">v1.1.0-live</div>
+            <div className="text-[10px] text-gray-300 text-center pb-4 opacity-50">v1.1.1-force</div>
         </div>
     );
 }
