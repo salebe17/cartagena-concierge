@@ -102,7 +102,7 @@ export default function HostLanding() {
                             Delega la operatividad. Nosotros nos encargamos de las sábanas, las llaves y las emergencias.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                            <Link href="/business" className="btn-primary shadow-hero text-base md:text-lg px-8 md:px-12 py-4 md:py-5 text-center transform hover:scale-105 transition-all">
+                            <Link href="/dashboard" className="btn-primary shadow-hero text-base md:text-lg px-8 md:px-12 py-4 md:py-5 text-center transform hover:scale-105 transition-all">
                                 Gestionar Propiedad
                             </Link>
                             <button
@@ -132,41 +132,51 @@ export default function HostLanding() {
                 <div id="solutions-grid" className="scroll-mt-32">
                     <h2 className="text-2xl md:text-4xl font-black text-[#222222] mb-8 md:mb-12 tracking-tighter">Soluciones Premium</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 md:gap-x-12 gap-y-10 md:gap-y-16">
-                        <ServiceCard
-                            title="Limpieza Hotelera"
-                            desc="Incluye insumos (papel, jabón), reporte fotográfico y check de inventario."
-                            price="55"
-                            rating="4.92"
-                            image="from-rose-100 to-rose-200"
-                        />
-                        <ServiceCard
-                            title="Lavandería Lencería"
-                            desc="Recogida y entrega de sábanas y toallas en 24h. Doblado profesional."
-                            price="35"
-                            rating="5.0"
-                            image="from-indigo-100 to-indigo-200"
-                        />
-                        <ServiceCard
-                            title="Soporte Técnico"
-                            desc="Aires acondicionados, cerrajería y reparaciones express de emergencia."
-                            price="50"
-                            rating="4.85"
-                            image="from-blue-100 to-blue-200"
-                        />
-                        <ServiceCard
-                            title="Lavado Muebles"
-                            desc="Limpieza por inyección y succión de sofás y alfombras."
-                            price="35"
-                            rating="4.98"
-                            image="from-cyan-100 to-cyan-200"
-                        />
-                        <ServiceCard
-                            title="Mercado & Insumos"
-                            desc="Abastecemos tu propiedad con víveres y suministros básicos."
-                            price="15"
-                            rating="4.95"
-                            image="from-emerald-100 to-emerald-200"
-                        />
+                        <Link href="/login" className="contents">
+                            <ServiceCard
+                                title="Limpieza Hotelera"
+                                desc="Incluye insumos (papel, jabón), reporte fotográfico y check de inventario."
+                                price="55"
+                                rating="4.92"
+                                image="from-rose-100 to-rose-200"
+                            />
+                        </Link>
+                        <Link href="/login" className="contents">
+                            <ServiceCard
+                                title="Lavandería Lencería"
+                                desc="Recogida y entrega de sábanas y toallas en 24h. Doblado profesional."
+                                price="35"
+                                rating="5.0"
+                                image="from-indigo-100 to-indigo-200"
+                            />
+                        </Link>
+                        <Link href="/login" className="contents">
+                            <ServiceCard
+                                title="Soporte Técnico"
+                                desc="Aires acondicionados, cerrajería y reparaciones express de emergencia."
+                                price="50"
+                                rating="4.85"
+                                image="from-blue-100 to-blue-200"
+                            />
+                        </Link>
+                        <Link href="/login" className="contents">
+                            <ServiceCard
+                                title="Lavado Muebles"
+                                desc="Limpieza por inyección y succión de sofás y alfombras."
+                                price="35"
+                                rating="4.98"
+                                image="from-cyan-100 to-cyan-200"
+                            />
+                        </Link>
+                        <Link href="/login" className="contents">
+                            <ServiceCard
+                                title="Mercado & Insumos"
+                                desc="Abastecemos tu propiedad con víveres y suministros básicos."
+                                price="15"
+                                rating="4.95"
+                                image="from-emerald-100 to-emerald-200"
+                            />
+                        </Link>
                     </div>
                 </div>
             </main>

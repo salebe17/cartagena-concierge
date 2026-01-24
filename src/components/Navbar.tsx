@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { Search, Globe, Menu, UserCircle, Home, Truck } from "lucide-react";
-import { ConnectButton } from "thirdweb/react";
-import { client, chain } from "@/lib/thirdweb";
 
 function Navbar() {
   return (
@@ -55,10 +53,10 @@ function Navbar() {
           {/* User Menu - Right */}
           <div className="flex items-center gap-2">
             <Link
-              href="/business"
+              href="/dashboard"
               className="hidden md:block text-[13px] font-bold text-[#222222] rounded-full hover:bg-gray-50 py-3 px-4 transition uppercase tracking-tight"
             >
-              Portal Host
+              Control Panel
             </Link>
 
             <div className="hidden sm:flex hover:bg-gray-50 rounded-full p-3 transition cursor-pointer">
