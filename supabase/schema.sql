@@ -31,23 +31,30 @@ CREATE TABLE IF NOT EXISTS orders (
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
+
 -- Profiles Policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone." ON profiles;
 CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Users can insert their own profile." ON profiles;
 CREATE POLICY "Users can insert their own profile." ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile." ON profiles;
 CREATE POLICY "Users can update own profile." ON profiles FOR UPDATE USING (auth.uid() = id);
 
 -- Orders Policies
+DROP POLICY IF EXISTS "Users can view their own orders." ON orders;
 CREATE POLICY "Users can view their own orders." ON orders FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Drivers can view paid/assigned orders." ON orders;
 CREATE POLICY "Drivers can view paid/assigned orders." ON orders FOR SELECT USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'driver' AND (orders.status IN ('paid', 'assigned', 'picked_up')))
 );
+
+DROP POLICY IF EXISTS "Users can insert orders." ON orders;
 CREATE POLICY "Users can insert orders." ON orders FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Note: Drivers updating orders would require more specific policies or RPCs. 
--- For this demo, we might allow authenticated updates if complexity is high, 
--- but ideally strict checks. 
--- ALLOW UPDATE for drivers on specific columns? 
--- Simplification: Allow all authenticated users to update (Security risk in real app, but allows demo driver flow).
+DROP POLICY IF EXISTS "Authenticated users can update orders." ON orders;
 CREATE POLICY "Authenticated users can update orders." ON orders FOR UPDATE USING (auth.uid() = user_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'driver'));
 
 -- =========================================================
@@ -67,9 +74,16 @@ CREATE TABLE IF NOT EXISTS properties (
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 
 -- MASTER PROPERTIES TABLE (1 Host -> N Properties)
+DROP POLICY IF EXISTS "Users can view own properties" ON properties;
 CREATE POLICY "Users can view own properties" ON properties FOR SELECT USING (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Users can insert own properties" ON properties;
 CREATE POLICY "Users can insert own properties" ON properties FOR INSERT WITH CHECK (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Users can update own properties" ON properties;
 CREATE POLICY "Users can update own properties" ON properties FOR UPDATE USING (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Users can delete own properties" ON properties;
 CREATE POLICY "Users can delete own properties" ON properties FOR DELETE USING (auth.uid() = owner_id OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- =========================================================
@@ -87,8 +101,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
 
 ALTER TABLE service_requests ENABLE ROW LEVEL SECURITY;
 
-
-
+DROP POLICY IF EXISTS "Users can manage requests for own properties" ON service_requests;
 CREATE POLICY "Users can manage requests for own properties" ON service_requests FOR ALL USING (
     property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
@@ -111,7 +124,12 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own alerts" ON alerts;
 CREATE POLICY "Users can view own alerts" ON alerts FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own alerts" ON alerts;
 CREATE POLICY "Users can update own alerts" ON alerts FOR UPDATE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "System/Admin can insert alerts" ON alerts;
 CREATE POLICY "System/Admin can insert alerts" ON alerts FOR INSERT WITH CHECK (true); -- Simplified for actions usage
 
