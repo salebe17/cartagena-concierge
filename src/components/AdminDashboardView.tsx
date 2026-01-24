@@ -247,15 +247,29 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                             </div>
                                         )}
 
-                                        <RequestDetailsModal
-                                            request={req}
-                                            onViewCalendar={handleViewCalendar}
-                                            triggerButton={
-                                                <Button variant="ghost" className="w-full text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
-                                                    Detalles Completos <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                </Button>
-                                            }
-                                        />
+                                        import {LogDetailsModal} from "./dashboard/LogDetailsModal";
+
+                                        // ... inside the component, near RequestDetailsModal
+
+                                        <div className="flex gap-2 w-full">
+                                            <RequestDetailsModal
+                                                request={req}
+                                                onViewCalendar={handleViewCalendar}
+                                                triggerButton={
+                                                    <Button variant="ghost" className="flex-1 text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
+                                                        Info <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </Button>
+                                                }
+                                            />
+                                            <LogDetailsModal
+                                                request={req}
+                                                triggerButton={
+                                                    <Button variant="ghost" className="flex-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" disabled={!req.service_logs?.length}>
+                                                        Evidencia {req.service_logs?.length ? `(${req.service_logs[0].end_photos?.length || 0})` : ''}
+                                                    </Button>
+                                                }
+                                            />
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))}

@@ -108,6 +108,15 @@ export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
                     title,
                     address,
                     owner_id
+                ),
+                service_logs (
+                    id,
+                    started_at,
+                    ended_at,
+                    staff_name,
+                    notes,
+                    start_photos,
+                    end_photos
                 )
             `)
             .order('created_at', { ascending: false });
