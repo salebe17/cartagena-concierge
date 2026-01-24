@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 // Helper for BigInt serialization (Crucial for Build Stability)
 function serialize<T>(data: T): T {
@@ -126,4 +127,14 @@ export async function submitServiceRequest(propertyId: string, serviceType: stri
     }
 
     return { success: true };
+}
+
+export async function signOut() {
+    try {
+        const supabase = await createClient();
+        await supabase.auth.signOut();
+    } catch (e) {
+        console.error("SignOut Error:", e);
+    }
+    return redirect('/login');
 }
