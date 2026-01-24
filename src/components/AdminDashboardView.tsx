@@ -204,6 +204,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                         )}
 
 
+                                        {/* TEMPORARILY DISABLED FOR DEBUGGING
                                         <RequestDetailsModal
                                             request={req}
                                             onViewCalendar={handleViewCalendar}
@@ -213,6 +214,10 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                                 </Button>
                                             }
                                         />
+                                        */}
+                                        <Button variant="ghost" className="w-full text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
+                                            Detalles (Mantenimiento) <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </Button>
                                     </div>
                                 </motion.div>
                             ))}
