@@ -513,3 +513,41 @@ export async function signOut() {
     await supabase.auth.signOut()
     return redirect('/login')
 }
+
+export async function createProperty(data: any) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: "Unauthorized" }
+
+    try {
+        const { error } = await supabase
+            .from('properties')
+            .insert({
+                owner_id: user.id,
+                ...data
+            })
+
+        if (error) throw error
+
+        revalidatePath('/business')
+        return { success: true }
+    } catch (e: any) {
+        console.error("Property Creation Error:", e)
+        return { success: false, error: e.message }
+    }
+}
+
+export async function getUserProperties() {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('owner_id', user.id)
+
+    return data || []
+}
