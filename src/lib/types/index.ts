@@ -12,6 +12,9 @@ export interface Property {
     image_url?: string;
     status: 'vacant' | 'occupied';
     ical_url?: string;
+    bedrooms?: number;
+    bathrooms?: number;
+    size_sqm?: number;
     created_at: string;
 }
 

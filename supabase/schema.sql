@@ -68,6 +68,9 @@ CREATE TABLE IF NOT EXISTS properties (
     image_url TEXT,               -- Foto de portada
     status TEXT DEFAULT 'vacant', -- 'vacant' | 'occupied'
     ical_url TEXT,                -- Para sincronizar Airbnb a futuro
+    bedrooms INTEGER DEFAULT 1,   -- Capacidad
+    bathrooms INTEGER DEFAULT 1,  -- Para cotizaciones de aseo
+    size_sqm NUMERIC,             -- Metros cuadrados
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
