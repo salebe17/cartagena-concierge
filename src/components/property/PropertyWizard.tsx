@@ -1,33 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Building2, MapPin, BedDouble, Wifi, CheckCircle2 } from "lucide-react";
+import { User, MapPin, Home, Key, Wifi, CheckCircle } from "lucide-react";
+import { createProperty } from "@/app/actions";
 import { useActiveAccount } from "thirdweb/react";
 
-// Steps
 const STEPS = [
-    { id: 1, title: "Tipo", icon: Building2 },
+    { id: 1, title: "Básico", icon: Home },
     { id: 2, title: "Ubicación", icon: MapPin },
-    { id: 3, title: "Detalles", icon: BedDouble },
-    { id: 4, title: "Amenities", icon: Wifi },
+    { id: 3, title: "Detalles", icon: CheckCircle },
+    { id: 4, title: "Acceso", icon: Key }
 ];
 
 export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
     const account = useActiveAccount();
-    const router = useRouter();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-
-    // Form Data
     const [data, setData] = useState({
         title: "",
         property_type: "Apartment",
-        address: "",
         max_guests: 2,
+        address: "",
         bedrooms: 1,
         bathrooms: 1,
-        beds: 1,
         wifi_network: "",
         wifi_password: "",
         access_instructions: ""
@@ -37,46 +32,43 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
         setData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleNext = async () => {
-        if (step < 4) {
-            setStep(step + 1);
-        } else {
-            submitForm();
-        }
-    };
-
     const submitForm = async () => {
         setLoading(true);
         try {
             const result = await createProperty(data, account?.address || "");
 
             if (result.success) {
-                onComplete(); // Refresh parent view
+                onComplete();
             } else {
-                alert("Error guardando propiedad: " + result.error);
+                alert("Error creando propiedad: " + result.error);
             }
         } catch (e: any) {
             console.error(e);
-            alert("Error: " + e.message);
+            alert("Error al guardar. Intenta nuevamente.");
         } finally {
             setLoading(false);
         }
     };
 
+    const handleNext = () => {
+        if (step < 4) setStep(step + 1);
+        else submitForm();
+    };
+
     return (
-        <div className="w-full max-w-2xl mx-auto bg-gray-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+        <div className="w-full max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
             {/* Header Steps */}
-            <div className="flex border-b border-white/5 bg-black/40">
+            <div className="flex border-b border-gray-100 bg-gray-50">
                 {STEPS.map((s, idx) => {
                     const active = s.id === step;
                     const completed = s.id < step;
                     return (
-                        <div key={s.id} className={`flex-1 p-4 flex flex-col items-center justify-center border-r border-white/5 last:border-0 relative
-                            ${active ? 'text-yellow-500 bg-yellow-500/5' : completed ? 'text-green-500' : 'text-gray-600'}
+                        <div key={s.id} className={`flex-1 p-4 flex flex-col items-center justify-center border-r border-gray-100 last:border-0 relative
+                            ${active ? 'text-rose-600 bg-rose-50/50' : completed ? 'text-gray-900' : 'text-gray-400'}
                         `}>
                             <s.icon className="w-5 h-5 mb-1" />
                             <span className="text-[10px] uppercase font-bold tracking-widest">{s.title}</span>
-                            {active && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500"></div>}
+                            {active && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-rose-500"></div>}
                         </div>
                     );
                 })}
@@ -88,13 +80,13 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                 {/* STEP 1: BASIC INFO */}
                 {step === 1 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <h2 className="text-2xl font-bold text-white">Información Básica</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">Información Básica</h2>
                         <div>
                             <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Nombre de la Propiedad</label>
                             <input
                                 type="text"
                                 placeholder="Ej: Casa Blanca Old City"
-                                className="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors"
+                                className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all"
                                 value={data.title}
                                 onChange={(e) => handleChange("title", e.target.value)}
                             />
@@ -103,7 +95,7 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                             <div>
                                 <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Tipo</label>
                                 <select
-                                    className="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all"
                                     value={data.property_type}
                                     onChange={(e) => handleChange("property_type", e.target.value)}
                                 >
@@ -116,7 +108,7 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                                 <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Huéspedes Máx</label>
                                 <input
                                     type="number"
-                                    className="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all"
                                     value={data.max_guests}
                                     onChange={(e) => handleChange("max_guests", parseInt(e.target.value))}
                                 />
@@ -128,13 +120,13 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                 {/* STEP 2: LOCATION */}
                 {step === 2 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <h2 className="text-2xl font-bold text-white">Ubicación Exacta</h2>
-                        <p className="text-gray-400 text-sm">Necesitamos la dirección exacta para coordinar la limpieza y entregas.</p>
+                        <h2 className="text-2xl font-bold text-gray-900">Ubicación Exacta</h2>
+                        <p className="text-gray-500 text-sm">Necesitamos la dirección exacta para coordinar la limpieza y entregas.</p>
                         <div>
                             <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Dirección Completa</label>
                             <textarea
                                 placeholder="Calle, Número, Edificio, Apto..."
-                                className="w-full h-32 bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors resize-none"
+                                className="w-full h-32 bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all resize-none"
                                 value={data.address}
                                 onChange={(e) => handleChange("address", e.target.value)}
                             />
@@ -145,8 +137,8 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                 {/* STEP 3: DETAILS */}
                 {step === 3 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <h2 className="text-2xl font-bold text-white">Habitaciones & Baños</h2>
-                        <p className="text-gray-400 text-sm">Los precios de limpieza se calculan automáticamente con esta info.</p>
+                        <h2 className="text-2xl font-bold text-gray-900">Habitaciones & Baños</h2>
+                        <p className="text-gray-500 text-sm">Los precios de limpieza se calculan automáticamente con esta info.</p>
 
                         <div className="grid grid-cols-3 gap-4">
                             {[
@@ -154,16 +146,16 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                                 { label: "Baños", key: "bathrooms" },
                                 { label: "Camas Total", key: "beds" }
                             ].map((field) => (
-                                <div key={field.key} className="bg-white/5 p-4 rounded-xl text-center">
+                                <div key={field.key} className="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
                                     <label className="text-[10px] uppercase text-gray-500 font-bold block mb-2">{field.label}</label>
                                     <div className="flex items-center justify-center gap-4">
                                         <button
-                                            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+                                            className="w-8 h-8 rounded-full bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-600 shadow-sm"
                                             onClick={() => handleChange(field.key, Math.max(0, (data as any)[field.key] - 1))}
                                         >-</button>
-                                        <span className="text-2xl font-bold text-white">{(data as any)[field.key]}</span>
+                                        <span className="text-2xl font-bold text-gray-900">{(data as any)[field.key]}</span>
                                         <button
-                                            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white"
+                                            className="w-8 h-8 rounded-full bg-white border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-gray-600 shadow-sm"
                                             onClick={() => handleChange(field.key, (data as any)[field.key] + 1)}
                                         >+</button>
                                     </div>
@@ -176,15 +168,15 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                 {/* STEP 4: AMENITIES / WIFI */}
                 {step === 4 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                        <h2 className="text-2xl font-bold text-white">Datos de Acceso</h2>
-                        <p className="text-gray-400 text-sm">Guarda estos datos para tu equipo y huéspedes.</p>
+                        <h2 className="text-2xl font-bold text-gray-900">Datos de Acceso</h2>
+                        <p className="text-gray-500 text-sm">Guarda estos datos para tu equipo y huéspedes.</p>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Red WiFi</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all"
                                     value={data.wifi_network}
                                     onChange={(e) => handleChange("wifi_network", e.target.value)}
                                 />
@@ -193,7 +185,7 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                                 <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Clave WiFi</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors"
+                                    className="w-full bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all"
                                     value={data.wifi_password}
                                     onChange={(e) => handleChange("wifi_password", e.target.value)}
                                 />
@@ -204,7 +196,7 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                             <label className="text-xs uppercase text-gray-500 font-bold mb-2 block">Instrucciones de Acceso / Caja de Llaves</label>
                             <textarea
                                 placeholder="Código de la puerta, ubicación de llaves, etc..."
-                                className="w-full h-32 bg-black/50 border border-white/10 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors resize-none"
+                                className="w-full h-32 bg-gray-50 border border-gray-200 p-4 rounded-xl text-gray-900 outline-none focus:border-rose-500 focus:bg-white transition-all resize-none"
                                 value={data.access_instructions}
                                 onChange={(e) => handleChange("access_instructions", e.target.value)}
                             />
@@ -215,11 +207,11 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
             </div>
 
             {/* Footer Actions */}
-            <div className="p-6 border-t border-white/5 bg-black/20 flex justify-end gap-4">
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-4">
                 {step > 1 && (
                     <button
                         onClick={() => setStep(step - 1)}
-                        className="px-6 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                        className="px-6 py-3 rounded-xl text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
                     >
                         Atras
                     </button>
@@ -228,10 +220,9 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
                 <button
                     onClick={handleNext}
                     disabled={loading}
-                    className="px-8 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-sm tracking-wider uppercase transition-colors shadow-lg hover:shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
+                    className="px-8 py-3 rounded-xl bg-gray-900 hover:bg-black text-white font-bold text-sm tracking-wider uppercase transition-colors shadow-lg shadow-gray-900/10 disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
                 >
                     {loading ? "Guardando..." : step === 4 ? "Finalizar Registro" : "Continuar"}
-                    {step === 4 && !loading && <CheckCircle2 className="w-4 h-4" />}
                 </button>
             </div>
         </div>
