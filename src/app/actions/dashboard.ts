@@ -147,8 +147,53 @@ export async function updatePropertyStatus(propertyId: string, status: 'occupied
     }
 }
 
+
 export async function signOut() {
     const supabase = await createClient();
     await supabase.auth.signOut();
     return redirect('/login');
+}
+
+// --- Alert Actions ---
+
+export async function getUserAlerts(): Promise<any[]> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+
+        const { data, error } = await supabase
+            .from('alerts')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('is_read', false)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return serialize(data || []);
+    } catch (e) {
+        console.error("Fetch Alerts Error:", e);
+        return [];
+    }
+}
+
+export async function markAlertRead(alertId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return { success: false, error: "Unauthorized" };
+
+        const { error } = await supabase
+            .from('alerts')
+            .update({ is_read: true })
+            .eq('id', alertId)
+            .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: "Error updating alert" };
+    }
 }

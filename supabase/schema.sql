@@ -87,7 +87,29 @@ CREATE TABLE IF NOT EXISTS service_requests (
 
 ALTER TABLE service_requests ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can manage requests for own properties" ON service_requests FOR ALL USING (
+
     property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
+
+-- =========================================================
+-- ALERTS TABLE (Notificaciones)
+-- =========================================================
+CREATE TABLE IF NOT EXISTS alerts (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    property_id UUID REFERENCES properties(id) ON DELETE CASCADE,
+    booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT DEFAULT 'info', -- 'pending_service', 'info', 'warning'
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own alerts" ON alerts FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own alerts" ON alerts FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "System/Admin can insert alerts" ON alerts FOR INSERT WITH CHECK (true); -- Simplified for actions usage
+

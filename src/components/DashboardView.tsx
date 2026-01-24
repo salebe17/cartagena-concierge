@@ -8,23 +8,28 @@ import { RequestServiceModal } from "./dashboard/RequestServiceModal";
 import { ManagePropertyModal } from "./dashboard/ManagePropertyModal";
 import { Button } from "./ui/button";
 
+import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
 import { Property } from "@/lib/types";
 
 interface DashboardViewProps {
     userName: string;
     properties: Property[];
+    alerts?: AlertItem[];
     serviceHistory?: React.ReactNode;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
-export function DashboardView({ userName, properties, serviceHistory = null }: DashboardViewProps) {
+export function DashboardView({ userName, properties, alerts = [], serviceHistory = null }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] text-gray-900 font-sans p-4 md:p-8">
             <div className="max-w-6xl mx-auto space-y-8">
+
+                {/* 0. Alerts Section */}
+                <AlertWidget initialAlerts={alerts} />
 
                 {/* 1. Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
