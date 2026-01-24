@@ -5,8 +5,6 @@ import { fetchICalEvents } from '@/lib/ical-sync'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { getRpcClient, eth_getTransactionReceipt } from "thirdweb";
-import { client, chain, TARGET_WALLET_ADDRESS } from "@/lib/thirdweb";
 
 export async function calculateOrderFee(amount: number, distanceKm: number) {
     // Service Fee = 10% of amount
@@ -325,6 +323,9 @@ export async function createWeb3Order(
 
     // 0. SECURITY: VERIFY TRANSACTION ON-CHAIN
     try {
+        const { getRpcClient, eth_getTransactionReceipt } = await import("thirdweb");
+        const { client, chain } = await import("@/lib/thirdweb");
+
         const rpcRequest = getRpcClient({ client, chain });
         const receipt = await eth_getTransactionReceipt(rpcRequest, { hash: txHash as `0x${string}` });
 
