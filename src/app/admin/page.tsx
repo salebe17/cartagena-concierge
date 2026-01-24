@@ -11,19 +11,36 @@ export default async function AdminPage() {
     // This tests if the COMPONENT renders client-side without crashing.
 
     // We still check auth to be safe/realistic
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // 1. Auth & Role Check (WRAPPED FOR DEBUGGING)
+    let user = null;
+    let profile = null;
 
-    if (!user) {
-        redirect('/login');
-        return null;
+    try {
+        const supabase = await createClient();
+        const authResponse = await supabase.auth.getUser();
+        user = authResponse.data.user;
+
+        if (user) {
+            const profileResponse = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+            profile = profileResponse.data;
+        }
+    } catch (error: any) {
+        console.error("Supabase Initialization Error:", error);
+        return (
+            <div className="p-10 text-red-600">
+                <h1 className="font-bold text-2xl">CRITICAL AUTH ERROR</h1>
+                <p>Could not initialize database connection.</p>
+                <div className="bg-gray-100 p-4 mt-4 rounded text-xs text-black overflow-auto whitespace-pre-wrap">
+                    {JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}
+                    {String(error)}
+                </div>
+            </div>
+        );
     }
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
 
     if (profile?.role !== 'admin') {
         redirect('/dashboard');
