@@ -19,39 +19,8 @@ function serialize<T>(data: T): T {
     }
 }
 
-// Dedicated Admin Client Helper (Avoids circular deps with actions.ts)
-async function getSupabaseAdmin() {
-    const { createClient } = await import('@supabase/supabase-js');
-
-    const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const rawKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!rawUrl) throw new Error("Falta NEXT_PUBLIC_SUPABASE_URL.");
-
-    if (!rawKey) {
-        // SECURITY DEBUG: List keys to see what IS available (names only)
-        const availableKeys = Object.keys(process.env)
-            .filter(k => k.startsWith('NEXT_') || k.startsWith('SUPABASE_') || k.startsWith('VERCEL_'))
-            .join(', ');
-
-        throw new Error(`Falta SUPABASE_SERVICE_ROLE_KEY. Keys disponibles: [${availableKeys}]`);
-    }
-
-    // Sanitize URL
-    const supabaseUrl = rawUrl.replace(/^=/, '').trim();
-    // Sanitize Key (remove accidental quotes or spaces)
-    const supabaseKey = rawKey.replace(/^["']|["']$/g, '').trim();
-
-    return createClient(
-        supabaseUrl,
-        supabaseKey,
-        { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-}
-
-// Internal Sync Logic (Isolated)
-async function syncPropertyCalendarInternal(propertyId: string) {
-    const supabase = await getSupabaseAdmin();
+// Internal Sync Logic (Uses authenticated session)
+async function syncPropertyCalendarInternal(supabase: any, propertyId: string) {
     // Dynamic import to avoid build evaluation errors with node-ical
     const { fetchICalEvents } = await import('@/lib/ical-sync');
 
@@ -231,9 +200,9 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
 
         if (profile?.role !== 'admin') return { success: false, error: "Requiere admin" };
 
-        // Fetch properties using Admin Client (bypass RLS)
-        const adminSupabase = await getSupabaseAdmin();
-        const { data: properties } = await adminSupabase
+        // Fetch properties using User Client (RLS allows admin to see all if configured correctly)
+        // If not, we might need a specific policy for "admin can see all properties"
+        const { data: properties } = await supabase
             .from('properties')
             .select('id, title')
             .not('ical_url', 'is', null);
@@ -246,7 +215,8 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         const TIMEOUT_MS = 9000;
         const syncPromises = properties.map(async (prop) => {
             try {
-                await syncPropertyCalendarInternal(prop.id);
+                // Pass the authenticated client
+                await syncPropertyCalendarInternal(supabase, prop.id);
                 return { id: prop.id, title: prop.title, success: true };
             } catch (err: any) {
                 console.error(`Sync error ${prop.title}:`, err);
