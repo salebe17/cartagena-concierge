@@ -33,12 +33,6 @@ export async function getUserPropertiesBySession(): Promise<Property[]> {
         console.error("Fetch Properties Error:", e);
         return [];
     }
-    return serialize(data || []);
-} catch (e) {
-    // Silent fail for data fetching to prevent UI crash, but log for monitoring
-    console.error("Fetch Properties Error:", e);
-    return [];
-}
 }
 
 export async function getOwnerBookings(): Promise<any[]> {
