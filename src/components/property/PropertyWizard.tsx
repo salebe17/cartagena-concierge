@@ -50,7 +50,7 @@ export function PropertyWizard({ onComplete }: { onComplete: () => void }) {
         try {
             // Import dynamically to avoid server/client boundary issues if any
             const { createProperty } = await import("@/app/actions");
-            const result = await createProperty(data);
+            const result = await createProperty(data, account?.address || "");
 
             if (result.success) {
                 onComplete(); // Refresh parent view

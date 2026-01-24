@@ -68,8 +68,9 @@ export function HostCatalog() {
     const [quoting, setQuoting] = useState(false);
 
     const fetchProperties = async () => {
+        if (!account?.address) return;
         try {
-            const props = await getUserProperties();
+            const props = await getUserProperties(account.address);
             setProperties(props);
             if (props.length === 0) setShowWizard(true);
             if (props.length > 0) setSelectedPropertyId(props[0].id);

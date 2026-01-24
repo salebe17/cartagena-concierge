@@ -514,17 +514,50 @@ export async function signOut() {
     return redirect('/login')
 }
 
-export async function createProperty(data: any) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+// Helper to get Admin Client
+async function getAdminClient() {
+    const { createClient } = await import('@supabase/supabase-js')
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+}
 
-    if (!user) return { success: false, error: "Unauthorized" }
+// Helper to get/create User ID from Wallet
+async function getUserIdFromWallet(address: string) {
+    const supabase = await getAdminClient()
+    const email = `${address.toLowerCase()}@wallet.com`
+
+    // Check if user exists
+    const { data: { users } } = await supabase.auth.admin.listUsers()
+    const existing = users.find(u => u.email === email)
+
+    if (existing) return existing.id
+
+    // Create User
+    const { data: { user }, error } = await supabase.auth.admin.createUser({
+        email: email,
+        password: 'wallet-password-' + Date.now(),
+        email_confirm: true,
+        user_metadata: { wallet: address }
+    })
+
+    if (error || !user) throw new Error("Failed to create wallet user: " + error?.message)
+    return user.id
+}
+
+export async function createProperty(data: any, walletAddress: string) {
+    if (!walletAddress) return { success: false, error: "No wallet address provided" }
 
     try {
+        const supabase = await getAdminClient()
+        const userId = await getUserIdFromWallet(walletAddress)
+
         const { error } = await supabase
             .from('properties')
             .insert({
-                owner_id: user.id,
+                owner_id: userId,
                 ...data
             })
 
@@ -538,18 +571,29 @@ export async function createProperty(data: any) {
     }
 }
 
-export async function getUserProperties() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+export async function getUserProperties(walletAddress: string) {
+    if (!walletAddress) return []
 
-    if (!user) return []
+    const supabase = await getAdminClient()
 
-    const { data } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('owner_id', user.id)
+    // We need the user ID first
+    // Optimization: We could join on email, but listUsers is fast enough for low volume
+    // Or just try to get the ID. 
+    // If getting ID is slow, we can just assume properties query? 
+    // No, properties table uses uuid owner_id. We need the UUID.
 
-    return data || []
+    try {
+        const userId = await getUserIdFromWallet(walletAddress)
+        const { data } = await supabase
+            .from('properties')
+            .select('*')
+            .eq('owner_id', userId)
+
+        return data || []
+    } catch (e) {
+        console.error("Get Properties Error:", e)
+        return []
+    }
 }
 
 export async function calculateCleaningQuote(propertyId: string) {
