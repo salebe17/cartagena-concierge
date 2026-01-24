@@ -15,7 +15,10 @@ export async function getAllServiceRequests() {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) return [];
+        if (!user) {
+            console.log("AdminSDK: No user found");
+            return [];
+        }
 
         // Verify admin role
         const { data: profile } = await supabase
@@ -24,9 +27,11 @@ export async function getAllServiceRequests() {
             .eq('id', user.id)
             .single();
 
+        console.log("AdminSDK: User Role:", profile?.role);
+
         if (profile?.role !== 'admin') return [];
 
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('service_requests')
             .select(`
                 *,
@@ -38,6 +43,13 @@ export async function getAllServiceRequests() {
                 )
             `)
             .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("AdminSDK: Supabase Error:", error);
+        }
+
+        console.log("AdminSDK: Requests Found:", data?.length);
+        console.log("AdminSDK: Raw Data Sample:", data?.[0]);
 
         return serialize(data || []);
     } catch (e) {
