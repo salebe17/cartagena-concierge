@@ -33,6 +33,41 @@ export async function getUserPropertiesBySession(): Promise<Property[]> {
         console.error("Fetch Properties Error:", e);
         return [];
     }
+    return serialize(data || []);
+} catch (e) {
+    // Silent fail for data fetching to prevent UI crash, but log for monitoring
+    console.error("Fetch Properties Error:", e);
+    return [];
+}
+}
+
+export async function getOwnerBookings(): Promise<any[]> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+
+        // Fetch bookings where property.owner_id = user.id
+        // We can do this by joining properties
+        const { data, error } = await supabase
+            .from('bookings')
+            .select(`
+                *,
+                properties!inner (
+                    id,
+                    title,
+                    owner_id
+                )
+            `)
+            .eq('properties.owner_id', user.id)
+            .order('start_date', { ascending: true });
+
+        if (error) throw error;
+        return serialize(data || []);
+    } catch (e) {
+        console.error("Fetch Owner Bookings Error:", e);
+        return [];
+    }
 }
 
 export async function createServiceRequest(formData: FormData): Promise<ActionResponse> {
