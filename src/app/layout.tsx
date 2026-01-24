@@ -8,6 +8,9 @@ import { ClientProviders } from "@/components/ClientProviders";
 
 const inter = Inter({ subsets: ["latin"] });
 
+// Force dynamic because we use cookies in the layout for auth checking
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Cartagena Concierge | Private Logistics",
   description: "Servicio exclusivo de logística a domicilio en Cartagena. Seguro, rápido y discreto. 24/7.",
