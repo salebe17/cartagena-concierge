@@ -10,7 +10,11 @@ export default async function DashboardPage() {
 
     // 1. Auth Check
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) redirect('/login');
+
+    if (!user) {
+        redirect('/login');
+        return null; // Force bailout for TS and compiler
+    }
 
     // 2. Fetch User Profile Name (or fallback to metadata)
     const { data: profile } = await supabase
