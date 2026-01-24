@@ -10,7 +10,7 @@ import { HostCatalog } from "@/components/HostCatalog";
 const wallets = [
     inAppWallet({
         auth: {
-            options: ["google", "email"],
+            options: ["google", "apple", "email"],
         },
         smartWallet: {
             chain: chain,

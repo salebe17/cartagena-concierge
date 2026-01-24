@@ -13,7 +13,7 @@ import Link from "next/link";
 const wallets = [
     inAppWallet({
         auth: {
-            options: ["google", "email"],
+            options: ["google", "apple", "email"],
         },
         // Esto activa la billetera inteligente que "regala" el gas inicial
         smartWallet: {
