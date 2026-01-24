@@ -4,6 +4,17 @@ import { useState } from 'react'
 import { deleteProperty, updatePropertyStatus } from '@/app/actions/dashboard'
 import { X, Trash2, Settings2, CheckCircle2, Circle, Loader2 } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export function ManagePropertyModal({
     propertyId,
@@ -17,17 +28,19 @@ export function ManagePropertyModal({
     triggerButton: React.ReactNode
 }) {
     const [isOpen, setIsOpen] = useState(false)
-    const [isDeleting, setIsDeleting] = useState(false)
     const [status, setStatus] = useState(currentStatus)
     const [isUpdating, setIsUpdating] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
     const { toast } = useToast()
 
     // Manejar cambio de estado (Ocupado/Vacante)
     const handleStatusChange = async (newStatus: 'vacant' | 'occupied') => {
         if (newStatus === status) return;
 
-        setIsUpdating(true)
-        setStatus(newStatus) // Actualización optimista
+        // Optimistic Update
+        const previousStatus = status;
+        setStatus(newStatus);
+        setIsUpdating(true);
 
         const result = await updatePropertyStatus(propertyId, newStatus)
         setIsUpdating(false)
@@ -38,7 +51,7 @@ export function ManagePropertyModal({
                 description: `${propertyTitle} ahora está ${newStatus === 'occupied' ? 'Ocupado' : 'Disponible'}.`,
             })
         } else {
-            setStatus(currentStatus) // Revertir si falla
+            setStatus(previousStatus) // Revertir si falla
             toast({
                 title: "Error al actualizar",
                 description: result.error,
@@ -49,8 +62,6 @@ export function ManagePropertyModal({
 
     // Manejar eliminación
     const handleDelete = async () => {
-        if (!confirm("¿Estás seguro de que quieres eliminar esta propiedad permanentemente? Esta acción no se puede deshacer.")) return;
-
         setIsDeleting(true)
         const result = await deleteProperty(propertyId)
 
@@ -77,7 +88,7 @@ export function ManagePropertyModal({
             </div>
 
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-200">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
                     <div
                         className="absolute inset-0"
                         onClick={() => !isDeleting && !isUpdating && setIsOpen(false)}
@@ -107,13 +118,13 @@ export function ManagePropertyModal({
                                     <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Estado Actual</label>
                                     {isUpdating && <Loader2 size={12} className="animate-spin text-gray-400" />}
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-200/50 rounded-xl">
+                                <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl">
                                     <button
                                         onClick={() => handleStatusChange('vacant')}
-                                        disabled={isDeleting || isUpdating}
+                                        disabled={isUpdating}
                                         className={`flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all ${status !== 'occupied'
-                                                ? 'bg-white text-orange-600 shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
+                                            ? 'bg-white text-orange-600 shadow-sm ring-1 ring-black/5'
+                                            : 'text-gray-500 hover:text-gray-700'
                                             }`}
                                     >
                                         {status !== 'occupied' ? (
@@ -125,10 +136,10 @@ export function ManagePropertyModal({
                                     </button>
                                     <button
                                         onClick={() => handleStatusChange('occupied')}
-                                        disabled={isDeleting || isUpdating}
+                                        disabled={isUpdating}
                                         className={`flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all ${status === 'occupied'
-                                                ? 'bg-white text-emerald-700 shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
+                                            ? 'bg-white text-emerald-700 shadow-sm ring-1 ring-black/5'
+                                            : 'text-gray-500 hover:text-gray-700'
                                             }`}
                                     >
                                         {status === 'occupied' ? (
@@ -146,21 +157,32 @@ export function ManagePropertyModal({
                             {/* Sección 2: Zona de Peligro */}
                             <div className="space-y-3">
                                 <label className="text-xs font-bold text-red-400 uppercase tracking-wider">Zona de Peligro</label>
-                                <div className="bg-red-50/50 rounded-xl p-4 border border-red-100">
-                                    <h4 className="text-sm font-bold text-red-900 mb-1">Eliminar Unidad</h4>
-                                    <p className="text-[11px] text-red-700/80 mb-4 leading-relaxed">Esta acción removerá "{propertyTitle}" permanentemente. Se borrarán todos los registros asociados.</p>
-                                    <button
-                                        onClick={handleDelete}
-                                        disabled={isDeleting || isUpdating}
-                                        className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 font-bold py-2.5 rounded-lg hover:bg-red-600 hover:text-white hover:border-red-600 transition-all text-sm active:scale-95 shadow-sm"
-                                    >
-                                        {isDeleting ? (
-                                            <Loader2 className="animate-spin" size={16} />
-                                        ) : (
-                                            <><Trash2 size={16} /> Eliminar Propiedad</>
-                                        )}
-                                    </button>
-                                </div>
+
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <button className="w-full flex items-center justify-center gap-2 bg-red-50 border border-red-100 text-red-600 font-bold py-3 rounded-xl hover:bg-red-100 transition-all text-sm active:scale-95 shadow-sm">
+                                            {isDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                                            Eliminar Propiedad
+                                        </button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="rounded-2xl border-gray-100">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle className="text-xl">¿Eliminar esta propiedad?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta acción eliminará <strong>{propertyTitle}</strong> y todo su historial de servicios permanentemente. No se puede deshacer.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="rounded-xl border-0 bg-gray-100 font-bold">Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={handleDelete}
+                                                className="rounded-xl bg-red-600 font-bold hover:bg-red-700 text-white"
+                                            >
+                                                Sí, eliminar
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </div>
 
                         </div>

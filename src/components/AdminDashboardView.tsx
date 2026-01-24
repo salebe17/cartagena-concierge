@@ -18,8 +18,10 @@ import { adminUpdateServiceStatus } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 
+import { ServiceRequest } from "@/lib/types";
+
 interface AdminDashboardViewProps {
-    requests: any[];
+    requests: ServiceRequest[];
 }
 
 export function AdminDashboardView({ requests: initialRequests }: AdminDashboardViewProps) {

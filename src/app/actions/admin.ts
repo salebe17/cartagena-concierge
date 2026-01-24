@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { ActionResponse, ServiceRequest } from '@/lib/types';
 
 // Helper for BigInt serialization
 function serialize<T>(data: T): T {
@@ -10,27 +11,23 @@ function serialize<T>(data: T): T {
     ));
 }
 
-export async function getAllServiceRequests() {
+export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
-            console.log("AdminSDK: No user found");
-            return [];
-        }
+        if (!user) return [];
 
-        // Verify admin role
+        // Verify admin role with single efficient query
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single();
 
-        console.log("AdminSDK: User Role:", profile?.role);
-
         if (profile?.role !== 'admin') return [];
 
+        // RLS Enabled Fetch
         const { data, error } = await supabase
             .from('service_requests')
             .select(`
@@ -44,26 +41,21 @@ export async function getAllServiceRequests() {
             `)
             .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error("AdminSDK: Supabase Error:", error);
-        }
-
-        console.log("AdminSDK: Requests Found:", data?.length);
-        console.log("AdminSDK: Raw Data Sample:", data?.[0]);
+        if (error) throw error;
 
         return serialize(data || []);
     } catch (e) {
-        console.error("Admin: Error fetching requests:", e);
-        return [];
+        console.error("Admin Fetch Error:", e);
+        return []; // Standardize empty return on error
     }
 }
 
-export async function adminUpdateServiceStatus(requestId: string, newStatus: string) {
+export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) return { error: "No autorizado" };
+        if (!user) return { success: false, error: "No autorizado" };
 
         // Verify admin role
         const { data: profile } = await supabase
@@ -72,7 +64,7 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
             .eq('id', user.id)
             .single();
 
-        if (profile?.role !== 'admin') return { error: "Acceso denegado" };
+        if (profile?.role !== 'admin') return { success: false, error: "Acceso denegado: Se requieren permisos de administrador." };
 
         const { error } = await supabase
             .from('service_requests')
@@ -82,10 +74,9 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
         if (error) throw error;
 
         revalidatePath('/admin');
-        revalidatePath('/dashboard'); // Update host view too
+        revalidatePath('/dashboard'); // Update host view context
         return { success: true };
     } catch (e: any) {
-        console.error("Admin: Error updating status:", e);
-        return { error: e.message };
+        return { success: false, error: "Error al actualizar el estado." };
     }
 }

@@ -8,15 +8,16 @@ import { RequestServiceModal } from "./dashboard/RequestServiceModal";
 import { ManagePropertyModal } from "./dashboard/ManagePropertyModal";
 import { Button } from "./ui/button";
 
+import { Property } from "@/lib/types";
+
 interface DashboardViewProps {
     userName: string;
-    properties: any[];
+    properties: Property[];
     serviceHistory?: React.ReactNode;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
-// version: 1.0.1 - force rebuild
 export function DashboardView({ userName, properties, serviceHistory = null }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);

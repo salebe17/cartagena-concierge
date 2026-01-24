@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { DashboardView } from '@/components/DashboardView';
 import { getUserPropertiesBySession } from '@/app/actions/dashboard';
 import ServiceHistory from '@/components/dashboard/ServiceHistory';
+import { Suspense } from 'react';
+import { DashboardSkeleton } from '@/components/skeletons';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +16,6 @@ export default async function DashboardPage() {
 
     if (!user) {
         redirect('/login');
-        return null; // Force bailout for TS and compiler
     }
 
     // 2. Fetch User Profile Name (or fallback to metadata)
@@ -26,10 +27,18 @@ export default async function DashboardPage() {
 
     const userName = profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Anfitrión";
 
-    // 3. Fetch Properties (Session Based)
+    // 3. Render View with Suspense
+    return (
+        <Suspense fallback={<DashboardSkeleton />}>
+            <DashboardContent userName={userName} />
+        </Suspense>
+    );
+}
+
+// Wrapper component to handle data fetching inside Suspense
+async function DashboardContent({ userName }: { userName: string }) {
     const properties = await getUserPropertiesBySession();
 
-    // 4. Render View
     return (
         <DashboardView
             userName={userName}
