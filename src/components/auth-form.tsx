@@ -88,13 +88,13 @@ export function AuthForm() {
             <div className="space-y-6">
                 <Button
                     variant="outline"
-                    className="w-full h-12 border-zinc-200 hover:bg-zinc-50 hover:text-black relative bg-white text-zinc-900 font-medium transition-all"
+                    className="w-full h-12 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 font-bold rounded-xl transition-all relative"
                     onClick={handleGoogleLogin}
                 >
                     <svg className="mr-3 h-5 w-5" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
                         <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
                     </svg>
-                    Continue with Google
+                    Continuar con Google
                 </Button>
 
                 <div className="relative py-2">
@@ -109,52 +109,52 @@ export function AuthForm() {
                 {step === 'email' ? (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-zinc-600 font-medium">Email Address</Label>
+                            <Label htmlFor="email" className="text-gray-700 font-bold text-xs uppercase tracking-wide">Correo Electrónico</Label>
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="name@example.com"
+                                placeholder="tu@email.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="h-12 bg-white border-zinc-200 focus:ring-1 focus:ring-black text-lg"
+                                className="h-12 bg-gray-50 border-gray-200 focus:border-[#FF5A5F] focus:ring-[#FF5A5F] rounded-xl text-gray-900 transition-all font-medium"
                             />
                         </div>
                         <Button
-                            className="w-full h-12 bg-zinc-900 hover:bg-black text-white font-semibold transition-all shadow-md hover:shadow-lg"
+                            className="w-full h-12 bg-[#FF5A5F] hover:bg-[#E03E43] text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200"
                             onClick={handleSendCode}
                             disabled={loading || !email}
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : 'Continue with Email'}
+                            {loading ? <Loader2 className="animate-spin" /> : 'Continuar con Email'}
                         </Button>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="otp" className="text-zinc-600 font-medium">Verification Code</Label>
+                            <Label htmlFor="otp" className="text-gray-700 font-bold text-xs uppercase tracking-wide">Código de Verificación</Label>
                             <Input
                                 id="otp"
                                 type="text"
                                 placeholder="0 0 0 0 0 0"
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
-                                className="h-14 bg-white border-zinc-200 focus:ring-1 focus:ring-black text-center tracking-[0.5em] text-2xl font-mono"
+                                className="h-14 bg-gray-50 border-gray-200 focus:border-[#FF5A5F] focus:ring-[#FF5A5F] rounded-xl text-center tracking-[0.5em] text-2xl font-bold text-gray-900"
                                 maxLength={6}
                             />
-                            <p className="text-xs text-zinc-400 text-center">Enter the code sent to {email}</p>
+                            <p className="text-xs text-gray-400 text-center font-medium">Enviamos el código a {email}</p>
                         </div>
                         <Button
-                            className="w-full h-12 bg-zinc-900 hover:bg-black text-white font-semibold transition-all shadow-md hover:shadow-lg"
+                            className="w-full h-12 bg-[#FF5A5F] hover:bg-[#E03E43] text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200"
                             onClick={handleVerifyCode}
                             disabled={loading || !otp}
                         >
-                            {loading ? <Loader2 className="animate-spin" /> : 'Verify & Login'}
+                            {loading ? <Loader2 className="animate-spin" /> : 'Verificar e Ingresar'}
                         </Button>
                         <Button
                             variant="ghost"
-                            className="w-full text-zinc-400 hover:text-zinc-900"
+                            className="w-full text-gray-400 hover:text-gray-900 hover:bg-gray-50 rounded-xl"
                             onClick={() => setStep('email')}
                         >
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Change Email
+                            <ArrowLeft className="mr-2 h-4 w-4" /> Cambiar correo
                         </Button>
                     </div>
                 )}
