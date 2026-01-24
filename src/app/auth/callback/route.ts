@@ -9,8 +9,11 @@ export async function GET(request: Request) {
 
     if (code) {
         const cookieStore = await cookies()
+        // Sanitize URL (Fix for common copy-paste error where '=' is included)
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^=/, '').trim();
+
         const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            supabaseUrl!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {

@@ -18,8 +18,12 @@ export function AuthForm() {
     const { toast } = useToast()
     const router = useRouter()
 
+    // Fix for environment variable typo (accidental equals sign)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/^=/, '').trim();
+
+    // Create Supabase Client
     const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        supabaseUrl!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
