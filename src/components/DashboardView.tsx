@@ -11,6 +11,7 @@ import { Button } from "./ui/button";
 interface DashboardViewProps {
     userName: string;
     properties: any[];
+    serviceHistory?: React.ReactNode;
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
@@ -144,6 +145,13 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                                 </div>
                             </motion.div>
                         ))}
+                    </div>
+                )}
+
+                {/* 3. Service History Section */}
+                {properties.length > 0 && serviceHistory && (
+                    <div className="pt-8">
+                        {serviceHistory}
                     </div>
                 )}
 

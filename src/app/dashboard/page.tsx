@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { DashboardView } from '@/components/DashboardView';
 import { getUserPropertiesBySession } from '@/app/actions/dashboard';
+import ServiceHistory from '@/components/dashboard/ServiceHistory';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,19 +28,13 @@ export default async function DashboardPage() {
 
     // 3. Fetch Properties (Session Based)
     const properties = await getUserPropertiesBySession();
-    // const properties = [{ id: "mock", title: "Test Property", address: "Isolation Mode", image: "" }];
 
     // 4. Render View
-    // Safety Force: Serialize all props to prevent BigInt build errors
-    const safeProps = JSON.parse(JSON.stringify({
-        userName,
-        properties
-    }, (key, value) => typeof value === 'bigint' ? value.toString() : value));
-
     return (
         <DashboardView
-            userName={safeProps.userName}
-            properties={safeProps.properties}
+            userName={userName}
+            properties={properties}
+            serviceHistory={<ServiceHistory />}
         />
     );
 }
