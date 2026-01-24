@@ -96,3 +96,31 @@ export async function getJobDetails(requestId: string) {
 
     return request;
 }
+
+export async function uploadEvidence(formData: FormData): Promise<ActionResponse<{ url: string }>> {
+    try {
+        const supabase = await createClient();
+
+        const file = formData.get('file') as File;
+        const requestId = formData.get('requestId') as string;
+
+        if (!file || !requestId) return { success: false, error: "Archivo o ID faltante" };
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${requestId}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('evidence')
+            .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('evidence')
+            .getPublicUrl(fileName);
+
+        return { success: true, data: { url: publicUrl } };
+    } catch (e: any) {
+        return { success: false, error: "Error al subir imagen: " + e.message };
+    }
+}
