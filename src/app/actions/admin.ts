@@ -268,3 +268,48 @@ export async function debugEnvVars() {
         nodeEnv: process.env.NODE_ENV
     };
 }
+
+export async function adminCreateServiceRequest(data: {
+    property_id: string;
+    service_type: 'cleaning' | 'maintenance' | 'concierge';
+    notes?: string;
+    requested_date: string; // ISO string
+}): Promise<ActionResponse<any>> {
+    const supabase = await createClient();
+
+    // 1. Auth Check
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: "No autenticado" };
+
+    // 2. Role Check
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { success: false, error: "No tiene permisos de administrador" };
+    }
+
+    // 3. Create Request
+    const { data: newRequest, error } = await supabase
+        .from('service_requests')
+        .insert({
+            property_id: data.property_id,
+            service_type: data.service_type,
+            notes: data.notes || "Generado desde Calendario",
+            requested_date: data.requested_date,
+            status: 'pending'
+        })
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Error creating request:", error);
+        return { success: false, error: error.message };
+    }
+
+    revalidatePath('/admin');
+    return { success: true, data: newRequest, message: "Solicitud creada exitosamente" };
+}
