@@ -83,18 +83,23 @@ export async function registerProperty(formData: FormData) {
     }
 }
 
-export async function submitServiceRequest(propertyId: string, serviceType: string, date: string, notes: string) {
+export async function createServiceRequest(formData: FormData) {
     try {
         const supabase = await createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !user) return { error: "No autorizado" };
 
+        const propertyId = formData.get('propertyId') as string;
+        const serviceType = formData.get('serviceType') as string;
+        const date = formData.get('date') as string;
+        const notes = formData.get('notes') as string;
+
         const { error } = await supabase.from('service_requests').insert({
             property_id: propertyId,
             service_type: serviceType,
             notes: notes,
-            requested_date: date,
+            requested_date: new Date(date).toISOString(),
             status: 'pending'
         });
 
@@ -103,7 +108,7 @@ export async function submitServiceRequest(propertyId: string, serviceType: stri
         revalidatePath('/dashboard');
         return { success: true };
     } catch (e: any) {
-        console.error("Service Request Error:", e);
+        console.error("Create Service Request Error:", e);
         return { error: e.message };
     }
 }

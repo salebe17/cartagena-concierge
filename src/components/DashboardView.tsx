@@ -2,56 +2,21 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Wrench, Ship, Users, MapPin, Plus, Home, Settings2 } from "lucide-react";
-import Image from "next/image";
-import { SimpleModal } from "./SimpleModal";
+import { Sparkles, Wrench, Ship, MapPin, Plus, Home, Settings2 } from "lucide-react";
 import { RegisterPropertyModal } from "./RegisterPropertyModal";
+import { RequestServiceModal } from "./dashboard/RequestServiceModal";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { submitServiceRequest } from "@/app/actions/dashboard";
-import { useToast } from "@/hooks/use-toast";
 
 interface DashboardViewProps {
     userName: string;
     properties: any[];
 }
 
-export function DashboardView({ userName, properties }: DashboardViewProps) {
-    const { toast } = useToast();
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
+export function DashboardView({ userName, properties }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
-    const [isServiceModalOpen, setServiceModalOpen] = useState(false);
-    const [selectedProperty, setSelectedProperty] = useState<any>(null);
-    const [selectedService, setSelectedService] = useState<string>("");
-    const [loading, setLoading] = useState(false);
-
-    const handleServiceRequest = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!selectedProperty) return;
-
-        setLoading(true);
-        const form = new FormData(e.currentTarget);
-        const date = form.get('date') as string;
-        const notes = form.get('notes') as string;
-
-        const res = await submitServiceRequest(selectedProperty.id, selectedService, date, notes);
-        setLoading(false);
-
-        if (res.error) {
-            toast({ title: "Error", description: res.error, variant: "destructive" });
-        } else {
-            toast({ title: "Solicitud Recibida", description: `Tu servicio para ${selectedProperty.title} ha sido agendado.` });
-            setServiceModalOpen(false);
-        }
-    };
-
-    const openServiceModal = (property: any, service: string) => {
-        setSelectedProperty(property);
-        setSelectedService(service);
-        setServiceModalOpen(true);
-    }
 
     return (
         <div className="min-h-screen bg-[#F9FAFB] text-gray-900 font-sans p-4 md:p-8">
@@ -65,7 +30,7 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                         </h1>
                         <p className="text-gray-500 font-medium">
                             {properties.length > 0
-                                ? `Gestionando ${properties.length} ${properties.length === 1 ? 'propiedad' : 'propiedades'} en Cartagena.`
+                                ? `Gestionando ${properties.length} ${properties.length === 1 ? 'propiedad' : 'propiedades'}.`
                                 : "Empecemos configurando tu primera propiedad operada por nosotros."}
                         </p>
                     </div>
@@ -90,7 +55,7 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                             <Home size={32} className="text-[#FF5A5F]" />
                         </div>
                         <div className="space-y-2 max-w-sm">
-                            <h2 className="text-2xl font-bold text-gray-900">Aún no tienes propiedades</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">Aún no tienes propiedades registrados</h2>
                             <p className="text-gray-500">Regístralas para acceder a servicios de limpieza premium, mantenimiento y concierge VIP.</p>
                         </div>
                         <Button
@@ -109,66 +74,65 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all group flex flex-col"
+                                className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col"
                             >
-                                {/* Property Header / Image */}
-                                <div className="aspect-[4/3] relative bg-gray-100">
-                                    {prop.image_url ? (
-                                        <Image src={prop.image_url} alt={prop.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                            <Home size={48} />
-                                        </div>
-                                    )}
-                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-emerald-600 shadow-sm flex items-center gap-1.5">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                        Operando
+                                {/* Luxury Header / Image */}
+                                <div className="h-48 bg-gray-200 relative overflow-hidden">
+                                    <img
+                                        src={prop.image_url || DEFAULT_IMAGE}
+                                        alt={prop.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                    />
+                                    {/* Status Badge */}
+                                    <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm border border-gray-100/50">
+                                        <span className={`w-2 h-2 rounded-full ${prop.status === 'occupied' ? 'bg-emerald-500 animate-pulse' : 'bg-orange-400'}`}></span>
+                                        <span className={prop.status === 'occupied' ? 'text-emerald-700' : 'text-orange-700'}>
+                                            {prop.status === 'occupied' ? 'Ocupado' : 'Disponible'}
+                                        </span>
                                     </div>
                                 </div>
 
-                                {/* Property Details */}
-                                <div className="p-5 space-y-4 flex-1 flex flex-col">
-                                    <div>
-                                        <h3 className="font-bold text-lg text-gray-900 truncate">{prop.title}</h3>
-                                        <div className="flex items-center gap-1 text-gray-400 mt-1">
-                                            <MapPin size={14} />
-                                            <span className="text-xs truncate">{prop.address}</span>
-                                        </div>
+                                {/* Content */}
+                                <div className="p-5 flex flex-col flex-1 min-h-[220px]">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1">{prop.title}</h3>
+                                    <div className="flex items-center gap-1 text-gray-400 mb-4 text-sm font-medium">
+                                        <MapPin size={14} className="shrink-0" />
+                                        <span className="line-clamp-1">{prop.address}</span>
                                     </div>
 
-                                    <div className="flex items-center justify-between text-xs font-bold text-gray-400 border-t border-gray-50 pt-4">
-                                        <div className="flex gap-4">
-                                            <span>{prop.bedrooms || 1} Hab.</span>
-                                            <span>{prop.bathrooms || 1} Baños</span>
-                                        </div>
-                                        {prop.ical_url && (
-                                            <span className="text-blue-500 bg-blue-50 px-2 py-1 rounded">iCal Activo</span>
-                                        )}
+                                    {/* Info Pills */}
+                                    <div className="flex gap-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-6">
+                                        {prop.bedrooms && <span>{prop.bedrooms} Hab</span>}
+                                        {prop.ical_url && <span className="text-blue-500 bg-blue-50 px-2 py-0.5 rounded">Sincronizado</span>}
                                     </div>
 
                                     {/* Action Buttons Grid */}
                                     <div className="grid grid-cols-2 gap-2 mt-auto">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="rounded-lg h-9 border-gray-100 hover:bg-rose-50 hover:text-rose-500 transition-colors"
-                                            onClick={() => openServiceModal(prop, "Limpieza")}
-                                        >
-                                            <Sparkles size={14} className="mr-2" /> Limpieza
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="rounded-lg h-9 border-gray-100 hover:bg-blue-50 hover:text-blue-500 transition-colors"
-                                            onClick={() => openServiceModal(prop, "Mantenimiento")}
-                                        >
-                                            <Wrench size={14} className="mr-2" /> Mtto
-                                        </Button>
+                                        <RequestServiceModal
+                                            propertyId={prop.id}
+                                            propertyName={prop.title}
+                                            serviceType="cleaning"
+                                            triggerButton={
+                                                <button className="w-full h-10 flex items-center justify-center text-xs font-bold border bg-white rounded-lg border-gray-100 hover:bg-rose-50 hover:text-[#FF5A5F] hover:border-rose-100 transition-all active:scale-95">
+                                                    <Sparkles size={14} className="mr-2" /> Limpieza
+                                                </button>
+                                            }
+                                        />
+                                        <RequestServiceModal
+                                            propertyId={prop.id}
+                                            propertyName={prop.title}
+                                            serviceType="maintenance"
+                                            triggerButton={
+                                                <button className="w-full h-10 flex items-center justify-center text-xs font-bold border bg-white rounded-lg border-gray-100 hover:bg-blue-50 hover:text-blue-500 hover:border-blue-100 transition-all active:scale-95">
+                                                    <Wrench size={14} className="mr-2" /> Mtto
+                                                </button>
+                                            }
+                                        />
                                     </div>
 
-                                    <Button className="w-full bg-gray-900 hover:bg-black text-white text-xs h-9 rounded-lg">
-                                        <Settings2 size={14} className="mr-2" /> Gestionar Unidad
-                                    </Button>
+                                    <button className="mt-2 w-full flex items-center justify-center font-bold px-4 py-2 bg-gray-900 hover:bg-black text-white text-[11px] uppercase tracking-widest h-10 rounded-lg transition-all active:scale-95 group/btn">
+                                        <Settings2 size={14} className="mr-2 group-hover/btn:rotate-45 transition-transform" /> Gestionar Unidad
+                                    </button>
                                 </div>
                             </motion.div>
                         ))}
@@ -176,38 +140,10 @@ export function DashboardView({ userName, properties }: DashboardViewProps) {
                 )}
 
                 {/* MODALS */}
-
-                {/* 1. Modular Property Registration */}
                 <RegisterPropertyModal
                     isOpen={isPropModalOpen}
                     onClose={() => setPropModalOpen(false)}
                 />
-
-                {/* 2. Service Request Modal (Context Aware) */}
-                <SimpleModal
-                    isOpen={isServiceModalOpen}
-                    onClose={() => setServiceModalOpen(false)}
-                    title={`Solicitar ${selectedService}`}
-                >
-                    <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Para la propiedad:</p>
-                        <p className="text-sm font-bold text-gray-900">{selectedProperty?.title}</p>
-                    </div>
-
-                    <form onSubmit={handleServiceRequest} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="date">Fecha y Hora Preferida</Label>
-                            <Input type="datetime-local" name="date" required disabled={loading} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="notes">Instrucciones Especiales</Label>
-                            <Input name="notes" placeholder="Ej. Cambio de sábanas en hab 2..." required disabled={loading} />
-                        </div>
-                        <Button type="submit" className="w-full bg-[#FF5A5F] hover:bg-[#E03E43] mt-4" disabled={loading}>
-                            {loading ? <span className="animate-spin mr-2">⏳</span> : "Confirmar Solicitud"}
-                        </Button>
-                    </form>
-                </SimpleModal>
 
             </div>
         </div>
