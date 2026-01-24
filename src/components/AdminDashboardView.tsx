@@ -17,6 +17,8 @@ import {
 import { adminUpdateServiceStatus } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
+import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
+
 
 import { ServiceRequest } from "@/lib/types";
 
@@ -160,9 +162,15 @@ export function AdminDashboardView({ requests: initialRequests }: AdminDashboard
                                         </div>
                                     )}
 
-                                    <Button variant="ghost" className="w-full text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
-                                        Detalles Completos <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </Button>
+
+                                    <RequestDetailsModal
+                                        request={req}
+                                        triggerButton={
+                                            <Button variant="ghost" className="w-full text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
+                                                Detalles Completos <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </Button>
+                                        }
+                                    />
                                 </div>
                             </motion.div>
                         ))}
