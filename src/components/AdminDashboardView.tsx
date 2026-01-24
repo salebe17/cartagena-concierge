@@ -13,14 +13,15 @@ import {
     ExternalLink,
     Loader2,
     Check,
-    X
+    X,
+    RefreshCw
 } from "lucide-react";
-import { adminUpdateServiceStatus, forceSyncAllCalendars } from "@/app/actions/admin";
+import { adminUpdateServiceStatus, forceSyncAllCalendars, adminCreateServiceRequest } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
 import { ServiceRequest } from "@/lib/types";
-import { RefreshCw } from "lucide-react";
+import { CalendarGrid } from "./admin/CalendarGrid";
 
 interface AdminDashboardViewProps {
     requests: ServiceRequest[];
@@ -57,6 +58,28 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
         } else {
             setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
             toast({ title: "Estado Actualizado", description: `Solicitud marcada como ${newStatus}.` });
+        }
+    };
+
+    const handleScheduleCleaning = async (booking: any) => {
+        // Calculate cleanup date (End Date at 11:00 AM)
+        const cleanupDate = new Date(booking.end_date);
+        cleanupDate.setHours(11, 0, 0, 0);
+
+        const res = await adminCreateServiceRequest({
+            property_id: booking.property_id,
+            service_type: 'cleaning',
+            notes: `Limpieza de salida. Huésped: ${booking.guest_name || 'Desconocido'}. (Auto-generado)`,
+            requested_date: cleanupDate.toISOString()
+        });
+
+        if (res.success) {
+            toast({ title: "Limpieza Programada", description: `Para el ${booking.end_date} a las 11:00 AM.` });
+            if (res.data) {
+                setRequests(prev => [res.data, ...prev]);
+            }
+        } else {
+            toast({ title: "Error", description: res.error, variant: "destructive" });
         }
     };
 
@@ -139,44 +162,9 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                     )}
                 </div>
 
-                import {CalendarGrid} from "./admin/CalendarGrid";
-                import {adminCreateServiceRequest} from "@/app/actions/admin";
-
-                // ... existing imports
-
-                export function AdminDashboardView({requests: initialRequests, bookings = [] }: AdminDashboardViewProps) {
-    // ... existing state
-
-    const handleScheduleCleaning = async (booking: any) => {
-        // Calculate cleanup date (End Date at 11:00 AM)
-        const cleanupDate = new Date(booking.end_date);
-                cleanupDate.setHours(11, 0, 0, 0);
-
-                const res = await adminCreateServiceRequest({
-                    property_id: booking.property_id,
-                service_type: 'cleaning',
-                notes: `Limpieza de salida. Huésped: ${booking.guest_name || 'Desconocido'}. (Auto-generado)`,
-                requested_date: cleanupDate.toISOString()
-        });
-
-                if (res.success) {
-                    toast({ title: "Limpieza Programada", description: `Para el ${booking.end_date} a las 11:00 AM.` });
-                // Optimistically add to list (optional, but revalidatePath handles it mostly)
-                // For now, we rely on server revalidate or page refresh, but we could append to state.
-                if (res.data) {
-                    setRequests(prev => [res.data, ...prev]);
-            }
-        } else {
-                    toast({ title: "Error", description: res.error, variant: "destructive" });
-        }
-    };
-
-                // ... existing render
-
                 {activeTab === 'requests' ? (
-                    /* ... Requests Feed ... */
+                    /* 2. Requests Feed */
                     <div className="space-y-4">
-                        {/* ... existing request list ... */}
                         <AnimatePresence mode="popLayout">
                             {requests.map((req, index) => (
                                 <motion.div
@@ -186,9 +174,52 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                     transition={{ delay: index * 0.05 }}
                                     className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row"
                                 >
-                                    {/* ... (keep existing request content) ... */}
+                                    {/* Left: Service Type Info */}
+                                    <div className="p-6 flex items-start gap-4 flex-1">
+                                        <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                                            {getIcon(req.service_type)}
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${getStatusColor(req.status)}`}>
+                                                        {req.status}
+                                                    </span>
+                                                    <span className="text-xs text-gray-400 font-medium">
+                                                        #{req.id.slice(0, 5)}
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-900 leading-none">
+                                                    {req.service_type === 'cleaning' ? 'Limpieza de Unidad' :
+                                                        req.service_type === 'maintenance' ? 'Ticket de Mantenimiento' : 'Concierge VIP'}
+                                                </h3>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                        <Home size={14} className="text-gray-400" />
+                                                        <span className="font-bold">{req.properties?.title}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                                                        <User size={14} />
+                                                        <span>Prop ID: {req.properties?.id.slice(0, 8)}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-medium text-gray-600 italic">"{req.notes}"</p>
+                                                    {req.requested_date && (
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
+                                                            Agenda: {new Date(req.requested_date).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Admin Actions */}
                                     <div className="bg-gray-50/50 p-6 border-t md:border-t-0 md:border-l border-gray-100 flex flex-col justify-center gap-2 min-w-[200px]">
-                                        {/* ... (keep existing action buttons) ... */}
                                         {req.status === 'pending' && (
                                             <Button
                                                 onClick={() => handleStatusUpdate(req.id, 'confirmed')}
@@ -260,9 +291,5 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                 )}
             </div>
         </div>
-    );
-}
-            </div >
-        </div >
     );
 }
