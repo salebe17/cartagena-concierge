@@ -12,7 +12,8 @@ import {
     Home,
     ExternalLink,
     Loader2,
-    Check
+    Check,
+    X
 } from "lucide-react";
 import { adminUpdateServiceStatus } from "@/app/actions/admin";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +32,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
     const [requests, setRequests] = useState(initialRequests);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'requests' | 'calendar'>('requests');
+    const [filterPropertyId, setFilterPropertyId] = useState<string | null>(null);
     const { toast } = useToast();
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
@@ -64,6 +66,15 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
         }
     };
 
+    const handleViewCalendar = (propertyId: string) => {
+        setFilterPropertyId(propertyId);
+        setActiveTab('calendar');
+    };
+
+    const filteredBookings = filterPropertyId
+        ? bookings.filter(b => b.property_id === filterPropertyId)
+        : bookings;
+
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-8">
             <div className="max-w-5xl mx-auto space-y-8">
@@ -80,19 +91,31 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                     </div>
                 </div>
 
-                <div className="flex gap-4 border-b border-gray-200 mb-6">
-                    <button
-                        onClick={() => setActiveTab('requests')}
-                        className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'requests' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                    >
-                        Solicitudes ({requests.length})
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('calendar')}
-                        className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'calendar' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                    >
-                        Calendario Global
-                    </button>
+                <div className="flex justify-between items-end border-b border-gray-200 mb-6">
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setActiveTab('requests')}
+                            className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'requests' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                        >
+                            Solicitudes ({requests.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('calendar')}
+                            className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'calendar' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                        >
+                            Calendario Global
+                        </button>
+                    </div>
+
+                    {activeTab === 'calendar' && filterPropertyId && (
+                        <Button
+                            variant="ghost"
+                            onClick={() => setFilterPropertyId(null)}
+                            className="mb-2 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                        >
+                            <X size={14} className="mr-1" /> Borrar Filtro
+                        </Button>
+                    )}
                 </div>
 
                 {activeTab === 'requests' ? (
@@ -183,6 +206,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
 
                                         <RequestDetailsModal
                                             request={req}
+                                            onViewCalendar={handleViewCalendar}
                                             triggerButton={
                                                 <Button variant="ghost" className="w-full text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
                                                     Detalles Completos <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -209,13 +233,22 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                 ) : (
                     /* 3. Calendar View */
                     <div className="space-y-4">
-                        {bookings.length === 0 ? (
+                        {filteredBookings.length === 0 ? (
                             <div className="bg-white rounded-3xl p-16 text-center border border-gray-100">
-                                <p className="text-gray-500 font-medium">No hay reservas registradas en el sistema.</p>
+                                <p className="text-gray-500 font-medium">
+                                    {filterPropertyId
+                                        ? "Esta propiedad no tiene reservas futuras."
+                                        : "No hay reservas registradas en el sistema."}
+                                </p>
+                                {filterPropertyId && (
+                                    <Button variant="link" onClick={() => setFilterPropertyId(null)} className="mt-2 text-blue-600">
+                                        Ver todas las propiedades
+                                    </Button>
+                                )}
                             </div>
                         ) : (
                             <div className="grid gap-3">
-                                {bookings.map((booking: any) => (
+                                {filteredBookings.map((booking: any) => (
                                     <div key={booking.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between gap-4">
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">

@@ -9,10 +9,18 @@ import { MapPin, User, Calendar, FileText, Clock, Phone } from "lucide-react";
 interface RequestDetailsModalProps {
     request: ServiceRequest;
     triggerButton: React.ReactNode;
+    onViewCalendar?: (propertyId: string) => void;
 }
 
-export function RequestDetailsModal({ request, triggerButton }: RequestDetailsModalProps) {
+export function RequestDetailsModal({ request, triggerButton, onViewCalendar }: RequestDetailsModalProps) {
     const [isOpen, setIsOpen] = useState(false);
+
+    const handleViewCalendar = () => {
+        if (onViewCalendar && request.property_id) {
+            setIsOpen(false);
+            onViewCalendar(request.property_id);
+        }
+    };
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -31,16 +39,26 @@ export function RequestDetailsModal({ request, triggerButton }: RequestDetailsMo
 
                 <div className="space-y-6">
                     {/* Property Card */}
-                    <div className="bg-gray-50 p-4 rounded-2xl flex gap-4 items-center">
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-rose-500 shadow-sm">
-                            <HomeIcon />
+                    <div className="bg-gray-50 p-4 rounded-2xl flex gap-4 items-center justify-between group">
+                        <div className="flex gap-4 items-center">
+                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-rose-500 shadow-sm">
+                                <HomeIcon />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-gray-900">{request.properties?.title || "Propiedad Desconocida"}</h4>
+                                <p className="text-xs text-gray-500 flex items-center gap-1">
+                                    <MapPin size={12} /> {request.properties?.address}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="font-bold text-gray-900">{request.properties?.title || "Propiedad Desconocida"}</h4>
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
-                                <MapPin size={12} /> {request.properties?.address}
-                            </p>
-                        </div>
+                        {onViewCalendar && (
+                            <button
+                                onClick={handleViewCalendar}
+                                className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors"
+                            >
+                                Ver Calendario
+                            </button>
+                        )}
                     </div>
 
                     {/* Metadata Grid */}
