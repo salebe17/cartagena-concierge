@@ -324,7 +324,10 @@ export async function createWeb3Order(
     // 0. SECURITY: VERIFY TRANSACTION ON-CHAIN
     try {
         const { getRpcClient, eth_getTransactionReceipt } = await import("thirdweb");
-        const { client, chain } = await import("@/lib/thirdweb");
+        const { getThirdwebClient, getChain } = await import("@/lib/thirdweb");
+
+        const client = getThirdwebClient();
+        const chain = getChain();
 
         const rpcRequest = getRpcClient({ client, chain });
         const receipt = await eth_getTransactionReceipt(rpcRequest, { hash: txHash as `0x${string}` });
