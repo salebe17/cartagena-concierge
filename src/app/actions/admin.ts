@@ -26,8 +26,16 @@ async function getSupabaseAdmin() {
     const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const rawKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!rawUrl) throw new Error("Falta NEXT_PUBLIC_SUPABASE_URL en variables de entorno.");
-    if (!rawKey) throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY en Vercel. Verifique que no tenga espacios extra.");
+    if (!rawUrl) throw new Error("Falta NEXT_PUBLIC_SUPABASE_URL.");
+
+    if (!rawKey) {
+        // SECURITY DEBUG: List keys to see what IS available (names only)
+        const availableKeys = Object.keys(process.env)
+            .filter(k => k.startsWith('NEXT_') || k.startsWith('SUPABASE_') || k.startsWith('VERCEL_'))
+            .join(', ');
+
+        throw new Error(`Falta SUPABASE_SERVICE_ROLE_KEY. Keys disponibles: [${availableKeys}]`);
+    }
 
     // Sanitize URL
     const supabaseUrl = rawUrl.replace(/^=/, '').trim();
