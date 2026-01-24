@@ -18,8 +18,11 @@ export async function createClient() {
     } as any;
   }
 
+  // Sanitize URL (Fix for common copy-paste error where '=' is included)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/^=/, '').trim();
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
