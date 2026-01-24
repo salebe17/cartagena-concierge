@@ -630,6 +630,74 @@ export async function calculateCleaningQuote(propertyId: string) {
     }
 }
 
+export async function createServiceOrder(
+    propertyId: string,
+    serviceType: 'cleaning' | 'maintenance' | 'laundry',
+    details: any,
+    walletAddress?: string
+) {
+    const supabase = await getAdminClient();
+
+    // Resolve User ID
+    let userId = null;
+    if (walletAddress) {
+        userId = await getUserIdFromWallet(walletAddress);
+    } else {
+        // Fallback or Error if we strictly require wallet/auth
+        return { error: "User identity required" }
+    }
+
+    // Calculate Price / Process Details
+    let amount = 0;
+    let serviceDetailsStr = "";
+
+    if (serviceType === 'cleaning') {
+        // Re-calculate to be safe
+        const quote = await calculateCleaningQuote(propertyId);
+        if ((quote as any).error) return { error: (quote as any).error };
+        amount = (quote as any).total;
+        serviceDetailsStr = `Limpieza General`;
+    }
+    else if (serviceType === 'laundry') {
+        const PRICE_PER_BAG = 35000;
+        const bags = details.bags || 1;
+        amount = bags * PRICE_PER_BAG;
+        serviceDetailsStr = `Lavandería: ${bags} Bolsas`;
+    }
+    else if (serviceType === 'maintenance') {
+        // Maintenance is "Quote on Site" or Base Fee
+        amount = 50000; // Base visit fee
+        serviceDetailsStr = `Mantenimiento: ${details.description} (${details.urgency})`;
+    }
+
+    // Create Order
+    const { data, error } = await supabase
+        .from('orders')
+        .insert({
+            user_id: userId,
+            amount: amount,
+            total_amount: amount,
+            service_fee: amount * 0.1, // 10% Platform fee example
+            delivery_fee: 0,
+            status: 'pending',
+            service_details: serviceDetailsStr,
+            delivery_code: Math.floor(1000 + Math.random() * 9000).toString(),
+            // Link to property if we add a column later, for now storing in metadata is fine
+            // or reusing existing schema. Ideally 'metadata' jsonb column.
+            // keeping it simple with existing schema.
+        })
+        .select('id')
+        .single();
+
+    if (error) {
+        console.error("Order Create Error:", error);
+        return { error: error.message };
+    }
+
+    revalidatePath('/business');
+    return { success: true, orderId: data.id };
+}
+
 
 export async function getPropertyBookings(propertyId: string) {
     const supabase = await createClient()
@@ -640,37 +708,51 @@ export async function getPropertyBookings(propertyId: string) {
     return data || []
 }
 
-export async function blockPropertyDate(propertyId: string, date: Date) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: "Unauthorized" }
+// Replaces blockPropertyDate with range support + wallet auth
+export async function blockPropertyRange(propertyId: string, startDate: Date, endDate: Date, walletAddress?: string) {
+    if (!walletAddress) return { error: "Wallet required" };
 
-    // Check if already blocked/booked
-    const isoDate = date.toISOString().split('T')[0] // YYYY-MM-DD
+    const supabase = await getAdminClient();
+    let userId = null;
+    try {
+        userId = await getUserIdFromWallet(walletAddress);
+    } catch {
+        return { error: "Unauthorized" };
+    }
 
-    // Simple toggle logic: Check if exists for this day
-    const { data: existing } = await supabase
+    const startIso = startDate.toISOString().split('T')[0];
+    const endIso = endDate.toISOString().split('T')[0];
+
+    // Check overlaps
+    const { data: overlaps } = await supabase
         .from('bookings')
         .select('id')
         .eq('property_id', propertyId)
-        .eq('start_date', isoDate)
-        .single()
+        .or(`and(start_date.lte.${endIso},end_date.gte.${startIso})`); // Overlap logic
 
-    if (existing) {
-        // Unblock
-        await supabase.from('bookings').delete().eq('id', existing.id)
-        revalidatePath('/business')
-        return { status: 'available' }
-    } else {
-        // Block
-        await supabase.from('bookings').insert({
-            property_id: propertyId,
-            start_date: isoDate,
-            end_date: isoDate, // Single day block for MVP
-            status: 'blocked',
-            platform: 'Direct'
-        })
-        revalidatePath('/business')
-        return { status: 'blocked' }
+    if (overlaps && overlaps.length > 0) {
+        return { error: "Fechas ya ocupadas" };
     }
+
+    // Insert Block
+    const { error } = await supabase.from('bookings').insert({
+        property_id: propertyId,
+        start_date: startIso,
+        end_date: endIso,
+        status: 'blocked',
+        platform: 'Direct',
+        user_id: userId
+    });
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/business');
+    return { success: true };
+}
+
+export async function deleteBooking(bookingId: string) {
+    const supabase = await getAdminClient();
+    await supabase.from('bookings').delete().eq('id', bookingId);
+    revalidatePath('/business');
+    return { success: true };
 }
