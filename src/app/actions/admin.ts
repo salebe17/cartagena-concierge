@@ -50,6 +50,47 @@ export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
     }
 }
 
+export async function getAllBookings(): Promise<any[]> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return [];
+
+        // Verify admin role 
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') return [];
+
+        // Fetch All Bookings
+        const { data, error } = await supabase
+            .from('bookings')
+            .select(`
+                *,
+                properties (
+                    title,
+                    address
+                ),
+                profiles (
+                    full_name,
+                    phone
+                )
+            `)
+            .order('start_date', { ascending: true }); // Future bookings first? No, list all sorted by date.
+
+        if (error) throw error;
+
+        return serialize(data || []);
+    } catch (e) {
+        console.error("Admin Bookings Fetch Error:", e);
+        return [];
+    }
+}
+
 export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
     try {
         const supabase = await createClient();

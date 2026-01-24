@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AdminDashboardView } from '@/components/AdminDashboardView';
-import { getAllServiceRequests } from '@/app/actions/admin';
+import { getAllServiceRequests, getAllBookings } from '@/app/actions/admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,11 +27,14 @@ export default async function AdminPage() {
         return null;
     }
 
-    // 2. Fetch Global Data
-    const requests = await getAllServiceRequests();
+    // 2. Fetch Global Data (Parallel)
+    const [requests, bookings] = await Promise.all([
+        getAllServiceRequests(),
+        getAllBookings()
+    ]);
 
     // 3. Render View
     return (
-        <AdminDashboardView requests={requests} />
+        <AdminDashboardView requests={requests} bookings={bookings} />
     );
 }
