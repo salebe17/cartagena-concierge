@@ -595,6 +595,7 @@ export async function createServiceOrder(
 
     // Calculate Price / Process Details
     let amount = 0;
+    let deliveryFee = 0;
     let serviceDetailsStr = "";
 
     if (serviceType === 'cleaning') {
@@ -618,7 +619,8 @@ export async function createServiceOrder(
         serviceDetailsStr = `Lavado de Muebles: ${details.type} (${details.quantity})`;
     }
     else if (serviceType === 'grocery') {
-        amount = 15000; // Base delivery fee, ticket paid on site
+        amount = 0; // Product cost paid on site
+        deliveryFee = 15000; // Fixed delivery fee
         serviceDetailsStr = `Mercado & Insumos: ${details.list}`;
     }
     else if (serviceType === 'inspection') {
@@ -632,9 +634,9 @@ export async function createServiceOrder(
         .insert({
             user_id: userId,
             amount: amount,
-            total_amount: amount,
-            service_fee: amount * 0.1, // 10% Platform fee example
-            delivery_fee: 0,
+            total_amount: amount + (deliveryFee || 0),
+            service_fee: amount * 0.1, // 10% Platform fee
+            delivery_fee: deliveryFee || 0,
             status: 'pending',
             service_details: serviceDetailsStr,
             delivery_code: Math.floor(1000 + Math.random() * 9000).toString(),
