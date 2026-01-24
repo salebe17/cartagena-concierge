@@ -125,72 +125,9 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
 
 export async function forceSyncAllCalendars(): Promise<ActionResponse> {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) return { success: false, error: "No autorizado" };
-
-        // Verify admin role
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-
-        if (profile?.role !== 'admin') return { success: false, error: "Requiere privilegios de Admin" };
-
-        // We need the sync logic. Dynamically import to avoid top-level circular deps if any.
-        const { syncPropertyCalendar } = await import('@/app/actions');
-
-        // Fetch all properties with iCal URLs
-        const { data: properties } = await supabase
-            .from('properties')
-            .select('id, title')
-            .not('ical_url', 'is', null);
-
-        if (!properties || properties.length === 0) {
-            return { success: true, message: "No hay propiedades con iCal configurado." };
-        }
-
-        // Optimización: Paralelismo controlado para evitar Timeout de Vercel (10s)
-        const TIMEOUT_MS = 8000; // 8 segundos de seguridad
-        const syncPromises = properties.map(async (prop) => {
-            try {
-                await syncPropertyCalendar(prop.id);
-                return { id: prop.id, title: prop.title, success: true };
-            } catch (err) {
-                console.error(`Error syncing prop ${prop.title}:`, err);
-                return { id: prop.id, title: prop.title, success: false };
-            }
-        });
-
-        // Race between sync and timeout
-        const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve('TIMEOUT'), TIMEOUT_MS)
-        );
-
-        const result = await Promise.race([Promise.all(syncPromises), timeoutPromise]);
-
-        if (result === 'TIMEOUT') {
-            return { success: true, message: "Sincronización parcial (Tiempo límite excedido). Recargue en unos segundos." };
-        }
-
-        const results = result as any[];
-        const successCount = results.filter(r => r.success).length;
-        const failed = results.filter(r => !r.success).map(r => r.title);
-        const succeeded = results.filter(r => r.success).map(r => r.title);
-
-        let msg = `Sincronizadas: ${successCount} de ${properties.length}.`;
-        if (succeeded.length > 0) msg += ` (${succeeded.join(', ')})`;
-        if (failed.length > 0) msg += ` Fallaron: ${failed.join(', ')}.`;
-
-        // revalidatePath('/admin'); // <-- COMENTADO TEMPORALMENTE PARA DIAGNOSTICO
-        return { success: true, message: msg };
-
+        // DIAGNOSTICO: Desactivamos TODO para ver si el servidor responde
+        return { success: true, message: "Test de Diagnóstico: Servidor OK" };
     } catch (e: any) {
-        // Return a clean error object, do not throw.
-        // Console error locally is fine, but ensure we return a JSON safe object
-        const errorMessage = e instanceof Error ? e.message : "Unknown error";
-        return { success: false, error: "Error crítico de sincronización: " + errorMessage };
+        return { success: false, error: "Error critico" };
     }
 }
