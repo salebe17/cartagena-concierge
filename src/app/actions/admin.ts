@@ -6,9 +6,14 @@ import { ActionResponse, ServiceRequest } from '@/lib/types';
 
 // Helper for BigInt serialization
 function serialize<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data, (key, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-    ));
+    try {
+        return JSON.parse(JSON.stringify(data, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        ));
+    } catch (e) {
+        console.error("Serialization Error:", e);
+        return data; // Return original if serialization fails (better than crash, though risks client error)
+    }
 }
 
 export async function getAllServiceRequests(): Promise<ServiceRequest[]> {

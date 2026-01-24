@@ -27,18 +27,22 @@ export default async function AdminPage() {
         return null;
     }
 
-    // 2. Fetch Global Data (Safe Mode)
-    let requests = [];
-    let bookings = [];
+    // 2. Fetch Global Data (Sequential & Safe)
+    let requests: any[] = [];
+    let bookings: any[] = [];
 
+    // Safely Fetch Requests
     try {
-        [requests, bookings] = await Promise.all([
-            getAllServiceRequests(),
-            getAllBookings()
-        ]);
-    } catch (error) {
-        console.error("Critical Admin Page Data Fetch Error:", error);
-        // Fallback to empty arrays to allow UI to render (Safe Mode)
+        requests = await getAllServiceRequests();
+    } catch (err) {
+        console.error("Failed to fetch requests:", err);
+    }
+
+    // Safely Fetch Bookings
+    try {
+        bookings = await getAllBookings();
+    } catch (err) {
+        console.error("Failed to fetch bookings:", err);
     }
 
     // 3. Render View
