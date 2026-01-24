@@ -56,7 +56,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
         if (res.error) {
             toast({ title: "Error", description: res.error, variant: "destructive" });
         } else {
-            setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+            setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
             toast({ title: "Estado Actualizado", description: `Solicitud marcada como ${newStatus}.` });
         }
     };
