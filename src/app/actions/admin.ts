@@ -3,7 +3,7 @@
 import { ActionResponse, ServiceRequest } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { fetchICalEvents } from '@/lib/ical-sync';
+// import { fetchICalEvents } from '@/lib/ical-sync'; // <-- Removed to avoid build-time eval
 
 // --- HELPERS ---
 
@@ -34,6 +34,8 @@ async function getSupabaseAdmin() {
 // Internal Sync Logic (Isolated)
 async function syncPropertyCalendarInternal(propertyId: string) {
     const supabase = await getSupabaseAdmin();
+    // Dynamic import to avoid build evaluation errors with node-ical
+    const { fetchICalEvents } = await import('@/lib/ical-sync');
 
     // 1. Get Property
     const { data: property, error: propError } = await supabase
