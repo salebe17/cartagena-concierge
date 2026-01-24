@@ -551,3 +551,82 @@ export async function getUserProperties() {
 
     return data || []
 }
+
+export async function calculateCleaningQuote(propertyId: string) {
+    const supabase = await createClient()
+
+    // Fetch property details
+    const { data: property, error } = await supabase
+        .from('properties')
+        .select('bedrooms, bathrooms, size_sqm')
+        .eq('id', propertyId)
+        .single()
+
+    if (error || !property) return { error: "Property not found" }
+
+    // Pricing Logic (COP)
+    const BASE_FEE = 40000
+    const PRICE_PER_BEDROOM = 25000
+    const PRICE_PER_BATHROOM = 15000
+
+    const estimate = BASE_FEE +
+        (property.bedrooms * PRICE_PER_BEDROOM) +
+        (property.bathrooms * PRICE_PER_BATHROOM)
+
+    // Round to nearest thousand
+    const total = Math.ceil(estimate / 1000) * 1000
+
+    return {
+        total,
+        breakdown: {
+            base: BASE_FEE,
+            bedrooms: property.bedrooms * PRICE_PER_BEDROOM,
+            bathrooms: property.bathrooms * PRICE_PER_BATHROOM
+        }
+    }
+}
+
+
+export async function getPropertyBookings(propertyId: string) {
+    const supabase = await createClient()
+    const { data } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('property_id', propertyId)
+    return data || []
+}
+
+export async function blockPropertyDate(propertyId: string, date: Date) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: "Unauthorized" }
+
+    // Check if already blocked/booked
+    const isoDate = date.toISOString().split('T')[0] // YYYY-MM-DD
+
+    // Simple toggle logic: Check if exists for this day
+    const { data: existing } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('property_id', propertyId)
+        .eq('start_date', isoDate)
+        .single()
+
+    if (existing) {
+        // Unblock
+        await supabase.from('bookings').delete().eq('id', existing.id)
+        revalidatePath('/business')
+        return { status: 'available' }
+    } else {
+        // Block
+        await supabase.from('bookings').insert({
+            property_id: propertyId,
+            start_date: isoDate,
+            end_date: isoDate, // Single day block for MVP
+            status: 'blocked',
+            platform: 'Direct'
+        })
+        revalidatePath('/business')
+        return { status: 'blocked' }
+    }
+}
