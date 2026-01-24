@@ -65,6 +65,8 @@ function Navbar() {
               <Globe size={16} className="text-[#222222]" />
             </div>
 
+            {/* Refactor: SaaS Login Button (CRO) */}
+            {/* 
             <div className="flex items-center gap-2 ml-1">
               <ConnectButton
                 client={client}
@@ -78,7 +80,16 @@ function Navbar() {
               <div className="hidden sm:block bg-gray-100 rounded-full p-2 border border-gray-200">
                 <UserCircle size={22} className="text-gray-400 fill-white" />
               </div>
-            </div>
+            </div> 
+            */}
+
+            <Link href="/login" className="flex items-center gap-2 ml-1 hover:shadow-md transition-all rounded-full border border-gray-200 p-2 pl-4 bg-white cursor-pointer group">
+              <Menu size={18} className="text-gray-500 group-hover:text-gray-800" />
+              <div className="bg-gray-500 rounded-full p-1 text-white group-hover:bg-[#FF5A5F] transition-colors">
+                <UserCircle size={20} className="fill-current" />
+              </div>
+              <span className="sr-only">Ingresar</span>
+            </Link>
           </div>
 
         </div>
