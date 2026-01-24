@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { ThirdwebProvider } from "thirdweb/react";
+// import { ThirdwebProvider } from "thirdweb/react";
 
 // Importamos el componente de forma dinámica y DESACTIVAMOS SSR
 // Esto previene errores de "window not defined" con Thirdweb y asegura consistencia visual inicial
@@ -16,8 +16,6 @@ const HostLanding = dynamic(() => import('@/components/HostLanding'), {
 
 export default function Home() {
   return (
-    <ThirdwebProvider>
-      <HostLanding />
-    </ThirdwebProvider>
+    <HostLanding />
   );
 }

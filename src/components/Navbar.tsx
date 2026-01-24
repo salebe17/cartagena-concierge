@@ -99,11 +99,11 @@ function Navbar() {
           <Search size={22} strokeWidth={2.5} />
           <span className="text-[10px] font-black uppercase tracking-tighter">Buscar</span>
         </Link>
-        <Link href="/business" className="flex flex-col items-center gap-1 text-gray-400">
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-gray-400">
           <Home size={22} strokeWidth={2.5} />
           <span className="text-[10px] font-black uppercase tracking-tighter">Mis Props</span>
         </Link>
-        <Link href="/orders" className="flex flex-col items-center gap-1 text-gray-400">
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-gray-400">
           <Truck size={22} strokeWidth={2.5} />
           <span className="text-[10px] font-black uppercase tracking-tighter">Pedidos</span>
         </Link>
