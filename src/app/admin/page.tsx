@@ -32,18 +32,26 @@ export default async function AdminPage() {
     let bookings: any[] = [];
 
     // Safely Fetch Requests
+    /*
     try {
         requests = await getAllServiceRequests();
     } catch (err) {
         console.error("Failed to fetch requests:", err);
     }
+    */
+    // MOCK DATA FOR DIAGNOSIS
+    requests = [];
 
     // Safely Fetch Bookings
+    /*
     try {
         bookings = await getAllBookings();
     } catch (err) {
         console.error("Failed to fetch bookings:", err);
     }
+    */
+    // MOCK DATA FOR DIAGNOSIS
+    bookings = [];
 
     // 3. Render View
     return (
