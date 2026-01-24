@@ -7,7 +7,7 @@ export interface ICalEvent {
     uid: string;
 }
 
-import ical from 'node-ical';
+
 
 export interface ICalEvent {
     summary: string;
