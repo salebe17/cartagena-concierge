@@ -88,6 +88,8 @@ CREATE TABLE IF NOT EXISTS service_requests (
 ALTER TABLE service_requests ENABLE ROW LEVEL SECURITY;
 
 
+
+CREATE POLICY "Users can manage requests for own properties" ON service_requests FOR ALL USING (
     property_id IN (SELECT id FROM properties WHERE owner_id = auth.uid()) OR 
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
