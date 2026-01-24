@@ -70,20 +70,21 @@ function TerminalContent() {
                         <h1 className="text-xl font-bold tracking-widest text-white uppercase">Cartagena</h1>
                         <p className="text-[10px] text-yellow-500 tracking-[0.3em] uppercase italic">Concierge</p>
                     </div>
+                </div>
 
-                    <div className="flex items-center gap-6">
-                        <Link href="/business" className="hidden md:block text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-yellow-500 transition-colors font-bold">
-                            Empresas
-                        </Link>
-                        <ConnectButton
-                            client={client}
-                            theme="dark"
-                            chain={chain}
-                            wallets={wallets}
-                            connectButton={{ label: "Ingresar / Registrarse" }}
-                        />
-                    </div>
-            </nav>
+                <div className="flex items-center gap-6">
+                    <Link href="/business" className="hidden md:block text-[10px] uppercase tracking-[0.2em] text-gray-400 hover:text-yellow-500 transition-colors font-bold">
+                        Empresas
+                    </Link>
+                    <ConnectButton
+                        client={client}
+                        theme="dark"
+                        chain={chain}
+                        wallets={wallets}
+                        connectButton={{ label: "Ingresar / Registrarse" }}
+                    />
+                </div>
+            </nav >
 
             <main className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-16 mt-10 items-center">
 
@@ -196,7 +197,7 @@ function TerminalContent() {
                     </div>
                 </div>
             </main>
-        </div>
+        </div >
     );
 }
 
