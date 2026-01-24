@@ -23,10 +23,16 @@ export default async function DashboardPage() {
     const properties = await getUserPropertiesBySession();
 
     // 4. Render View
+    // Safety Force: Serialize all props to prevent BigInt build errors
+    const safeProps = JSON.parse(JSON.stringify({
+        userName,
+        properties
+    }, (key, value) => typeof value === 'bigint' ? value.toString() : value));
+
     return (
         <DashboardView
-            userName={userName}
-            properties={properties}
+            userName={safeProps.userName}
+            properties={safeProps.properties}
         />
     );
 }
