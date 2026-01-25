@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { startJob, finishJob } from "@/app/actions/staff";
+import { startJob, finishJob, uploadEvidence } from "@/app/actions/staff";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +26,11 @@ export default function StaffJobPage({ params }: { params: { requestId: string }
     const [loading, setLoading] = useState(false);
     const [logId, setLogId] = useState<string | null>(null);
     const [completedTasks, setCompletedTasks] = useState<string[]>([]);
-    const [evidence, setEvidence] = useState<string[]>([]); // URLs or placeholders
+    const [evidence, setEvidence] = useState<string[]>([]);
+
+    // New Upload State
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { toast } = useToast();
 
@@ -53,10 +57,31 @@ export default function StaffJobPage({ params }: { params: { requestId: string }
         );
     };
 
-    const handlePhoto = () => {
-        // Simular subida
-        toast({ title: "Foto capturada", description: "Se ha guardado la evidencia." });
-        setEvidence(prev => [...prev, "https://placehold.co/600x400/png?text=Evidencia+Simulada"]);
+    const handlePhotoClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("requestId", params.requestId);
+
+        const res = await uploadEvidence(formData);
+        setUploading(false);
+
+        // Clear input to allow re-uploading same file if needed
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        if (res.success && res.data) {
+            setEvidence(prev => [...prev, res.data.url]);
+            toast({ title: "Foto subida", description: "Evidencia guardada correctamente." });
+        } else {
+            toast({ title: "Error", description: res.error || "Falló la subida.", variant: "destructive" });
+        }
     };
 
     const handleFinish = async () => {
@@ -195,109 +220,72 @@ export default function StaffJobPage({ params }: { params: { requestId: string }
                                 <p className="text-gray-500 text-sm">Toma una foto del resultado final.</p>
                             </div>
 
-                            import {useRef} from "react";
-                            import {startJob, finishJob, uploadEvidence} from "@/app/actions/staff";
-                            // ... (keep other imports)
+                            <div
+                                onClick={handlePhotoClick}
+                                className="border-3 border-dashed border-gray-200 rounded-3xl h-64 flex flex-col items-center justify-center bg-gray-50 cursor-pointer hover:bg-gray-100 active:scale-95 transition-all relative overflow-hidden"
+                            >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleFileChange}
+                                />
 
-                            export default function StaffJobPage({params}: {params: {requestId: string } }) {
-    // ... (keep state)
-    const [uploading, setUploading] = useState(false);
-                            const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // ... (keep other handlers)
-
-    const handlePhotoClick = () => {
-                                    fileInputRef.current?.click();
-    };
-
-                                const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-                                    if (!file) return;
-
-                                    setUploading(true);
-                                    const formData = new FormData();
-                                    formData.append("file", file);
-                                    formData.append("requestId", params.requestId);
-
-                                    const res = await uploadEvidence(formData);
-                                    setUploading(false);
-
-                                    if (res.success && res.data) {
-                                        setEvidence(prev => [...prev, res.data.url]);
-                                    toast({title: "Foto subida", description: "Evidencia guardada correctamente." });
-        } else {
-                                        toast({ title: "Error", description: res.error || "Falló la subida.", variant: "destructive" });
-        }
-    };
-
-                                    // ... (inside render)
-
-                                    <div
-                                        onClick={handlePhotoClick}
-                                        className="border-3 border-dashed border-gray-200 rounded-3xl h-64 flex flex-col items-center justify-center bg-gray-50 cursor-pointer hover:bg-gray-100 active:scale-95 transition-all relative overflow-hidden"
-                                    >
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            className="hidden"
-                                            accept="image/*"
-                                            capture="environment"
-                                            onChange={handleFileChange}
-                                        />
-
-                                        {uploading ? (
-                                            <div className="flex flex-col items-center animate-pulse">
-                                                <Loader2 className="animate-spin text-emerald-500 mb-2" size={32} />
-                                                <p className="text-gray-400 font-medium">Subiendo...</p>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-900 mb-4">
-                                                    <Camera size={32} />
-                                                </div>
-                                                <p className="font-bold text-gray-500">Tocar para tomar foto</p>
-                                            </>
-                                        )}
-
-                                        {evidence.length > 0 && (
-                                            <div className="absolute bottom-4 left-0 right-0 text-center">
-                                                <p className="text-emerald-600 font-bold text-sm bg-emerald-50 inline-block px-3 py-1 rounded-full">{evidence.length} Fotos Guardadas</p>
-                                            </div>
-                                        )}
+                                {uploading ? (
+                                    <div className="flex flex-col items-center animate-pulse">
+                                        <Loader2 className="animate-spin text-emerald-500 mb-2" size={32} />
+                                        <p className="text-gray-400 font-medium">Subiendo...</p>
                                     </div>
+                                ) : (
+                                    <>
+                                        <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-900 mb-4">
+                                            <Camera size={32} />
+                                        </div>
+                                        <p className="font-bold text-gray-500">Tocar para tomar foto</p>
+                                    </>
+                                )}
 
-                                    <Button
-                                        className="w-full h-14 text-lg font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200 shadow-lg active:scale-95 transition-all"
-                                        onClick={handleFinish}
-                                        disabled={loading || evidence.length === 0}
-                                    >
-                                        {loading ? <Loader2 className="animate-spin" /> : "FINALIZAR SERVICIO"}
-                                    </Button>
-                                </motion.div>
+                                {evidence.length > 0 && (
+                                    <div className="absolute bottom-4 left-0 right-0 text-center">
+                                        <p className="text-emerald-600 font-bold text-sm bg-emerald-50 inline-block px-3 py-1 rounded-full">{evidence.length} Fotos Guardadas</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <Button
+                                className="w-full h-14 text-lg font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200 shadow-lg active:scale-95 transition-all"
+                                onClick={handleFinish}
+                                disabled={loading || evidence.length === 0}
+                            >
+                                {loading ? <Loader2 className="animate-spin" /> : "FINALIZAR SERVICIO"}
+                            </Button>
+                        </motion.div>
                     )}
 
-                                {/* STEP 4: SUCCESS */}
-                                {step === 'success' && (
-                                    <motion.div
-                                        key="success"
-                                        initial={{ scale: 0.8, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        className="text-center space-y-6 py-12"
-                                    >
-                                        <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                                            <CheckCircle2 size={48} />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-3xl font-black text-gray-900">¡Gran Trabajo!</h2>
-                                            <p className="text-gray-500 mt-2">El servicio ha sido registrado exitosamente.</p>
-                                        </div>
-                                        <div className="pt-8">
-                                            <p className="text-xs text-gray-400 uppercase tracking-widest">Cartagena Concierge Staff</p>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </main>
+                    {/* STEP 4: SUCCESS */}
+                    {step === 'success' && (
+                        <motion.div
+                            key="success"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="text-center space-y-6 py-12"
+                        >
+                            <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle2 size={48} />
+                            </div>
+                            <div>
+                                <h2 className="text-3xl font-black text-gray-900">¡Gran Trabajo!</h2>
+                                <p className="text-gray-500 mt-2">El servicio ha sido registrado exitosamente.</p>
+                            </div>
+                            <div className="pt-8">
+                                <p className="text-xs text-gray-400 uppercase tracking-widest">Cartagena Concierge Staff</p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </main>
         </div>
-                );
+    );
 }
