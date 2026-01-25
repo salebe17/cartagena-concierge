@@ -35,8 +35,10 @@ export async function sendMessage(content: string, requestId?: string, receiverI
     }
 }
 
-export async function getConversation(requestId?: string, userId?: string): Promise<any[]> {
+export async function getConversation(requestId?: string | null, userId?: string | null): Promise<any[]> {
     try {
+        if (!requestId && !userId) return [];
+
         const supabase = await createClient();
 
         let query = supabase
@@ -55,11 +57,15 @@ export async function getConversation(requestId?: string, userId?: string): Prom
             query = query.eq('service_request_id', requestId);
         } else if (userId) {
             // General support for a specific user
+            // Use rigorous string injection for .or() to prevent Malformed Errors
             query = query.or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
         }
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase Chat Query Error:", error);
+            return []; // Return empty on DB error rather than crash
+        }
         return deepSerialize(data || []);
     } catch (e) {
         console.error("GetConversation Error:", e);

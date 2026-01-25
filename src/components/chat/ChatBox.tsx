@@ -32,19 +32,26 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
 
     useEffect(() => {
         const load = async () => {
-            const data = await getConversation(requestId, userId);
-            setMessages(data);
-            setLoading(false);
-            setMounted(true);
-            setTimeout(scrollToBottom, 100);
-
-            // Mark unread as read if Admin
-            if (isAdmin) {
-                const unread = data.filter(m => !m.is_read && m.sender_id !== currentUserId).map(m => m.id);
-                if (unread.length > 0) markAsRead(unread);
+            try {
+                const data = await getConversation(requestId || null, userId || null);
+                if (data) {
+                    setMessages(data);
+                    // Mark unread as read if Admin
+                    if (isAdmin) {
+                        const unread = data.filter((m: any) => !m.is_read && m.sender_id !== currentUserId).map((m: any) => m.id);
+                        if (unread.length > 0) markAsRead(unread);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load conversation:", error);
+            } finally {
+                setLoading(false);
+                setMounted(true);
+                setTimeout(scrollToBottom, 500);
             }
         };
         load();
+
 
         // REALTIME SUBSCRIPTION
         const channel = supabase.channel(`chat_${requestId || 'general'}`)
