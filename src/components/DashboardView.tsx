@@ -131,10 +131,24 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Create New Listing Card */}
+                            <div
+                                onClick={() => setPropModalOpen(true)}
+                                className="group cursor-pointer flex flex-col items-center justify-center aspect-[4/3] rounded-3xl border-2 border-dashed border-gray-300 hover:border-black hover:bg-gray-50 transition-all text-center p-6 space-y-4"
+                            >
+                                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Plus size={32} className="text-gray-400 group-hover:text-black" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg text-gray-900">Crear nuevo anuncio</h3>
+                                    <p className="text-sm text-gray-500 max-w-[200px] mx-auto">Pon tu propiedad frente a miles de viajeros.</p>
+                                </div>
+                            </div>
+
                             {properties.map(prop => (
                                 <div key={prop.id} className="group cursor-pointer">
                                     <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 mb-4 border border-gray-100 shadow-sm transition-all group-hover:shadow-md">
-                                        <img src={prop.image_url || DEFAULT_IMAGE} alt={prop.title} className="w-full h-full object-cover" />
+                                        <img src={prop.image_url || DEFAULT_IMAGE} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                         <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
                                             <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></div>
                                             <span className="text-xs font-bold text-gray-800">Publicado</span>
