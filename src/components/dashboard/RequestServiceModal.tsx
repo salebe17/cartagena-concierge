@@ -13,7 +13,7 @@ export function RequestServiceModal({
 }: {
     propertyId: string
     propertyName: string
-    serviceType?: 'cleaning' | 'maintenance' | 'concierge'
+    serviceType?: string
     triggerButton: React.ReactNode
 }) {
     const [isOpen, setIsOpen] = useState(false)

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Wrench, Ship, MapPin, Plus, Home, Settings2, MessageSquare, Menu } from "lucide-react";
+import { Sparkles, Wrench, Ship, MapPin, Plus, Home, Settings2, MessageSquare, Menu, LayoutGrid } from "lucide-react";
 import { RegisterPropertyModal } from "./RegisterPropertyModal";
 import { RequestServiceModal } from "./dashboard/RequestServiceModal";
 import { ManagePropertyModal } from "./dashboard/ManagePropertyModal";
@@ -16,9 +16,7 @@ import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
 import { BillingSection } from "./dashboard/BillingSection";
 import { Property } from "@/lib/types";
 import { BottomNav } from "./host/BottomNav";
-import { HostMenu } from "./host/HostMenu";
-import { HostTodayView } from "./host/HostTodayView";
-import { HostMessagesView } from "./host/HostMessagesView";
+import { HostServicesView } from "./host/HostServicesView";
 import { signOut } from "@/app/actions/dashboard";
 
 interface DashboardViewProps {
@@ -37,7 +35,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     // Tab State: Unifying to Spanish IDs for consistency with BottomNav
-    const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'anuncios' | 'mensajes' | 'menu'>('hoy');
+    const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'anuncios' | 'mensajes' | 'servicios'>('hoy');
     const { toast } = useToast();
 
     // Map legacy props or usage if needed, but we will stick to new tabs.
@@ -167,14 +165,8 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                         userName={userName}
                     />
                 );
-            case 'menu':
-                return <HostMenu
-                    userName={userName}
-                    onLogout={signOut}
-                    revenue="$7,118,496" // Mock data matching screenshot
-                    rating={4.74}
-                    reviewsCount={27}
-                />;
+            case 'servicios':
+                return <HostServicesView properties={properties} />;
             default:
                 return null;
         }
@@ -196,8 +188,8 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
                         ))}
-                        <button onClick={() => setActiveTab('menu')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                            <Menu size={20} />
+                        <button onClick={() => setActiveTab('servicios')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                            <LayoutGrid size={20} />
                         </button>
                     </div>
                 </div>
