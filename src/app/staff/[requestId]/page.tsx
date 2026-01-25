@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Check, Camera, Play, CheckCircle2, User, MapPin, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "next/navigation";
 
 // Mock Checklist for Demo
 const TASKS = [
@@ -20,7 +21,9 @@ const TASKS = [
     { id: '6', label: 'Apagar luces y A/C', zone: 'Salida' },
 ];
 
-export default function StaffJobPage({ params }: { params: { requestId: string } }) {
+export default function StaffJobPage() {
+    const params = useParams();
+    const requestId = params.requestId as string;
     const [step, setStep] = useState<'welcome' | 'checklist' | 'checkout' | 'success'>('welcome');
     const [staffName, setStaffName] = useState("");
     const [loading, setLoading] = useState(false);
