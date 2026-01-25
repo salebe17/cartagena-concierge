@@ -110,6 +110,25 @@ export async function createServiceRequest(formData: FormData): Promise<ActionRe
             return { success: false, error: "No tienes permiso para solicitar servicios en esta propiedad." };
         }
 
+        // 1.5 Duplicate Check (Backend Guard)
+        const reqDate = new Date(date);
+        const startOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate()).toISOString();
+        const endOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate(), 23, 59, 59).toISOString();
+
+        const { data: existing } = await supabase
+            .from('service_requests')
+            .select('id')
+            .eq('property_id', propertyId)
+            .eq('service_type', serviceType)
+            .neq('status', 'cancelled')
+            .gte('requested_date', startOfDay)
+            .lte('requested_date', endOfDay)
+            .maybeSingle();
+
+        if (existing) {
+            return { success: false, error: "Ya existe una solicitud de este tipo para esa fecha." };
+        }
+
         // 2. Insert Request
         const { error } = await supabase.from('service_requests').insert({
             property_id: propertyId,

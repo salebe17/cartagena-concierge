@@ -36,23 +36,49 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
     const { toast } = useToast();
 
     const handleScheduleCleaning = async (booking: any) => {
-        // 1. Construct FormData for the existing action
+        // 1. Safe Date Construction (Local Time) to prevent Timezone shift
+        // booking.end_date is YYYY-MM-DD
+        const [year, month, day] = booking.end_date.split('-').map(Number);
+        // Create date at 11:00 AM Local Time
+        const cleanupDate = new Date(year, month - 1, day, 11, 0, 0);
+
+        // 2. Duplicate Check (Client Side)
+        // Check if we already have a 'cleaning' service for this property on this date
+        // Compare YYYY-MM-DD parts
+        const dateStr = cleanupDate.toISOString().split('T')[0]; // This gives UTC date part, check if that matches user expectation?
+        // Wait, cleanupDate is Local. toISOString converts to UTC.
+        // If Local is UTC-5, 11:00 AM -> 16:00 UTC. Date part stays same.
+        // But if user is UTC+10? 
+        // Let's compare using the ISO string logic matching the server.
+        // The server stores ISO. 
+        // Let's strictly check if we see any service in `services` that matches the property and the DAY.
+
+        const alreadyExists = services.some(s => {
+            if (s.property_id !== booking.properties.id) return false;
+            // s.requested_date is ISO. 
+            const sDate = new Date(s.requested_date);
+            return s.service_type === 'cleaning' &&
+                sDate.getFullYear() === year &&
+                sDate.getMonth() === (month - 1) &&
+                sDate.getDate() === day;
+        });
+
+        if (alreadyExists) {
+            toast({ title: "Atención", description: "Ya existe una limpieza programada para este checkout.", variant: "default" });
+            return;
+        }
+
+        // 3. Submit
         const formData = new FormData();
         formData.append('propertyId', booking.property_id); // Ensure booking has property_id
         formData.append('serviceType', 'cleaning');
-
-        // Cleanup date: End Date at 11:00 AM
-        const cleanupDate = new Date(booking.end_date);
-        cleanupDate.setHours(11, 0, 0, 0);
         formData.append('date', cleanupDate.toISOString());
-
         formData.append('notes', `Limpieza de salida (Auto-generada) para huésped: ${booking.guest_name || 'Desconocido'}`);
 
-        // 2. Call Server Action
         const res = await createServiceRequest(formData);
 
         if (res.success) {
-            toast({ title: "Limpieza Solicitada", description: "El equipo ha sido notificado." });
+            toast({ title: "Limpieza Solicitada", description: "Se ha agendado la limpieza de salida." });
         } else {
             toast({ title: "Error", description: res.error, variant: "destructive" });
         }
