@@ -126,7 +126,31 @@ export function DiagnosticOverlay() {
                                 disabled={loading}
                                 className="w-full bg-purple-900/30 border border-purple-800 hover:bg-purple-900/50 text-purple-100 p-3 rounded-xl text-left flex justify-between items-center transition-colors"
                             >
-                                <span>Test Debug Ping (Clean File)</span>
+                                <span>Test Debug Ping (Server Action)</span>
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    setLoading(true);
+                                    addLog("🚀 PING API Route...");
+                                    try {
+                                        const res = await fetch('/api/debug/ping');
+                                        if (res.ok) {
+                                            const json = await res.json();
+                                            addLog(`✅ API Success: ${json.message}`);
+                                        } else {
+                                            const text = await res.text();
+                                            addLog(`🔥 API Failed: ${res.status} ${text.slice(0, 50)}`);
+                                        }
+                                    } catch (e: any) {
+                                        addLog(`💀 API Network Error: ${e.message}`);
+                                    }
+                                    setLoading(false);
+                                }}
+                                disabled={loading}
+                                className="w-full bg-amber-900/30 border border-amber-800 hover:bg-amber-900/50 text-amber-100 p-3 rounded-xl text-left flex justify-between items-center transition-colors"
+                            >
+                                <span>Test /api/debug/ping (API Route)</span>
                             </button>
 
                             <button
