@@ -11,14 +11,18 @@ export async function sendMessage(content: string, requestId?: string, receiverI
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
+        // Ensure inputs are strings
+        const safeContent = String(content || "");
+        const safeRequestId = requestId ? String(requestId) : null;
+        const safeReceiverId = receiverId ? String(receiverId) : null;
 
         const { error } = await supabase
             .from('messages')
             .insert({
-                content,
+                content: safeContent,
                 sender_id: user.id,
-                receiver_id: receiverId || null,
-                service_request_id: requestId || null
+                receiver_id: safeReceiverId,
+                service_request_id: safeRequestId
             });
 
         if (error) throw error;
