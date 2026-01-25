@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, ShieldCheck, Clock, Globe, Award, CheckCircle } from "lucide-react";
-import { LayoutDebugWidget } from "@/components/LayoutDebugWidget";
 import { HeroRegistrationWidget } from "@/components/HeroRegistrationWidget";
 
 export default function LandingPage() {
@@ -122,7 +121,6 @@ export default function LandingPage() {
         </div>
       </div>
 
-      <LayoutDebugWidget />
     </div>
   );
 }
