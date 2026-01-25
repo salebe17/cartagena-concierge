@@ -113,9 +113,15 @@ function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
     useEffect(() => {
         const load = async () => {
             try {
-                const [s, p] = await Promise.all([getFinancialStats(), getRevenueByProperty()]);
-                setStats(s || { total: 0, byService: {} });
-                setPropRevenue(p || []);
+                // BYPASS STRATEGY: API Route for Finance
+                const res = await fetch('/api/admin/finance');
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success) {
+                        setStats(json.data.stats);
+                        setPropRevenue(json.data.propertyRevenue);
+                    }
+                }
             } catch (e) {
                 console.error("Failed to load finance stats", e);
             } finally {
