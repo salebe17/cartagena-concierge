@@ -48,8 +48,8 @@ export default function LandingPage() {
               {/* Main Image - Stable & Premium */}
               <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-[1px] border-white/50">
                 <img
-                  src="https://images.unsplash.com/photo-1600596542815-e328d4de4bf7?q=80&w=2000&auto=format&fit=crop"
-                  alt="Luxury Interior"
+                  src="https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=2000&auto=format&fit=crop"
+                  alt="Vista al mar desde apartamento en Cartagena"
                   className="h-full w-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
                 />
 
