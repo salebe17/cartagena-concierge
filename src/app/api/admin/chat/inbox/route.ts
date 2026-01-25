@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 export async function GET() {
     try {
         const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        const myId = user?.id;
 
         // Fetch Messages with sender and receiver profile
         const { data: messages, error } = await supabase
@@ -33,17 +35,14 @@ export async function GET() {
         const conversations: Record<string, any> = {};
 
         messages?.forEach(msg => {
-            // Determine the "Conversation Partner" (The Non-Admin user)
             const sender = msg.sender as any;
             const receiver = msg.receiver as any;
 
-            // If strictly Admin-to-Admin chat exists, this logic might need tweaking, 
-            // but for Support, it's Admin <-> User.
-
+            const isMe = myId && msg.sender_id === myId;
             let partnerId = null;
-            let partnerProfile = null;
+            let partnerProfile: any = null;
 
-            if (sender?.role === 'admin') {
+            if (isMe) {
                 partnerId = msg.receiver_id;
                 partnerProfile = receiver;
             } else {
@@ -54,7 +53,7 @@ export async function GET() {
             // Group Key precedence: Service Request > Direct Partner
             const key = msg.service_request_id || partnerId;
 
-            if (!key) return; // Should not happen unless bad data
+            if (!key) return;
 
             if (!conversations[key]) {
                 const props = (msg.service_requests as any)?.properties;
