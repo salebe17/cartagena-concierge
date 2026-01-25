@@ -341,7 +341,15 @@ export async function adminCreateServiceRequest(data: {
             requested_date: data.requested_date,
             status: 'pending'
         })
-        .select()
+        .select(`
+            *,
+            properties (
+                id,
+                title,
+                address,
+                owner_id
+            )
+        `)
         .single();
 
     if (error) {
