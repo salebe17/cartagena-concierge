@@ -13,6 +13,7 @@ import { useParams } from "next/navigation";
 
 // Mock Checklist for Demo
 const TASKS = [
+    { id: '0', label: 'Encender y verificar TVs', zone: 'General' },
     { id: '1', label: 'Verificar nevera (Items olvidados)', zone: 'Cocina' },
     { id: '2', label: 'Sacar basura y cambiar bolsas', zone: 'Cocina' },
     { id: '3', label: 'Cambiar sábanas y toallas', zone: 'Habitaciones' },
