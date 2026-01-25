@@ -269,9 +269,17 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${getStatusColor(req.status)}`}>
                                                         {req.status}
                                                     </span>
-                                                    <span className="text-xs text-gray-400 font-medium">
-                                                        #{req.id.slice(0, 5)}
-                                                    </span>
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(`${window.location.origin}/staff/${req.id}`);
+                                                            toast({ title: "Enlace Copiado", description: "Link de Staff listo para compartir." });
+                                                        }}
+                                                        className="text-xs text-gray-400 font-medium hover:text-blue-500 hover:underline flex items-center gap-1 group"
+                                                        title="Copiar enlace de Staff"
+                                                    >
+                                                        #{req.id.slice(0, 5)}...
+                                                        <Copy size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </button>
                                                 </div>
                                                 <h3 className="text-lg font-bold text-gray-900 leading-none">
                                                     {req.service_type === 'cleaning' ? 'Limpieza de Unidad' :
