@@ -15,9 +15,11 @@ import { Loader2 } from "lucide-react";
 import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
 import { BillingSection } from "./dashboard/BillingSection";
 import { Property } from "@/lib/types";
+import { FloatingChatWidget } from "./chat/FloatingChatWidget";
 
 interface DashboardViewProps {
     userName: string;
+    currentUserId: string;
     properties: Property[];
     alerts?: AlertItem[];
     serviceHistory?: React.ReactNode;
@@ -26,7 +28,7 @@ interface DashboardViewProps {
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
-export function DashboardView({ userName, properties, alerts = [], serviceHistory = null, bookings = [] }: DashboardViewProps) {
+export function DashboardView({ userName, currentUserId, properties, alerts = [], serviceHistory = null, bookings = [] }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'portfolio' | 'calendar' | 'billing'>('portfolio');
@@ -232,6 +234,10 @@ export function DashboardView({ userName, properties, alerts = [], serviceHistor
                     isOpen={isPropModalOpen}
                     onClose={() => setPropModalOpen(false)}
                 />
+
+
+                {/* 4. Floating Chat Widget */}
+                <FloatingChatWidget currentUserId={currentUserId} userName={userName} />
 
             </div>
         </div >

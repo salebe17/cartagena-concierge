@@ -30,13 +30,13 @@ export default async function DashboardPage() {
     // 3. Render View with Suspense
     return (
         <Suspense fallback={<DashboardSkeleton />}>
-            <DashboardContent userName={userName} />
+            <DashboardContent userName={userName} currentUserId={user.id} />
         </Suspense>
     );
 }
 
 // Wrapper component to handle data fetching inside Suspense
-async function DashboardContent({ userName }: { userName: string }) {
+async function DashboardContent({ userName, currentUserId }: { userName: string, currentUserId: string }) {
     const [properties, alerts, bookings] = await Promise.all([
         getUserPropertiesBySession(),
         getUserAlerts(),
@@ -46,6 +46,7 @@ async function DashboardContent({ userName }: { userName: string }) {
     return (
         <DashboardView
             userName={userName}
+            currentUserId={currentUserId}
             properties={properties}
             alerts={alerts}
             serviceHistory={<ServiceHistory />}
