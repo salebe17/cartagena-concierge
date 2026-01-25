@@ -33,12 +33,20 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
     useEffect(() => {
         const load = async () => {
             try {
-                const data = await getConversation(requestId || null, userId || null);
-                if (data) {
-                    setMessages(data);
+                // Determine Query Params
+                const params = new URLSearchParams();
+                if (requestId) params.append('requestId', requestId);
+                if (userId) params.append('userId', userId);
+
+                // Fetch from API Route (Bypass Server Action)
+                const res = await fetch(`/api/chat/conversation?${params.toString()}`);
+                const json = await res.json();
+
+                if (json.success && json.data) {
+                    setMessages(json.data);
                     // Mark unread as read if Admin
                     if (isAdmin) {
-                        const unread = data.filter((m: any) => !m.is_read && m.sender_id !== currentUserId).map((m: any) => m.id);
+                        const unread = json.data.filter((m: any) => !m.is_read && m.sender_id !== currentUserId).map((m: any) => m.id);
                         if (unread.length > 0) markAsRead(unread);
                     }
                 }
