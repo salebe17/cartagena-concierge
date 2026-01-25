@@ -1,112 +1,122 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, ShieldCheck, Clock, Globe } from "lucide-react";
+import { ArrowRight, Star, ShieldCheck, Clock, Globe, Award, CheckCircle } from "lucide-react";
 import { LayoutDebugWidget } from "@/components/LayoutDebugWidget";
+import { HeroRegistrationWidget } from "@/components/HeroRegistrationWidget";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-[#FF5A5F] selection:text-white">
+    <div className="min-h-screen bg-white font-sans text-gray-900">
+
+      {/* HEADER (Minimalist Airbnb Style) */}
+      <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#FF385C] rounded-full flex items-center justify-center text-white">
+              <ShieldCheck size={18} fill="currentColor" className="text-white" />
+            </div>
+            <span className="font-extrabold text-[#FF385C] tracking-tighter text-xl hidden sm:block">concierge</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-full transition-colors">
+              Iniciar Sesión
+            </Link>
+            <Link href="/register">
+              <Button className="rounded-full bg-gray-900 hover:bg-black text-white px-6 font-bold text-sm h-10 shadow-none">
+                Registra tu Propiedad
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
 
       {/* HERO SECTION */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-white -z-10" />
-        <div className="max-w-7xl mx-auto px-6 pt-32 pb-24 lg:pt-48 lg:pb-32 text-center lg:text-left">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5 duration-1000">
-              <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-1 shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#FF5A5F] animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Operador Certificado Cartagena</span>
-              </div>
-              <h1 className="text-5xl lg:text-7xl font-black tracking-tighter leading-tight text-gray-900">
-                Logística de Lujo para tu <span className="text-[#FF5A5F]">Airbnb</span>.
-              </h1>
-              <p className="text-xl text-gray-500 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-medium">
-                Elevamos tu propiedad con limpieza de hotel 5 estrellas, mantenimiento preventivo y reportes fotográficos en tiempo real.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link href="/login">
-                  <Button className="h-14 px-8 text-lg rounded-xl bg-[#FF5A5F] hover:bg-[#E03E43] text-white shadow-hero w-full sm:w-auto">
-                    Ingresar a Plataforma
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="outline" className="h-14 px-8 text-lg rounded-xl border-gray-200 hover:bg-gray-50 text-gray-900 w-full sm:w-auto">
-                    Registrar Propiedad
-                  </Button>
-                </Link>
-              </div>
-              <div className="pt-8 flex items-center justify-center lg:justify-start gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-300">Compatible con:</p>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg" alt="Airbnb" className="h-8" />
-                {/* Add more logos if needed */}
-              </div>
-            </div>
-            <div className="relative group hidden lg:block h-[600px] w-full">
-              {/* Background Glow */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-rose-100 to-teal-100 rounded-[2.5rem] opacity-30 blur-2xl group-hover:opacity-50 transition-opacity duration-700" />
+      <div className="pt-20">
+        <div className="relative">
+          {/* Split Background on Large Screens */}
+          <div className="absolute inset-0 grid lg:grid-cols-2">
+            <div className="hidden lg:block bg-white" />
+            <div className="bg-gray-100" />
+          </div>
 
-              {/* Main Image - Stable & Premium */}
-              <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-[1px] border-white/50">
-                <img
-                  src="https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=2000&auto=format&fit=crop"
-                  alt="Vista al mar desde apartamento en Cartagena"
-                  className="h-full w-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
-                />
+          <div className="max-w-7xl mx-auto px-6 relative">
+            <div className="grid lg:grid-cols-2 min-h-[calc(100vh-80px)] items-center gap-12 lg:gap-24 py-12 lg:py-0">
 
-                {/* Floating Card - Glassmorphism */}
-                <div className="absolute bottom-8 left-8 right-8 bg-white/80 backdrop-blur-xl p-4 rounded-2xl shadow-lg border border-white/40 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 delay-300 duration-1000">
-                  <div className="w-12 h-12 bg-emerald-100/80 rounded-full flex items-center justify-center text-emerald-600 shrink-0">
-                    <ShieldCheck size={24} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-bold text-gray-900 leading-tight">Limpieza Verificada</p>
-                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    </div>
-                    <p className="text-xs text-gray-600 font-medium mt-0.5">Hace 2 minutos • Bocagrande</p>
-                  </div>
+              {/* Left Column: Copy & Widget */}
+              <div className="space-y-8 animate-in fade-in slide-in-from-left-5 duration-700">
+                <div className="space-y-6">
+                  <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
+                    Pon tu Airbnb en <span className="text-[#FF385C]">Autopiloto</span>.
+                  </h1>
+                  <p className="text-lg text-gray-500 font-medium max-w-md leading-relaxed">
+                    La infraestructura operativa que usan los Superhosts en Cartagena. Limpieza, mantenimiento y recepción 5 estrellas.
+                  </p>
+                </div>
+
+                {/* WIDGET INTEGRATION */}
+                <div className="max-w-md">
+                  <HeroRegistrationWidget />
+                </div>
+
+                <div className="flex items-center gap-4 pt-4 opacity-70">
+                  <Star size={16} className="text-[#FF385C] fill-current" />
+                  <span className="text-sm font-semibold text-gray-900">4.9/5 Calificación Promedio</span>
+                  <span className="text-gray-300">|</span>
+                  <span className="text-sm text-gray-500">+500 Reservas Gestionadas</span>
                 </div>
               </div>
+
+              {/* Right Column: Hero Image (Clean / No Skew) */}
+              <div className="relative h-[500px] lg:h-[700px] w-full rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+                <img
+                  src="https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=2000&auto=format&fit=crop"
+                  alt="Vista privilegiada en Cartagena"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]"
+                />
+                {/* NO FLOATING CARD AS REQUESTED */}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* FEATURES */}
-      <div className="py-24 bg-gray-50">
+      {/* FEATURES (Airbnb Category Style) */}
+      <div className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16 space-y-4">
-            <h2 className="text-3xl lg:text-4xl font-black text-gray-900">¿Por qué los Superhosts nos eligen?</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto">Dejamos de lado el caos operativo. Te damos control total con tecnología transparente.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-12">Todo lo que necesitas para ser Superhost</h2>
+          <div className="grid md:grid-cols-3 gap-x-8 gap-y-12">
             <FeatureCard
-              icon={<Star className="text-amber-500" />}
-              title="Estándar Hotelero"
-              desc="Nuestro personal sigue un checklist de 40 puntos. Sábanas perfectas, baños impolutos y amenidades repuestas."
+              title="Limpieza Hotelera"
+              desc="Protocolos de 40 puntos. Ropa de cama blanca, amenities de lujo y limpieza profunda entre cada estancia."
+              img="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=600&auto=format&fit=crop"
             />
             <FeatureCard
-              icon={<Clock className="text-blue-500" />}
-              title="Turnover Express"
-              desc="Coordinamos limpiezas sincronizadas con tu calendario iCal. Tu propiedad siempre lista para el check-in de las 3 PM."
+              title="Mantenimiento 24/7"
+              desc="Desde un aire acondicionado dañado hasta una bombilla fundida. Lo solucionamos antes de que el huésped lo note."
+              img="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=600&auto=format&fit=crop"
             />
             <FeatureCard
-              icon={<Globe className="text-emerald-500" />}
-              title="Reporte en Tiempo Real"
-              desc="Recibe fotos antes y después de cada servicio directamente en tu dashboard. Sin sorpresas."
+              title="Concierge VIP"
+              desc="Recepción de huéspedes, transporte privado y experiencias locales. Tus huéspedes amarán su estancia."
+              img="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop"
             />
           </div>
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="py-24 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
-          <h2 className="text-4xl font-black text-gray-900">Recupera tu tiempo.</h2>
-          <p className="text-xl text-gray-500">Únete a la red de propietarios más exclusiva de Cartagena.</p>
+      {/* TRUST BANNER */}
+      <div className="bg-gray-50 py-16 border-y border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="max-w-xl space-y-2">
+            <h3 className="text-2xl font-bold text-gray-900">Tecnología Transparente</h3>
+            <p className="text-gray-500">
+              Usa nuestro Dashboard para ver fotos en tiempo real de cada limpieza y mantenimiento.
+              Tu propiedad en tu bolsillo.
+            </p>
+          </div>
           <Link href="/register">
-            <Button className="h-16 px-12 text-xl rounded-full bg-black hover:bg-gray-800 text-white shadow-xl transition-all hover:scale-105 active:scale-95">
-              Comenzar Ahora <ArrowRight className="ml-2" />
+            <Button variant="outline" className="h-12 px-8 rounded-xl border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold transition-colors">
+              Ver Demo del Dashboard
             </Button>
           </Link>
         </div>
@@ -117,14 +127,19 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+function FeatureCard({ title, desc, img }: { title: string, desc: string, img: string }) {
   return (
-    <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-      <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 text-2xl">
-        {icon}
+    <div className="group cursor-pointer">
+      <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-gray-100">
+        <img
+          src={img}
+          alt={title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
-      <p className="text-gray-500 leading-relaxed text-sm">{desc}</p>
+      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:underline decoration-2 decoration-gray-200 underline-offset-4">{title}</h3>
+      <p className="text-sm text-gray-500 leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }
