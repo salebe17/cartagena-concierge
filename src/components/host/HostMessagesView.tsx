@@ -11,14 +11,14 @@ interface HostMessagesViewProps {
 
 export function HostMessagesView({ bookings, currentUserId, userName }: HostMessagesViewProps) {
     return (
-        <div className="pb-4 animate-in fade-in duration-500 h-[calc(100dvh-150px)] md:h-[calc(100vh-140px)] flex flex-col">
+        <div className="pb-0 animate-in fade-in duration-500 h-[calc(100dvh-70px)] md:h-[calc(100vh-140px)] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 shrink-0">
                 <h1 className="text-3xl font-black text-[#222222] tracking-tight">Soporte</h1>
             </div>
 
             {/* Chat Interface - Direct to Support for now */}
-            <div className="flex-1 bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm flex flex-col">
+            <div className="flex-1 bg-white rounded-t-[2rem] rounded-b-none md:rounded-3xl border-x-0 border-b-0 border-t md:border border-gray-100 overflow-hidden shadow-none md:shadow-sm flex flex-col">
                 <div className="bg-gray-50 border-b border-gray-100 p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-white shadow-md">
                         <MessageSquare size={20} />
