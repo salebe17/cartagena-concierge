@@ -1,0 +1,111 @@
+'use client';
+
+import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft } from 'lucide-react';
+import { Button } from '../ui/button';
+
+interface HostMenuProps {
+    userName: string;
+    userImage?: string;
+    revenue?: string;
+    rating?: number;
+    reviewsCount?: number;
+    onLogout: () => void;
+}
+
+export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout }: HostMenuProps) {
+    return (
+        <div className="pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-3xl font-black text-[#222222]">Menú</h1>
+                <div className="flex gap-4">
+                    <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                        <Bell size={20} className="text-[#222222]" />
+                    </button>
+                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-100">
+                        {userImage ? (
+                            <img src={userImage} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                                <User size={20} className="text-white" />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+                {/* Revenue Card */}
+                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40">
+                    <div>
+                        <h3 className="text-sm font-bold text-[#222222]">Ingresos</h3>
+                        <p className="text-xs text-gray-500 mt-1">Este mes:</p>
+                        <p className="text-lg font-black text-[#222222] tracking-tight">{revenue} COP</p>
+                    </div>
+                    {/* Fake Chart */}
+                    <div className="flex items-end gap-1.5 h-12 mt-2 opacity-90">
+                        <div className="w-1/6 bg-rose-500 h-[30%] rounded-t-sm"></div>
+                        <div className="w-1/6 bg-rose-500 h-[60%] rounded-t-sm"></div>
+                        <div className="w-1/6 bg-rose-500 h-[40%] rounded-t-sm"></div>
+                        <div className="w-1/6 bg-rose-500 h-[50%] rounded-t-sm"></div>
+                        <div className="w-1/6 bg-gray-200 h-[20%] rounded-t-sm"></div>
+                        <div className="w-1/6 bg-gray-100 h-[10%] rounded-t-sm"></div>
+                    </div>
+                </div>
+
+                {/* Info / Ratings Card */}
+                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40">
+                    <div>
+                        <h3 className="text-sm font-bold text-[#222222]">Info</h3>
+                        <p className="text-xs text-gray-500 mt-1">{reviewsCount} reseñas</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-4xl font-black text-[#222222]">{rating?.toFixed(2)}</span>
+                        <div className="flex text-[#222222]">★</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Promo Banner "Create new listing" */}
+            <div className="bg-[#F7F7F7] rounded-2xl p-4 flex gap-4 items-center mb-8 border border-gray-100">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                    <Plus size={24} className="text-rose-500" />
+                </div>
+                <div>
+                    <h3 className="text-sm font-bold text-[#222222]">Crea un nuevo anuncio</h3>
+                    <p className="text-xs text-gray-500 leading-snug">Anfitriona un alojamiento, una Experiencia o un Servicio.</p>
+                </div>
+            </div>
+
+            {/* Menu List */}
+            <div className="space-y-1">
+                <MenuItem icon={Settings} label="Configuración de la cuenta" />
+                <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />
+                <MenuItem icon={HelpCircle} label="Obtén ayuda" />
+                <MenuItem icon={Users} label="Encuentra un coanfitrión" />
+                <MenuItem icon={Plus} label="Crea un nuevo anuncio" />
+                <MenuItem icon={Users} label="Recomienda a un anfitrión" />
+                <MenuItem icon={LogOut} label="Cerrar Sessión" onClick={onLogout} isLast />
+            </div>
+
+            {/* Toggle Mode Button */}
+            <div className="sticky bottom-24 flex justify-center mt-8 md:hidden">
+                <button className="bg-[#222222] text-white px-6 py-3 rounded-full font-bold text-sm shadow-xl flex items-center gap-2 active:scale-95 transition-transform">
+                    <ArrowRightLeft size={16} />
+                    Cambiar a modo viajero
+                </button>
+            </div>
+        </div>
+    );
+}
+
+const MenuItem = ({ icon: Icon, label, onClick, isLast }: { icon: any, label: string, onClick?: () => void, isLast?: boolean }) => (
+    <button onClick={onClick} className={`w-full flex items-center justify-between py-4 hover:bg-gray-50 transition-colors ${!isLast ? 'border-b border-gray-100' : ''}`}>
+        <div className="flex items-center gap-4">
+            <Icon size={24} className="text-[#222222] stroke-1" />
+            <span className="text-[#222222] font-light text-base">{label}</span>
+        </div>
+        <ChevronRight size={20} className="text-gray-400" />
+    </button>
+);
