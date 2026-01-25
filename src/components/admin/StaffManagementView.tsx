@@ -157,7 +157,7 @@ export function StaffManagementView() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {staff.map(member => (
+                    {staff.filter(m => m && m.id).map(member => (
                         <Card key={member.id} className="p-6 border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start">
                                 <div className="flex gap-4">
@@ -170,7 +170,7 @@ export function StaffManagementView() {
                                             {member.role === 'cleaner' ? 'Limpieza' :
                                                 member.role === 'maintenance' ? 'Mantenimiento' : member.role}
                                         </span>
-                                        {member.metrics && <div className="mt-1"><EfficiencyBadge minutes={member.metrics.avgCompletionTimeMinutes} /></div>}
+                                        {member.metrics && <div className="mt-1"><EfficiencyBadge minutes={member.metrics.avgCompletionTimeMinutes || 0} /></div>}
                                     </div>
                                 </div>
                                 <button onClick={() => handleDelete(member.id, member.full_name)} className="text-gray-300 hover:text-rose-500 transition-colors">
@@ -187,23 +187,23 @@ export function StaffManagementView() {
                                 )}
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                     <Award size={14} className="text-amber-400" />
-                                    <span className="font-bold">Rating: {mounted ? member.rating.toFixed(1) : "-.-"}</span>
+                                    <span className="font-bold">Rating: {mounted ? (member.rating || 0).toFixed(1) : "-.-"}</span>
                                 </div>
                                 {member.metrics && (
                                     <div className="grid grid-cols-2 gap-2 pt-1">
                                         <div className="bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
                                             <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Misiones</span>
-                                            <span className="text-sm font-black text-gray-900">{member.metrics.totalJobs}</span>
+                                            <span className="text-sm font-black text-gray-900">{member.metrics.totalJobs || 0}</span>
                                         </div>
                                         <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Promedio</span>
-                                        <span className="text-sm font-black text-gray-900">{mounted ? `${member.metrics.avgCompletionTimeMinutes}m` : "--m"}</span>
+                                        <span className="text-sm font-black text-gray-900">{mounted ? `${member.metrics.avgCompletionTimeMinutes || 0}m` : "--m"}</span>
                                     </div>
                                 )}
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">
                                 <span className="text-[10px] text-gray-400 font-medium">Estado: </span>
-                                <span className="text-[10px] font-bold text-emerald-500 uppercase">{member.status}</span>
+                                <span className="text-[10px] font-bold text-emerald-500 uppercase">{member.status || 'Active'}</span>
                             </div>
                         </Card>
                     ))}

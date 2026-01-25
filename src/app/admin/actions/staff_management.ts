@@ -42,24 +42,29 @@ export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> 
         if (logsError) throw logsError;
 
         const staffWithMetrics = (staff || []).map((member: StaffMember) => {
-            const memberLogs = (logs || []).filter((l: any) => l.staff_member_id === member.id);
+            const memberLogs = (logs || []).filter((l: any) => l && l.staff_member_id === member.id);
             const totalJobs = memberLogs.length;
             let avgTime = 0;
+
             if (totalJobs > 0) {
                 const totalMinutes = memberLogs.reduce((acc: number, log: any) => {
-                    if (!log.started_at || !log.ended_at) return acc;
-                    const start = new Date(log.started_at).getTime();
-                    const end = new Date(log.ended_at).getTime();
-                    const duration = end - start;
-                    return acc + (duration / 1000 / 60);
+                    if (!log || !log.started_at || !log.ended_at) return acc;
+                    try {
+                        const start = new Date(log.started_at).getTime();
+                        const end = new Date(log.ended_at).getTime();
+                        if (isNaN(start) || isNaN(end)) return acc;
+                        const duration = end - start;
+                        return acc + (duration / 1000 / 60);
+                    } catch { return acc; }
                 }, 0);
-                avgTime = totalMinutes / totalJobs;
+                avgTime = totalJobs > 0 ? (totalMinutes / totalJobs) : 0;
             }
+
             return {
                 ...member,
                 metrics: {
                     totalJobs,
-                    avgCompletionTimeMinutes: Math.round(avgTime)
+                    avgCompletionTimeMinutes: Math.round(avgTime) || 0 // Fix NaN
                 }
             };
         });
