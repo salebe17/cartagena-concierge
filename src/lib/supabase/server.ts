@@ -49,16 +49,17 @@ export async function createAdminClient() {
   const cookieStore = await cookies();
 
   // Safety check for Service Key
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("SUPABASE_SERVICE_ROLE_KEY missing - Admin actions will fail");
-    throw new Error("Service Configuration Error");
+  let supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseKey) {
+    console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY missing. Falling back to ANON_KEY. Some Admin actions may fail RLS checks.");
+    supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!.replace(/^=/, '').trim();
 
   return createServerClient(
     supabaseUrl,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseKey,
     {
       cookies: {
         getAll() { return cookieStore.getAll() },
