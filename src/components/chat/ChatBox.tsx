@@ -34,7 +34,8 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
         setMessages([]); // Clear previous state immediately to prevent leak/flash
         setLoading(true);
 
-        const load = async () => {
+        const load = async (silent = false) => {
+            if (!silent) setLoading(true);
             try {
                 // Determine Query Params
                 const params = new URLSearchParams();
@@ -46,7 +47,19 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
                 const json = await res.json();
 
                 if (json.success && json.data) {
-                    setMessages(json.data);
+                    setMessages(prev => {
+                        // Simple check to avoid re-rendering if identical? 
+                        // JSON stringify comparison is heavy but safe for small chats.
+                        // Or just update. React handles Diffing.
+                        if (JSON.stringify(prev) !== JSON.stringify(json.data)) {
+                            if (!silent) setTimeout(scrollToBottom, 100); // Scroll only on hard load? 
+                            // If silent (poll), maybe don't force scroll unless we were at bottom?
+                            // For now, let's just update state.
+                            return json.data;
+                        }
+                        return prev;
+                    });
+
                     // Mark unread as read if Admin
                     if (isAdmin) {
                         const unreadIds = json.data
@@ -65,12 +78,17 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
             } catch (error) {
                 console.error("Failed to load conversation:", error);
             } finally {
-                setLoading(false);
-                setMounted(true);
-                setTimeout(scrollToBottom, 500);
+                if (!silent) {
+                    setLoading(false);
+                    setMounted(true);
+                    setTimeout(scrollToBottom, 500);
+                }
             }
         };
         load();
+
+        // Fallback Polling (Every 4 seconds)
+        const interval = setInterval(() => load(true), 4000);
 
 
         // REALTIME SUBSCRIPTION
@@ -123,6 +141,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
 
         return () => {
             supabase.removeChannel(channel);
+            clearInterval(interval);
         };
     }, [requestId, isAdmin, currentUserId, userId]); // ADDED userId dependency
 

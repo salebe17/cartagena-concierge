@@ -11,7 +11,7 @@ interface HostMessagesViewProps {
 
 export function HostMessagesView({ bookings, currentUserId, userName }: HostMessagesViewProps) {
     return (
-        <div className="pb-24 animate-in fade-in duration-500 h-[calc(100vh-140px)] flex flex-col">
+        <div className="pb-32 animate-in fade-in duration-500 h-[calc(100dvh-100px)] md:h-[calc(100vh-140px)] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 shrink-0">
                 <h1 className="text-3xl font-black text-[#222222] tracking-tight">Soporte</h1>
