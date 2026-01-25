@@ -115,8 +115,6 @@ export function DiagnosticOverlay() {
                                     setLoading(true);
                                     addLog("🚀 PING Debug Action...");
                                     try {
-                                        // Dynamic import to avoid build dependency if file missing
-                                        const { debugTestPing } = await import("@/app/actions/debug_test");
                                         const res = await debugTestPing();
                                         addLog(`✅ PING Success: ${res.message}`);
                                     } catch (e: any) {
