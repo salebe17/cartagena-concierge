@@ -5,13 +5,17 @@ export async function GET() {
     try {
         const supabase = await createClient();
 
-        // Fetch Messages with sender profile and service_request info
-        // Standard client usually respects RLS (Admins can see all)
+        // Fetch Messages with sender and receiver profile
         const { data: messages, error } = await supabase
             .from('messages')
             .select(`
                 *,
-                profiles!sender_id (
+                sender:profiles!sender_id (
+                    full_name,
+                    email,
+                    role
+                ),
+                receiver:profiles!receiver_id (
                     full_name,
                     email,
                     role
@@ -25,32 +29,48 @@ export async function GET() {
 
         if (error) throw error;
 
-        // Grouping Logic (Same as original action)
+        // Grouping Logic
         const conversations: Record<string, any> = {};
+
         messages?.forEach(msg => {
-            const key = msg.service_request_id || msg.sender_id;
-            // The person the Admin is chatting with is the non-admin participant
-            // If sender is admin, then we need receiver... but msg.profiles!sender_id.role
-            // Wait, msg.profiles is array or object? It's object thanks to !sender_id
+            // Determine the "Conversation Partner" (The Non-Admin user)
+            const sender = msg.sender as any;
+            const receiver = msg.receiver as any;
 
-            // Note: Typescript might cry about profiles array vs object.
-            // PostgREST single relation returns object.
+            // If strictly Admin-to-Admin chat exists, this logic might need tweaking, 
+            // but for Support, it's Admin <-> User.
 
-            const senderRole = (msg.profiles as any)?.role;
-            const chatPartnerId = senderRole !== 'admin' ? msg.sender_id : msg.receiver_id;
+            let partnerId = null;
+            let partnerProfile = null;
+
+            if (sender?.role === 'admin') {
+                partnerId = msg.receiver_id;
+                partnerProfile = receiver;
+            } else {
+                partnerId = msg.sender_id;
+                partnerProfile = sender;
+            }
+
+            // Group Key precedence: Service Request > Direct Partner
+            const key = msg.service_request_id || partnerId;
+
+            if (!key) return; // Should not happen unless bad data
 
             if (!conversations[key]) {
                 const props = (msg.service_requests as any)?.properties;
                 conversations[key] = {
-                    id: key,
-                    chatPartnerId: chatPartnerId,
+                    id: key, // This is either requestID or PartnerID
+                    chatPartnerId: partnerId,
                     isRequest: !!msg.service_request_id,
                     lastMessage: msg.content,
                     timestamp: msg.created_at,
-                    senderName: (msg.profiles as any)?.full_name || 'Desconocido',
-                    propertyTitle: props?.title || 'Consulta General',
+                    // The Display Name of the thread is always the Partner's name
+                    senderName: partnerProfile?.full_name || 'Usuario',
+                    email: partnerProfile?.email,
+                    propertyTitle: props?.title || 'Mensaje Directo',
                     serviceType: (msg.service_requests as any)?.service_type || 'Soporte',
-                    unread: !msg.is_read && senderRole !== 'admin'
+                    // Unread if the LAST message was sent BY the partner (not me) AND is not read
+                    unread: !msg.is_read && msg.sender_id === partnerId
                 };
             }
         });
