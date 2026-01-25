@@ -3,21 +3,9 @@
 import { ActionResponse, ServiceRequest } from '@/lib/types';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { deepSerialize } from '@/lib/utils/serialization';
 // import { fetchICalEvents } from '@/lib/ical-sync'; // <-- Removed to avoid build-time eval
 
-// --- HELPERS ---
-
-// Helper for BigInt serialization
-function serialize<T>(data: T): T {
-    try {
-        return JSON.parse(JSON.stringify(data, (key, value) =>
-            typeof value === 'bigint' ? value.toString() : value
-        ));
-    } catch (e) {
-        console.error("Serialization Error:", e);
-        return data; // Return original if serialization fails
-    }
-}
 
 // Internal Sync Logic (Uses authenticated session)
 async function syncPropertyCalendarInternal(supabase: any, propertyId: string) {
@@ -142,7 +130,7 @@ export async function getAllServiceRequests(): Promise<ServiceRequest[]> {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return serialize(data || []);
+        return deepSerialize(data || []);
     } catch (e) {
         console.error("Admin Fetch Error:", e);
         return [];
@@ -183,7 +171,7 @@ export async function getAllBookings(): Promise<any[]> {
             .order('start_date', { ascending: true });
 
         if (error) throw error;
-        return serialize(data || []);
+        return deepSerialize(data || []);
     } catch (e) {
         console.error("Admin Bookings Fetch Error:", e);
         return [];
@@ -358,7 +346,7 @@ export async function adminCreateServiceRequest(data: {
     }
 
     revalidatePath('/admin');
-    return serialize({ success: true, data: newRequest, message: "Solicitud creada exitosamente" });
+    return deepSerialize({ success: true, data: newRequest, message: "Solicitud creada exitosamente" });
 }
 
 export async function assignStaffToRequest(requestId: string, staffId: string): Promise<ActionResponse> {
@@ -412,7 +400,7 @@ export async function getFinancialStats(): Promise<any> {
             }
         });
 
-        return serialize(stats);
+        return deepSerialize(stats);
     } catch (e) {
         console.error("Finance Stats Error:", e);
         return { total: 0, byService: { cleaning: 0, maintenance: 0, concierge: 0, other: 0 } };
@@ -447,7 +435,7 @@ export async function getRevenueByProperty(): Promise<any[]> {
         });
 
         // Convert to array and sort
-        return serialize(Object.entries(propertyMap)
+        return deepSerialize(Object.entries(propertyMap)
             .map(([id, data]) => ({ id, ...data }))
             .filter(p => p.revenue > 0)
             .sort((a, b) => b.revenue - a.revenue));

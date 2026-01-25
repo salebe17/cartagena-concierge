@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { ActionResponse } from '@/lib/types'
+import { deepSerialize } from '@/lib/utils/serialization'
 
 export type StaffMember = {
     id: string;
@@ -20,15 +21,6 @@ export type StaffMember = {
     }
 }
 
-function serialize<T>(data: T): T {
-    try {
-        return JSON.parse(JSON.stringify(data, (key, value) =>
-            typeof value === 'bigint' ? value.toString() : value
-        ));
-    } catch (e) {
-        return data;
-    }
-}
 
 export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> {
     try {
@@ -72,7 +64,7 @@ export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> 
             };
         });
 
-        return { success: true, data: serialize(staffWithMetrics) };
+        return { success: true, data: deepSerialize(staffWithMetrics) };
     } catch (e: any) {
         return { success: false, error: e.message };
     }

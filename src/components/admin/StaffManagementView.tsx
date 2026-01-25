@@ -46,9 +46,11 @@ export function StaffManagementView() {
         phone: "",
         email: ""
     });
+    const [mounted, setMounted] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
+        setMounted(true);
         fetchStaff();
     }, []);
 
@@ -185,7 +187,7 @@ export function StaffManagementView() {
                                 )}
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                     <Award size={14} className="text-amber-400" />
-                                    <span className="font-bold">Rating: {member.rating.toFixed(1)}</span>
+                                    <span className="font-bold">Rating: {mounted ? member.rating.toFixed(1) : "-.-"}</span>
                                 </div>
                                 {member.metrics && (
                                     <div className="grid grid-cols-2 gap-2 pt-1">
@@ -193,10 +195,8 @@ export function StaffManagementView() {
                                             <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Misiones</span>
                                             <span className="text-sm font-black text-gray-900">{member.metrics.totalJobs}</span>
                                         </div>
-                                        <div className="bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
-                                            <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Promedio</span>
-                                            <span className="text-sm font-black text-gray-900">{member.metrics.avgCompletionTimeMinutes}m</span>
-                                        </div>
+                                        <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Promedio</span>
+                                        <span className="text-sm font-black text-gray-900">{mounted ? `${member.metrics.avgCompletionTimeMinutes}m` : "--m"}</span>
                                     </div>
                                 )}
                             </div>

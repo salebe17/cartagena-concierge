@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AdminDashboardView } from '@/components/AdminDashboardView';
 import { getAllServiceRequests, getAllBookings } from '@/app/actions/admin';
+import { deepSerialize } from '@/lib/utils/serialization';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,10 @@ export default async function AdminPage() {
 
         // 3. Render View
         return (
-            <AdminDashboardView requests={requests} bookings={bookings} />
+            <AdminDashboardView
+                requests={deepSerialize(requests)}
+                bookings={deepSerialize(bookings)}
+            />
         );
     } catch (error: any) {
         console.error("Admin Page Crash:", error);

@@ -3,16 +3,8 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/lib/types';
+import { deepSerialize } from '@/lib/utils/serialization';
 
-function serialize<T>(data: T): T {
-    try {
-        return JSON.parse(JSON.stringify(data, (key, value) =>
-            typeof value === 'bigint' ? value.toString() : value
-        ));
-    } catch (e) {
-        return data;
-    }
-}
 
 export async function sendMessage(content: string, requestId?: string, receiverId?: string): Promise<ActionResponse> {
     try {
@@ -62,7 +54,7 @@ export async function getConversation(requestId?: string, userId?: string): Prom
 
         const { data, error } = await query;
         if (error) throw error;
-        return serialize(data || []);
+        return deepSerialize(data || []);
     } catch (e) {
         console.error("GetConversation Error:", e);
         return [];
@@ -114,7 +106,7 @@ export async function getAdminInbox(): Promise<any[]> {
             }
         });
 
-        return serialize(Object.values(conversations));
+        return deepSerialize(Object.values(conversations));
     } catch (e) {
         console.error("GetAdminInbox Error:", e);
         return [];

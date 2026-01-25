@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Sparkles, User, Info, Calendar as CalendarIcon } from "lucide-react";
@@ -105,7 +105,7 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
                         >
                             <div className="flex justify-between items-start">
                                 <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
-                                    {format(day, "d")}
+                                    {mounted ? format(day, "d") : "--"}
                                 </span>
                             </div>
 
