@@ -24,6 +24,7 @@ import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
 import { ServiceRequest } from "@/lib/types";
 import { CalendarGrid } from "./admin/CalendarGrid";
 import { LogDetailsModal } from "./dashboard/LogDetailsModal";
+import { StaffManagementView } from "./admin/StaffManagementView";
 
 import { getAdminSystemStatus } from "@/app/actions/debug";
 import { Copy } from "lucide-react";
@@ -116,7 +117,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
     const [requests, setRequests] = useState(initialRequests || []);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [activeTab, setActiveTab] = useState<'requests' | 'calendar'>('requests');
+    const [activeTab, setActiveTab] = useState<'requests' | 'calendar' | 'staff'>('requests');
     const [filterPropertyId, setFilterPropertyId] = useState<string | null>(null);
     const { toast } = useToast();
 
@@ -232,6 +233,12 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                             className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'calendar' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                         >
                             Calendario Global
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('staff')}
+                            className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'staff' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                        >
+                            Staff
                         </button>
                     </div>
 
@@ -411,6 +418,10 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500"></span> iCal Sync</span>
                         </div>
                     </div>
+                )}
+
+                {activeTab === 'staff' && (
+                    <StaffManagementView />
                 )}
             </div>
         </div>

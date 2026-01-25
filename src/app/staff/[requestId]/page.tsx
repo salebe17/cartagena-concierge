@@ -1,25 +1,67 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { startJob, finishJob, uploadEvidence, saveStartPhotos } from "@/app/actions/staff";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Check, Camera, Play, CheckCircle2, User, MapPin, Loader2 } from "lucide-react";
+import { Check, Camera, Play, CheckCircle2, User, MapPin, Loader2, Clock, Sparkles, Award } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "next/navigation";
 
 // Mock Checklist for Demo
 const TASKS = [
-    { id: '0', label: 'Encender y verificar TVs', zone: 'General' },
-    { id: '1', label: 'Verificar nevera (Items olvidados)', zone: 'Cocina' },
-    { id: '2', label: 'Sacar basura y cambiar bolsas', zone: 'Cocina' },
-    { id: '3', label: 'Cambiar sábanas y toallas', zone: 'Habitaciones' },
-    { id: '4', label: 'Limpiar espejos y grifería', zone: 'Baños' },
-    { id: '5', label: 'Barrer y trapear pisos', zone: 'General' },
-    { id: '6', label: 'Apagar luces y A/C', zone: 'Salida' },
+    {
+        id: '0',
+        label: 'Encender y verificar TVs',
+        zone: 'General',
+        proTip: 'Verifica que el control remoto tenga pilas y que Netflix/YouTube carguen rápido. Limpia los marcos de la pantalla.',
+        targetTime: 2
+    },
+    {
+        id: '1',
+        label: 'Verificar nevera (Items olvidados)',
+        zone: 'Cocina',
+        proTip: 'Mira detrás de los cajones de verduras. Si hay algo perecedero de huéspedes anteriores, bótalo.',
+        targetTime: 1
+    },
+    {
+        id: '2',
+        label: 'Sacar basura y cambiar bolsas',
+        zone: 'Cocina',
+        proTip: 'Asegúrate de que la bolsa sea del tamaño correcto. Rocía un poco de ambientador en el fondo del balde.',
+        targetTime: 3
+    },
+    {
+        id: '3',
+        label: 'Cambiar sábanas y toallas',
+        zone: 'Habitaciones',
+        proTip: 'Haz el "doblez de hotel" en las esquinas. Revisa que no haya cabellos en las almohadas antes de poner la funda.',
+        targetTime: 15
+    },
+    {
+        id: '4',
+        label: 'Limpiar espejos y grifería',
+        zone: 'Baños',
+        proTip: 'Usa paño de microfibra seco para el pulido final. No debe quedar ni una gota de agua.',
+        targetTime: 5
+    },
+    {
+        id: '5',
+        label: 'Barrer y trapear pisos',
+        zone: 'General',
+        proTip: 'Empieza desde el fondo hacia la salida. Revisa debajo de las camas y sofás.',
+        targetTime: 10
+    },
+    {
+        id: '6',
+        label: 'Apagar luces y A/C',
+        zone: 'Salida',
+        proTip: 'Verifica que todas las ventanas estén cerradas y el A/C quede en 24°C si es necesario o apagado.',
+        targetTime: 2
+    },
 ];
 
 export default function StaffJobPage() {
@@ -32,10 +74,23 @@ export default function StaffJobPage() {
     const [completedTasks, setCompletedTasks] = useState<string[]>([]);
     const [evidence, setEvidence] = useState<string[]>([]);
     const [startEvidence, setStartEvidence] = useState<string[]>([]);
+    const [expandedTask, setExpandedTask] = useState<string | null>(null);
+    const [seconds, setSeconds] = useState(0);
 
     // New Upload State
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Timer Logic
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (['initial_inspection', 'checklist', 'checkout'].includes(step)) {
+            interval = setInterval(() => {
+                setSeconds(s => s + 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [step]);
 
     const { toast } = useToast();
 
@@ -49,7 +104,7 @@ export default function StaffJobPage() {
         setLoading(false);
 
         if (res.success && res.data) {
-            setLogId(res.data.id);
+            setLogId((res.data as any).id);
             setStep('initial_inspection'); // NEW FLOW
         } else {
             toast({ title: "Error", description: res.error || "No se pudo iniciar.", variant: "destructive" });
@@ -112,7 +167,8 @@ export default function StaffJobPage() {
         if (fileInputRef.current) fileInputRef.current.value = "";
 
         if (res.success && res.data) {
-            setEvidence(prev => [...prev, res.data.url]);
+            const dataUrl = (res.data as any).url;
+            setEvidence(prev => [...prev, dataUrl]);
             toast({ title: "Foto subida", description: "Evidencia guardada correctamente." });
         } else {
             toast({ title: "Error", description: res.error || "Falló la subida.", variant: "destructive" });
@@ -139,7 +195,17 @@ export default function StaffJobPage() {
                 <h1 className="text-xl font-bold uppercase tracking-wider flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Staff Portal
                 </h1>
-                <p className="text-gray-400 text-xs mt-1">ID Misión: {requestId ? requestId.slice(0, 6) : "..."}</p>
+                <div className="flex justify-between items-center mt-2">
+                    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Misión: {requestId ? requestId.slice(0, 6) : "..."}</p>
+                    {seconds > 0 && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
+                            <Clock size={12} className="text-emerald-400" />
+                            <span className="text-xs font-mono font-bold tracking-tighter">
+                                {Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, '0')}
+                            </span>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <main className="flex-1 p-6 max-w-md mx-auto w-full">
@@ -276,28 +342,64 @@ export default function StaffJobPage() {
 
                             <div className="space-y-3">
                                 {TASKS.map((task) => (
-                                    <motion.button
-                                        key={task.id}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => toggleTask(task.id)}
-                                        className={`w-full p-4 rounded-2xl border text-left flex items-center gap-4 transition-all shadow-sm ${completedTasks.includes(task.id)
-                                            ? 'bg-emerald-50 border-emerald-100 ring-1 ring-emerald-200'
-                                            : 'bg-white border-gray-100 hover:border-gray-200'
-                                            }`}
-                                    >
-                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${completedTasks.includes(task.id) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300'
-                                            }`}>
-                                            {completedTasks.includes(task.id) && <Check size={14} strokeWidth={4} />}
-                                        </div>
-                                        <div>
-                                            <p className={`font-bold ${completedTasks.includes(task.id) ? 'text-gray-900' : 'text-gray-700'}`}>
-                                                {task.label}
-                                            </p>
-                                            <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
-                                                {task.zone}
-                                            </p>
-                                        </div>
-                                    </motion.button>
+                                    <div key={task.id} className="space-y-2">
+                                        <motion.button
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => toggleTask(task.id)}
+                                            className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between gap-4 transition-all shadow-sm ${completedTasks.includes(task.id)
+                                                ? 'bg-emerald-50 border-emerald-100 ring-1 ring-emerald-200'
+                                                : 'bg-white border-gray-100 hover:border-gray-200'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${completedTasks.includes(task.id) ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300'
+                                                    }`}>
+                                                    {completedTasks.includes(task.id) && <Check size={14} strokeWidth={4} />}
+                                                </div>
+                                                <div>
+                                                    <p className={`text-sm font-bold ${completedTasks.includes(task.id) ? 'text-gray-900' : 'text-gray-700'}`}>
+                                                        {task.label}
+                                                    </p>
+                                                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                                                        {task.zone} • {task.targetTime} min sugerido
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setExpandedTask(expandedTask === task.id ? null : task.id);
+                                                }}
+                                                className={`p-2 rounded-full hover:bg-gray-50 transition-colors ${expandedTask === task.id ? 'text-blue-600 bg-blue-50' : 'text-gray-300'}`}
+                                            >
+                                                <Award size={18} />
+                                            </button>
+                                        </motion.button>
+
+                                        <AnimatePresence>
+                                            {expandedTask === task.id && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl border-dashed">
+                                                        <div className="flex gap-2 items-start text-blue-800">
+                                                            <Sparkles size={16} className="mt-0.5 shrink-0" />
+                                                            <div className="space-y-1">
+                                                                <p className="text-xs font-black uppercase tracking-wider">Pro-Tip de Eficiencia</p>
+                                                                <p className="text-xs font-medium leading-relaxed italic">
+                                                                    {task.proTip}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 ))}
                             </div>
 
