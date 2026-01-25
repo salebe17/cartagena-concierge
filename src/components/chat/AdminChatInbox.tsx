@@ -10,6 +10,7 @@ export function AdminChatInbox({ currentUserId }: { currentUserId: string }) {
     const [conversations, setConversations] = useState<any[]>([]);
     const [selectedConv, setSelectedConv] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
     const refresh = async () => {
         const data = await getAdminInbox();
@@ -18,6 +19,7 @@ export function AdminChatInbox({ currentUserId }: { currentUserId: string }) {
     };
 
     useEffect(() => {
+        setMounted(true);
         refresh();
         const interval = setInterval(refresh, 5000); // Polling for inbox summary updates
         return () => clearInterval(interval);
@@ -43,7 +45,7 @@ export function AdminChatInbox({ currentUserId }: { currentUserId: string }) {
                             <div className="flex justify-between items-start mb-1">
                                 <p className="text-sm font-bold text-gray-900 truncate pr-2">{conv.senderName}</p>
                                 <span className="text-[9px] font-bold text-gray-400 shrink-0">
-                                    {new Date(conv.timestamp).toLocaleDateString()}
+                                    {mounted ? new Date(conv.timestamp).toLocaleDateString() : '--/--/----'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-1 mb-1">

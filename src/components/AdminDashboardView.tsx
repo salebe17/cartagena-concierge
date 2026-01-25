@@ -98,12 +98,14 @@ function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
     const [stats, setStats] = useState<any>(null);
     const [propRevenue, setPropRevenue] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
     const EX_RATE = 4000;
 
     const format = (amt: number) => {
         const val = currency === 'USD' ? amt / EX_RATE : amt;
-        return (currency === 'USD' ? '$' : '$') + Math.round(val).toLocaleString() + (currency === 'USD' ? ' USD' : '');
+        const numStr = mounted ? Math.round(val).toLocaleString() : '---';
+        return (currency === 'USD' ? '$' : '$') + numStr + (currency === 'USD' ? ' USD' : '');
     };
 
     useEffect(() => {
@@ -112,6 +114,7 @@ function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
             setStats(s);
             setPropRevenue(p);
             setLoading(false);
+            setMounted(true);
         };
         load();
     }, []);

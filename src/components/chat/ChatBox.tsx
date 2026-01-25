@@ -18,6 +18,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
 
@@ -32,6 +33,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
             const data = await getConversation(requestId, userId);
             setMessages(data);
             setLoading(false);
+            setMounted(true);
             setTimeout(scrollToBottom, 100);
 
             // Mark unread as read if Admin
@@ -101,7 +103,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
                                 </div>
                                 <div className="flex items-center gap-1 mt-1 px-1">
                                     <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
-                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {mounted ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                     </span>
                                     {isMe && (
                                         msg.is_read

@@ -45,8 +45,9 @@ export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> 
             let avgTime = 0;
             if (totalJobs > 0) {
                 const totalMinutes = memberLogs.reduce((acc: number, log: any) => {
-                    const start = log.started_at ? new Date(log.started_at).getTime() : 0;
-                    const end = log.ended_at ? new Date(log.ended_at).getTime() : 0;
+                    if (!log.started_at || !log.ended_at) return acc;
+                    const start = new Date(log.started_at).getTime();
+                    const end = new Date(log.ended_at).getTime();
                     const duration = end - start;
                     return acc + (duration / 1000 / 60);
                 }, 0);
