@@ -17,6 +17,8 @@ import { BillingSection } from "./dashboard/BillingSection";
 import { Property } from "@/lib/types";
 import { BottomNav } from "./host/BottomNav";
 import { HostServicesView } from "./host/HostServicesView";
+import { HostTodayView } from "./host/HostTodayView";
+import { HostMessagesView } from "./host/HostMessagesView";
 import { signOut } from "@/app/actions/dashboard";
 
 interface DashboardViewProps {
