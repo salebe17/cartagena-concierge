@@ -20,11 +20,47 @@ import { MessageSquare as MessageIcon } from "lucide-react";
 import { getAdminSystemStatus } from "@/app/actions/debug";
 import { DiagnosticOverlay } from "./debug/DiagnosticOverlay";
 
-function StatsOverview({ requests = [], staff = [] }: { requests: ServiceRequest[], staff: StaffMember[] }) {
-    const safeRequests = (requests || []).filter(r => r && typeof r === 'object');
-    const pending = safeRequests.filter(r => r.status === 'pending').length;
-    const active = safeRequests.filter(r => r.status === 'confirmed').length;
-    const completed = safeRequests.filter(r => r.status === 'completed').length;
+function StatsOverview({ staff = [] }: { requests?: ServiceRequest[], staff: StaffMember[] }) {
+    const [requests, setRequests] = useState<ServiceRequest[]>([]);
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [loadingData, setLoadingData] = useState(true);
+    const { toast } = useToast(); // Assuming useToast is available here
+
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            try {
+                // Parallel fetch for speed
+                const [reqRes, bookRes] = await Promise.all([
+                    fetch('/api/admin/requests'),
+                    fetch('/api/admin/bookings')
+                ]);
+
+                if (reqRes.ok) {
+                    const reqJson = await reqRes.json();
+                    if (reqJson.success) setRequests(reqJson.data);
+                }
+
+                if (bookRes.ok) {
+                    const bookJson = await bookRes.json();
+                    if (bookJson.success) setBookings(bookJson.data);
+                }
+            } catch (error) {
+                console.error("Dashboard Data Load Error:", error);
+                toast({ title: "Error de Conexión", description: "No se pudieron cargar los datos actualizados.", variant: "destructive" });
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        loadDashboardData();
+    }, []);
+
+    // Derived state
+    const activeRequests = requests.filter(r => r.status === 'pending' || r.status === 'in_progress');
+    const recentBookings = bookings.slice(0, 5);
+    const pending = requests.filter(r => r.status === 'pending').length;
+    const active = requests.filter(r => r.status === 'confirmed').length;
+    const completed = requests.filter(r => r.status === 'completed').length;
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -281,6 +317,17 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
     };
 
     const filteredBookings = filterPropertyId ? bookings.filter(b => b.property_id === filterPropertyId) : bookings;
+
+    if (loadingData && requests.length === 0) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="flex flex-col items-center gap-4">
+                    <RefreshCw className="animate-spin text-blue-900" size={48} />
+                    <p className="text-gray-500 font-medium animate-pulse">Cargando Panel de Control...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-8">
