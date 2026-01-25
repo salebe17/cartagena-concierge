@@ -41,20 +41,30 @@ export default function LandingPage() {
                 {/* Add more logos if needed */}
               </div>
             </div>
-            <div className="relative group hidden lg:block">
-              <div className="absolute -inset-4 bg-gradient-to-r from-rose-100 to-teal-100 rounded-[3rem] opacity-30 blur-2xl group-hover:opacity-50 transition-opacity duration-700" />
-              <img
-                src="https://images.unsplash.com/photo-1600596542815-e328d4de4bf7?q=80&w=2000&auto=format&fit=crop"
-                alt="Luxury Interior"
-                className="relative rounded-[2.5rem] shadow-2xl skew-y-3 group-hover:skew-y-2 transition-transform duration-700 object-cover h-[600px] w-full border-[8px] border-white"
-              />
-              <div className="absolute bottom-12 -left-8 bg-white/90 backdrop-blur p-4 rounded-2xl shadow-xl flex items-center gap-4 animate-in fade-in slide-in-from-right-10 delay-300 duration-1000">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                  <ShieldCheck size={24} />
-                </div>
-                <div>
-                  <p className="font-bold text-gray-900">Limpieza Verificada</p>
-                  <p className="text-xs text-gray-500">Hace 2 minutos • Bocagrande</p>
+            <div className="relative group hidden lg:block h-[600px] w-full">
+              {/* Background Glow */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-rose-100 to-teal-100 rounded-[2.5rem] opacity-30 blur-2xl group-hover:opacity-50 transition-opacity duration-700" />
+
+              {/* Main Image - Stable & Premium */}
+              <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl border-[1px] border-white/50">
+                <img
+                  src="https://images.unsplash.com/photo-1600596542815-e328d4de4bf7?q=80&w=2000&auto=format&fit=crop"
+                  alt="Luxury Interior"
+                  className="h-full w-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
+                />
+
+                {/* Floating Card - Glassmorphism */}
+                <div className="absolute bottom-8 left-8 right-8 bg-white/80 backdrop-blur-xl p-4 rounded-2xl shadow-lg border border-white/40 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 delay-300 duration-1000">
+                  <div className="w-12 h-12 bg-emerald-100/80 rounded-full flex items-center justify-center text-emerald-600 shrink-0">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-gray-900 leading-tight">Limpieza Verificada</p>
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    </div>
+                    <p className="text-xs text-gray-600 font-medium mt-0.5">Hace 2 minutos • Bocagrande</p>
+                  </div>
                 </div>
               </div>
             </div>
