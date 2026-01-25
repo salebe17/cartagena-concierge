@@ -48,8 +48,8 @@ export default async function AdminPage() {
         // 3. Render View
         return (
             <AdminDashboardView
-                requests={deepSerialize(requests)}
-                bookings={deepSerialize(bookings)}
+                requests={deepSerialize(requests) || []}
+                bookings={deepSerialize(bookings) || []}
             />
         );
     } catch (error: any) {

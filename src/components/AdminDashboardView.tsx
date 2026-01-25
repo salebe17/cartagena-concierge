@@ -19,10 +19,11 @@ import { MessageSquare as MessageIcon } from "lucide-react";
 
 import { getAdminSystemStatus } from "@/app/actions/debug";
 
-function StatsOverview({ requests, staff }: { requests: ServiceRequest[], staff: StaffMember[] }) {
-    const pending = requests.filter(r => r.status === 'pending').length;
-    const active = requests.filter(r => r.status === 'confirmed').length;
-    const completed = requests.filter(r => r.status === 'completed').length;
+function StatsOverview({ requests = [], staff = [] }: { requests: ServiceRequest[], staff: StaffMember[] }) {
+    const safeRequests = requests || [];
+    const pending = safeRequests.filter(r => r.status === 'pending').length;
+    const active = safeRequests.filter(r => r.status === 'confirmed').length;
+    const completed = safeRequests.filter(r => r.status === 'completed').length;
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
