@@ -1,6 +1,4 @@
-"use client";
-
-import { Search, Home } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -25,13 +23,15 @@ export function HeroRegistrationWidget() {
                     <select
                         value={propertyType}
                         onChange={(e) => setPropertyType(e.target.value)}
-                        className="w-full bg-transparent text-sm text-gray-600 font-medium outline-none cursor-pointer appearance-none group-hover:text-gray-900"
+                        className="w-full bg-transparent text-sm text-gray-600 font-medium outline-none cursor-pointer appearance-none group-hover:text-gray-900 pr-8"
                     >
                         <option>Apartamento Turístico</option>
                         <option>Casa Colonial</option>
                         <option>Villa Privada</option>
+                        <option>Penthouse / Loft</option>
+                        <option>Isla Privada</option>
                     </select>
-                    <Home size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
             </div>
 
