@@ -401,7 +401,7 @@ export async function getFinancialStats(): Promise<any> {
             }
         };
 
-        invoices.forEach((inv: any) => {
+        (invoices || []).forEach((inv: any) => {
             const amount = inv.amount || 0;
             stats.total += amount;
             const type = inv.service_requests?.service_type || 'other';
@@ -439,7 +439,7 @@ export async function getRevenueByProperty(): Promise<any[]> {
 
         if (error) throw error;
 
-        invoices.forEach((inv: any) => {
+        (invoices || []).forEach((inv: any) => {
             const propId = inv.service_requests?.property_id;
             if (propId && propertyMap[propId]) {
                 propertyMap[propId].revenue += inv.amount;

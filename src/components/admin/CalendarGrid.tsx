@@ -30,6 +30,11 @@ interface CalendarGridProps {
 export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Grid Calculation
     const monthStart = startOfMonth(currentDate);
@@ -65,7 +70,7 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
             <div className="p-6 flex items-center justify-between border-b border-gray-100">
                 <h2 className="text-2xl font-black text-gray-900 capitalize flex items-center gap-2">
                     <CalendarIcon className="text-rose-500" />
-                    {format(currentDate, "MMMM yyyy", { locale: es })}
+                    {mounted ? format(currentDate, "MMMM yyyy", { locale: es }) : "Cargando..."}
                 </h2>
                 <div className="flex gap-2">
                     <Button variant="outline" size="icon" onClick={prevMonth}>
@@ -99,7 +104,7 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
                             className={`min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors ${!isCurrentMonth ? 'bg-gray-50/30 text-gray-300' : ''}`}
                         >
                             <div className="flex justify-between items-start">
-                                <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-gray-900 text-white' : ''}`}>
+                                <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
                                     {format(day, "d")}
                                 </span>
                             </div>
