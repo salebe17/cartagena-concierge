@@ -25,6 +25,78 @@ import { ServiceRequest } from "@/lib/types";
 import { CalendarGrid } from "./admin/CalendarGrid";
 import { LogDetailsModal } from "./dashboard/LogDetailsModal";
 
+import { getAdminSystemStatus } from "@/app/actions/debug";
+import { Copy } from "lucide-react";
+
+function DebugStatusWidget() {
+    const [status, setStatus] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    const checkStatus = async () => {
+        setLoading(true);
+        const data = await getAdminSystemStatus();
+        setStatus(data);
+        setLoading(false);
+    };
+
+    return (
+        <div className="bg-gray-900 rounded-xl p-4 text-xs font-mono text-gray-300 overflow-hidden">
+            <div className="flex justify-between items-center mb-2 border-b border-gray-800 pb-2">
+                <span className="font-bold text-white uppercase tracking-wider">System Diagnostic</span>
+                <button onClick={checkStatus} className="text-cyan-400 hover:text-cyan-300 underline">
+                    {loading ? "Checking..." : "Run Check"}
+                </button>
+            </div>
+            {status ? (
+                <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <span className="text-gray-500 block">Environment</span>
+                            <span className={status.env.hasServiceKey ? "text-emerald-400" : "text-red-400"}>
+                                Service Key: {status.env.hasServiceKey ? "OK" : "MISSING"}
+                            </span>
+                        </div>
+                        <div>
+                            <span className="text-gray-500 block">Auth</span>
+                            <span>User: {status.auth.userId ? status.auth.userId.slice(0, 8) + '...' : 'None'}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span className="text-gray-500 block">Profile Check</span>
+                        {status.profile.error ? (
+                            <span className="text-red-400">Error: {status.profile.error}</span>
+                        ) : (
+                            <span className="text-blue-300">Role: {status.profile.data?.role || 'None'}</span>
+                        )}
+                    </div>
+                    <div>
+                        <span className="text-gray-500 block">Database Visibility (Rows Found)</span>
+                        <div className="flex justify-between">
+                            <span>Via User Client:</span>
+                            <span className={status.dataAccess.viaUserClient.count > 0 ? "text-emerald-400" : "text-yellow-400"}>
+                                {status.dataAccess.viaUserClient.count} {status.dataAccess.viaUserClient.error && `(${status.dataAccess.viaUserClient.error})`}
+                            </span>
+                        </div>
+                        <div className="flex justify-between opacity-75">
+                            <span>Via Admin Key:</span>
+                            <span>{status.dataAccess.viaAdminClient.count} ({status.dataAccess.viaAdminClient.error})</span>
+                        </div>
+                    </div>
+                    <div className="pt-2 border-t border-gray-800 flex justify-end">
+                        <button onClick={() => navigator.clipboard.writeText(JSON.stringify(status, null, 2))} className="flex items-center gap-1 text-gray-500 hover:text-white">
+                            <Copy size={12} /> Copy JSON
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="text-center py-4 text-gray-600 italic">
+                    Click "Run Check" to verify persistence issues.
+                </div>
+            )}
+        </div>
+    );
+}
+
 interface AdminDashboardViewProps {
     requests: ServiceRequest[];
     bookings?: any[];
@@ -276,26 +348,33 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                         </AnimatePresence>
 
                         {requests.length === 0 && (
-                            <div className="bg-white rounded-3xl p-12 border border-gray-100 text-center space-y-4 shadow-sm">
-                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
-                                    <CheckCircle2 size={32} />
-                                </div>
-                                <div className="space-y-1">
-                                    <h3 className="text-xl font-bold text-gray-900">Todo al día</h3>
-                                    <p className="text-sm text-gray-400 max-w-xs mx-auto">No hay solicitudes pendientes de gestión.</p>
+                            <div className="space-y-6">
+                                <div className="bg-white rounded-3xl p-12 border border-gray-100 text-center space-y-4 shadow-sm">
+                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
+                                        <CheckCircle2 size={32} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-xl font-bold text-gray-900">Todo al día</h3>
+                                        <p className="text-sm text-gray-400 max-w-xs mx-auto">No hay solicitudes pendientes de gestión.</p>
+                                    </div>
+
+                                    {bookings.length > 0 && (
+                                        <div className="pt-4">
+                                            <Button
+                                                onClick={() => setActiveTab('calendar')}
+                                                variant="outline"
+                                                className="gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+                                            >
+                                                <CalendarIcon size={16} /> Ver mis {bookings.length} Reservas
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {bookings.length > 0 && (
-                                    <div className="pt-4">
-                                        <Button
-                                            onClick={() => setActiveTab('calendar')}
-                                            variant="outline"
-                                            className="gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-                                        >
-                                            <CalendarIcon size={16} /> Ver mis {bookings.length} Reservas
-                                        </Button>
-                                    </div>
-                                )}
+                                {/* DEBUG WIDGET - Only visible if empty to help troubleshoot */}
+                                <div className="mx-auto max-w-2xl">
+                                    <DebugStatusWidget />
+                                </div>
                             </div>
                         )}
                     </div>
