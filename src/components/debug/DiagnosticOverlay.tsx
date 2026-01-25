@@ -137,10 +137,10 @@ export function DiagnosticOverlay() {
                                         const res = await fetch('/api/debug/ping');
                                         if (res.ok) {
                                             const json = await res.json();
-                                            addLog(`✅ API Success: ${json.message}`);
+                                            addLog(`✅ API Ping Success: ${json.message}`);
                                         } else {
                                             const text = await res.text();
-                                            addLog(`🔥 API Failed: ${res.status} ${text.slice(0, 50)}`);
+                                            addLog(`🔥 API Ping Failed: ${res.status} ${text.slice(0, 50)}`);
                                         }
                                     } catch (e: any) {
                                         addLog(`💀 API Network Error: ${e.message}`);
@@ -150,7 +150,31 @@ export function DiagnosticOverlay() {
                                 disabled={loading}
                                 className="w-full bg-amber-900/30 border border-amber-800 hover:bg-amber-900/50 text-amber-100 p-3 rounded-xl text-left flex justify-between items-center transition-colors"
                             >
-                                <span>Test /api/debug/ping (API Route)</span>
+                                <span>Test /api/debug/ping (Simple)</span>
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    setLoading(true);
+                                    addLog("🚀 TESTING STAFF API...");
+                                    try {
+                                        const res = await fetch('/api/admin/staff');
+                                        const json = await res.json();
+
+                                        if (res.ok && json.success) {
+                                            addLog(`✅ Staff API Success: Loaded ${json.data.length} members`);
+                                        } else {
+                                            addLog(`🔥 Staff API Error: ${json.error || res.statusText}`);
+                                        }
+                                    } catch (e: any) {
+                                        addLog(`💀 Staff API Network Error: ${e.message}`);
+                                    }
+                                    setLoading(false);
+                                }}
+                                disabled={loading}
+                                className="w-full bg-emerald-900/30 border border-emerald-800 hover:bg-emerald-900/50 text-emerald-100 p-3 rounded-xl text-left flex justify-between items-center transition-colors"
+                            >
+                                <span>Test /api/admin/staff (Bypass)</span>
                             </button>
 
                             <button
