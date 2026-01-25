@@ -19,6 +19,8 @@ import { FloatingChatWidget } from "./chat/FloatingChatWidget";
 
 import { BottomNav } from "./host/BottomNav";
 import { HostMenu } from "./host/HostMenu";
+import { HostTodayView } from "./host/HostTodayView";
+import { HostMessagesView } from "./host/HostMessagesView";
 import { signOut } from "@/app/actions/dashboard";
 
 interface DashboardViewProps {
@@ -95,8 +97,6 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
             toast({ title: "Error", description: res.error, variant: "destructive" });
         }
     };
-
-    import { HostTodayView } from "./host/HostTodayView";
 
     const renderContent = () => {
         switch (activeTab) {
