@@ -99,7 +99,7 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
             <div className="hidden md:flex p-6 items-center justify-between border-b border-gray-100">
                 <h2 className="text-2xl font-black text-gray-900 capitalize flex items-center gap-2">
                     <CalendarIcon className="text-rose-500" />
-                    {mounted ? format(currentDate, "MMMM yyyy", { locale: es }) : "Cargando..."}
+                    <span suppressHydrationWarning>{format(currentDate, "MMMM yyyy", { locale: es })}</span>
                 </h2>
                 <div className="flex gap-2">
                     <Button variant="outline" size="icon" onClick={prevMonth}>
