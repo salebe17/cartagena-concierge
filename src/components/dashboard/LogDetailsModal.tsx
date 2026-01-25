@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Info, Camera, Clock, User, CheckCircle2 } from "lucide-react";
@@ -25,9 +25,15 @@ interface LogDetailsModalProps {
 }
 
 export function LogDetailsModal({ request, triggerButton }: LogDetailsModalProps) {
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
     const log = request.service_logs && request.service_logs.length > 0 ? request.service_logs[0] : null;
 
-    if (!log) return null; // Don't show if no logs
+    if (!log) return null;
+
+    const startTime = mounted ? new Date(log.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--";
+    const endTime = log.ended_at && mounted ? new Date(log.ended_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (log.ended_at ? "--:--" : "En progreso");
 
     return (
         <Dialog>
@@ -59,8 +65,7 @@ export function LogDetailsModal({ request, triggerButton }: LogDetailsModalProps
                                 <Clock size={12} /> Duración
                             </div>
                             <p className="font-medium text-gray-900">
-                                {new Date(log.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -
-                                {log.ended_at ? new Date(log.ended_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "En progreso"}
+                                {startTime} - {endTime}
                             </p>
                         </div>
                     </div>

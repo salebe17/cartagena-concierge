@@ -1,7 +1,6 @@
 "use client";
 
 import { ActionResponse, ServiceRequest } from '@/lib/types';
-import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { adminUpdateServiceStatus, forceSyncAllCalendars, adminCreateServiceRequest, assignStaffToRequest, getFinancialStats, getRevenueByProperty } from '@/app/actions/admin';
 import { getStaffMembers, StaffMember } from '@/app/admin/actions/staff_management';
