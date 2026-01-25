@@ -13,15 +13,22 @@ export function AdminChatInbox({ currentUserId }: { currentUserId: string }) {
     const [mounted, setMounted] = useState(false);
 
     const refresh = async () => {
-        const data = await getAdminInbox();
-        setConversations(data);
+        try {
+            const res = await fetch('/api/admin/chat/inbox');
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success) setConversations(json.data);
+            }
+        } catch (e) {
+            console.error("Inbox Poll Error:", e);
+        }
         setLoading(false);
     };
 
     useEffect(() => {
         setMounted(true);
         refresh();
-        const interval = setInterval(refresh, 5000); // Polling for inbox summary updates
+        const interval = setInterval(refresh, 5000);
         return () => clearInterval(interval);
     }, []);
 
