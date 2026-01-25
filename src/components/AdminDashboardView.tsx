@@ -381,10 +381,6 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                     )}
                                 </div>
 
-                                {/* DEBUG WIDGET - Only visible if empty to help troubleshoot */}
-                                <div className="mx-auto max-w-2xl">
-                                    <DebugStatusWidget />
-                                </div>
                             </div>
                         )}
                     </div>
