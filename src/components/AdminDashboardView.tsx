@@ -253,8 +253,15 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
     }, []);
 
     const fetchStaff = async () => {
-        const res = await getStaffMembers();
-        if (res.success && res.data) setStaffList(res.data);
+        try {
+            const res = await fetch('/api/admin/staff');
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success) setStaffList(json.data);
+            }
+        } catch (e) {
+            console.error("Staff Fetch Error", e);
+        }
     };
 
     const handleSync = async () => {
