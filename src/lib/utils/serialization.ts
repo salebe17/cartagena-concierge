@@ -6,29 +6,14 @@ export function deepSerialize<T>(data: T): T {
     if (data === null || data === undefined) return data;
 
     try {
-        // Simple but effective deep serialization for POJOs
-        // converting BigInt to strings via replacer function
         return JSON.parse(
-            JSON.stringify(data, (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value
-            )
+            JSON.stringify(data, (key, value) => {
+                if (typeof value === 'bigint') return value.toString();
+                return value;
+            })
         );
     } catch (error) {
         console.error("Deep serialization failed:", error);
-
-        // Fallback for objects with circular references or other issues
-        if (Array.isArray(data)) {
-            return data.map(item => deepSerialize(item)) as unknown as T;
-        }
-
-        if (typeof data === 'object') {
-            const result: any = {};
-            for (const [key, value] of Object.entries(data)) {
-                result[key] = deepSerialize(value);
-            }
-            return result as T;
-        }
-
-        return data;
+        return [] as any; // Fallback to safe array if everything fails
     }
 }

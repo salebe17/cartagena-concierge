@@ -20,7 +20,7 @@ import { MessageSquare as MessageIcon } from "lucide-react";
 import { getAdminSystemStatus } from "@/app/actions/debug";
 
 function StatsOverview({ requests = [], staff = [] }: { requests: ServiceRequest[], staff: StaffMember[] }) {
-    const safeRequests = requests || [];
+    const safeRequests = (requests || []).filter(r => r && typeof r === 'object');
     const pending = safeRequests.filter(r => r.status === 'pending').length;
     const active = safeRequests.filter(r => r.status === 'confirmed').length;
     const completed = safeRequests.filter(r => r.status === 'completed').length;
@@ -186,7 +186,7 @@ function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
 }
 
 export function AdminDashboardView({ requests: initialRequests, bookings = [] }: AdminDashboardViewProps) {
-    const [requests, setRequests] = useState<any[]>(initialRequests || []);
+    const [requests, setRequests] = useState<any[]>((initialRequests || []).filter(r => r && typeof r === 'object'));
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const [activeTab, setActiveTab] = useState<'requests' | 'calendar' | 'staff' | 'finance' | 'inbox'>('requests');
@@ -319,67 +319,70 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                     {activeTab === 'requests' ? (
                         <div className="space-y-4">
                             <AnimatePresence mode="popLayout">
-                                {requests.map((req, index) => (
-                                    <motion.div
-                                        key={req.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row group"
-                                    >
-                                        <div className="p-6 flex items-start gap-4 flex-1">
-                                            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform">
-                                                {getIcon(req.service_type)}
-                                            </div>
-                                            <div className="space-y-4 flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(req.status)}`}>{req.status}</span>
-                                                    <span className="text-[10px] text-gray-300 font-mono">#{req.id.slice(0, 5)}</span>
+                                {requests.map((req, index) => {
+                                    if (!req || !req.id) return null;
+                                    return (
+                                        <motion.div
+                                            key={req.id}
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row group"
+                                        >
+                                            <div className="p-6 flex items-start gap-4 flex-1">
+                                                <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform">
+                                                    {getIcon(req.service_type)}
                                                 </div>
-                                                <h3 className="text-xl font-black text-gray-900 leading-none">{req.service_type === 'cleaning' ? 'Limpieza de Unidad' : 'Servicio Especial'}</h3>
-
-                                                <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50 grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <p className="text-[13px] font-black text-gray-900 flex items-center gap-1.5"><Home size={14} className="text-rose-500" /> {req.properties?.title}</p>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><MapPin size={10} /> {req.properties?.address || 'Cartagena'}</p>
+                                                <div className="space-y-4 flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(req.status)}`}>{req.status}</span>
+                                                        <span className="text-[10px] text-gray-300 font-mono">#{req.id.slice(0, 5)}</span>
                                                     </div>
-                                                    <div className="flex items-center justify-between border-l border-gray-200 pl-4">
+                                                    <h3 className="text-xl font-black text-gray-900 leading-none">{req.service_type === 'cleaning' ? 'Limpieza de Unidad' : 'Servicio Especial'}</h3>
+
+                                                    <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50 grid grid-cols-2 gap-4">
                                                         <div>
-                                                            <p className="text-[9px] font-black text-gray-400 uppercase">{mounted ? new Date(req.requested_date).toLocaleDateString() : '--/--/----'}</p>
-                                                            <p className="text-xs font-bold text-gray-800">Fecha Misi&oacute;n</p>
+                                                            <p className="text-[13px] font-black text-gray-900 flex items-center gap-1.5"><Home size={14} className="text-rose-500" /> {req.properties?.title}</p>
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><MapPin size={10} /> {req.properties?.address || 'Cartagena'}</p>
                                                         </div>
-                                                        <button onClick={() => setActiveTab('inbox')} className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors shadow-sm">
-                                                            <MessageIcon size={14} />
-                                                        </button>
+                                                        <div className="flex items-center justify-between border-l border-gray-200 pl-4">
+                                                            <div>
+                                                                <p className="text-[9px] font-black text-gray-400 uppercase">{mounted ? new Date(req.requested_date).toLocaleDateString() : '--/--/----'}</p>
+                                                                <p className="text-xs font-bold text-gray-800">Fecha Misi&oacute;n</p>
+                                                            </div>
+                                                            <button onClick={() => setActiveTab('inbox')} className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors shadow-sm">
+                                                                <MessageIcon size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <Users size={12} className="text-gray-400" />
+                                                        <select
+                                                            value={req.assigned_staff_id || ""}
+                                                            onChange={(e) => handleAssignStaff(req.id, e.target.value)}
+                                                            className="text-[11px] font-bold border-none bg-transparent p-0 focus:ring-0 text-gray-500 cursor-pointer"
+                                                        >
+                                                            <option value="">Asignar Personal...</option>
+                                                            {staffList.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                                                        </select>
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <div className="flex items-center gap-2">
-                                                    <Users size={12} className="text-gray-400" />
-                                                    <select
-                                                        value={req.assigned_staff_id || ""}
-                                                        onChange={(e) => handleAssignStaff(req.id, e.target.value)}
-                                                        className="text-[11px] font-bold border-none bg-transparent p-0 focus:ring-0 text-gray-500 cursor-pointer"
-                                                    >
-                                                        <option value="">Asignar Personal...</option>
-                                                        {staffList.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
-                                                    </select>
+                                            <div className="bg-gray-50/50 p-6 border-l border-gray-100 flex flex-col justify-center gap-3 min-w-[220px]">
+                                                {req.status === 'pending' && <Button onClick={() => handleStatusUpdate(req.id, 'confirmed')} className="w-full bg-blue-600 font-bold rounded-xl h-11">Confirmar</Button>}
+                                                {req.status === 'confirmed' && <Button onClick={() => handleStatusUpdate(req.id, 'completed')} className="w-full bg-emerald-600 font-bold rounded-xl h-11">Finalizar</Button>}
+                                                {req.status === 'completed' && <Button onClick={() => handleCharge(req.id)} className="w-full bg-gray-950 font-bold rounded-xl h-11">Cobrar</Button>}
+
+                                                <div className="flex gap-2">
+                                                    <RequestDetailsModal request={req} onViewCalendar={handleViewCalendar} triggerButton={<Button variant="ghost" className="flex-1 text-[10px] font-bold">INFO</Button>} />
+                                                    <LogDetailsModal request={req} triggerButton={<Button variant="ghost" className="flex-1 text-[10px] font-bold text-emerald-600">LOGS</Button>} />
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div className="bg-gray-50/50 p-6 border-l border-gray-100 flex flex-col justify-center gap-3 min-w-[220px]">
-                                            {req.status === 'pending' && <Button onClick={() => handleStatusUpdate(req.id, 'confirmed')} className="w-full bg-blue-600 font-bold rounded-xl h-11">Confirmar</Button>}
-                                            {req.status === 'confirmed' && <Button onClick={() => handleStatusUpdate(req.id, 'completed')} className="w-full bg-emerald-600 font-bold rounded-xl h-11">Finalizar</Button>}
-                                            {req.status === 'completed' && <Button onClick={() => handleCharge(req.id)} className="w-full bg-gray-950 font-bold rounded-xl h-11">Cobrar</Button>}
-
-                                            <div className="flex gap-2">
-                                                <RequestDetailsModal request={req} onViewCalendar={handleViewCalendar} triggerButton={<Button variant="ghost" className="flex-1 text-[10px] font-bold">INFO</Button>} />
-                                                <LogDetailsModal request={req} triggerButton={<Button variant="ghost" className="flex-1 text-[10px] font-bold text-emerald-600">LOGS</Button>} />
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                        </motion.div>
+                                    );
+                                })}
                             </AnimatePresence>
                             {requests.length === 0 && <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 font-bold">Sin solicitudes pendientes.</div>}
                             <DebugStatusWidget />

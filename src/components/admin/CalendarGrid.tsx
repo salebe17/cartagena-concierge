@@ -111,16 +111,19 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
 
                             {/* Booking Pills */}
                             <div className="space-y-1 mt-1 overflow-y-auto max-h-[90px] no-scrollbar">
-                                {dayBookings.map(booking => (
-                                    <motion.button
-                                        key={booking.id}
-                                        whileHover={{ scale: 1.02 }}
-                                        onClick={() => setSelectedBooking(booking)}
-                                        className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-50' : ''}`}
-                                    >
-                                        {booking.properties?.title || "Casa"}
-                                    </motion.button>
-                                ))}
+                                {(dayBookings || []).map(booking => {
+                                    if (!booking || !booking.id) return null;
+                                    return (
+                                        <motion.button
+                                            key={booking.id}
+                                            whileHover={{ scale: 1.02 }}
+                                            onClick={() => setSelectedBooking(booking)}
+                                            className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                        >
+                                            {booking.properties?.title || "Casa"}
+                                        </motion.button>
+                                    );
+                                })}
                             </div>
                         </div>
                     );
