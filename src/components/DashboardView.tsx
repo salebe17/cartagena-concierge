@@ -149,27 +149,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                 );
             case 'mensajes':
                 return (
-                    <div className="h-[80vh] bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm animate-in fade-in">
-                        {/* Desktop Chat View - reusing ChatBox logic implicitly via FloatingWidget? 
-                             No, 'Mensajes' tab usually implies a full screen chat list. 
-                             For now, let's show a placeholder or the AdminChatInbox if user is admin?
-                             Or just a "Use the chat widget" message?
-                             Actually, the prompt implies "Mensajes" in the bottom bar.
-                             Let's render a Full Screen chat view.
-                         */}
-                        <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
-                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
-                                <MessageSquare size={32} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-xl text-gray-900">Mensajes</h3>
-                                <p className="text-gray-500 max-w-xs mx-auto">Tus conversaciones con huéspedes y soporte aparecerán aquí.</p>
-                            </div>
-                            <Button onClick={() => document.getElementById('floating-chat-trigger')?.click()} className="bg-black text-white rounded-xl">
-                                Abrir Chat de Soporte
-                            </Button>
-                        </div>
-                    </div>
+                    <HostMessagesView bookings={bookings} />
                 );
             case 'menu':
                 return <HostMenu
