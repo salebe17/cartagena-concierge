@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { sendMessage, getConversation, markAsRead } from '@/app/actions/chat';
+import { getConversation, markAsRead } from '@/app/actions/chat';
 import { Send, User, Loader2, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatBubble } from './ChatBubble';
@@ -90,11 +90,29 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
         const receiverId = isAdmin ? userId : undefined;
 
         // Optimistic update could go here, but let's wait for server for safety
-        const res = await sendMessage(contentToSend, requestId, receiverId, fileUrl, fileType);
+        try {
+            const res = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: contentToSend,
+                    requestId,
+                    receiverId,
+                    mediaUrl: fileUrl,
+                    mediaType: fileType
+                })
+            });
 
-        if (res.success) {
-            setInput('');
+            const json = await res.json();
+            if (json.success) {
+                setInput('');
+            } else {
+                console.error("Send failed:", json.error);
+            }
+        } catch (err) {
+            console.error("Send error:", err);
         }
+
         setSending(false);
     };
 
