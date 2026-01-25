@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { getConversation, markAsRead } from '@/app/actions/chat';
+// Server Actions removed in favor of API Routes
 import { Send, User, Loader2, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatBubble } from './ChatBubble';
@@ -46,8 +46,17 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
                     setMessages(json.data);
                     // Mark unread as read if Admin
                     if (isAdmin) {
-                        const unread = json.data.filter((m: any) => !m.is_read && m.sender_id !== currentUserId).map((m: any) => m.id);
-                        if (unread.length > 0) markAsRead(unread);
+                        const unreadIds = json.data
+                            .filter((m: any) => !m.is_read && m.sender_id !== currentUserId)
+                            .map((m: any) => m.id);
+
+                        if (unreadIds.length > 0) {
+                            fetch('/api/chat/mark-read', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ ids: unreadIds })
+                            }).catch(err => console.error("Failed to mark as read:", err));
+                        }
                     }
                 }
             } catch (error) {
