@@ -59,6 +59,34 @@ export async function getOwnerBookings(): Promise<any[]> {
     }
 }
 
+export async function getOwnerServices(): Promise<any[]> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+
+        const { data, error } = await supabase
+            .from('service_requests')
+            .select(`
+                *,
+                properties!inner (
+                    id,
+                    title,
+                    owner_id
+                )
+            `)
+            .eq('properties.owner_id', user.id)
+            .neq('status', 'cancelled') // Optional: Hide cancelled?
+            .order('requested_date', { ascending: true });
+
+        if (error) throw error;
+        return deepSerialize(data || []);
+    } catch (e) {
+        console.error("Fetch Owner Services Error:", e);
+        return [];
+    }
+}
+
 export async function createServiceRequest(formData: FormData): Promise<ActionResponse> {
     try {
         const supabase = await createClient();

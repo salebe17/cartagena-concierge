@@ -24,11 +24,12 @@ interface DashboardViewProps {
     alerts?: AlertItem[];
     serviceHistory?: React.ReactNode;
     bookings?: any[];
+    services?: any[];
 }
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
-export function DashboardView({ userName, currentUserId, properties, alerts = [], serviceHistory = null, bookings = [] }: DashboardViewProps) {
+export function DashboardView({ userName, currentUserId, properties, alerts = [], serviceHistory = null, bookings = [], services = [] }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'portfolio' | 'calendar' | 'billing'>('portfolio');
@@ -214,7 +215,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     </>
                 ) : activeTab === 'calendar' ? (
                     <div className="space-y-4">
-                        <CalendarGrid bookings={bookings} onScheduleCleaning={handleScheduleCleaning} />
+                        <CalendarGrid bookings={bookings} services={services} onScheduleCleaning={handleScheduleCleaning} />
                     </div>
                 ) : (
                     <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">

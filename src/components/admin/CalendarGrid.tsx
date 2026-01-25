@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Sparkles, User, Info, Calendar as CalendarIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, User, Info, Calendar as CalendarIcon, Wrench } from "lucide-react";
 import { Button } from "../ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
@@ -24,12 +24,14 @@ interface Booking {
 
 interface CalendarGridProps {
     bookings: Booking[];
+    services?: any[]; // ServiceRequest[]
     onScheduleCleaning: (booking: Booking) => void;
 }
 
-export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps) {
+export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: CalendarGridProps) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [selectedService, setSelectedService] = useState<any | null>(null);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -50,11 +52,19 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
     // Helper: Find bookings for a specific day
     const getBookingsForDay = (day: Date) => {
         return bookings.filter(b => {
-            // Basic overlap check. Note: start_date/end_date are strings YYYY-MM-DD
-            // We treat them carefully to avoid timezone issues.
-            // Best way: check if day string YYYY-MM-DD lies between start and end.
             const dayStr = format(day, "yyyy-MM-dd");
             return dayStr >= b.start_date && dayStr <= b.end_date;
+        });
+    };
+
+    // Helper: Find services for a specific day
+    const getServicesForDay = (day: Date) => {
+        return services.filter(s => {
+            if (!s.requested_date) return false;
+            // Service date strings can be full ISO. Compare just YYYY-MM-DD
+            const serviceDay = format(parseISO(s.requested_date), "yyyy-MM-dd");
+            const dayStr = format(day, "yyyy-MM-dd");
+            return serviceDay === dayStr;
         });
     };
 
@@ -95,6 +105,8 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
             <div className="grid grid-cols-7 auto-rows-fr bg-gray-100 gap-px border-b border-gray-100">
                 {calendarDays.map((day, dayIdx) => {
                     const dayBookings = getBookingsForDay(day);
+                    const dayServices = getServicesForDay(day);
+
                     const isCurrentMonth = isSameMonth(day, monthStart);
                     const isToday = isSameDay(day, new Date());
 
@@ -109,8 +121,9 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
                                 </span>
                             </div>
 
-                            {/* Booking Pills */}
+                            {/* Items Container */}
                             <div className="space-y-1 mt-1 overflow-y-auto max-h-[90px] no-scrollbar">
+                                {/* Bookings */}
                                 {(dayBookings || []).map(booking => {
                                     if (!booking || !booking.id) return null;
                                     return (
@@ -121,6 +134,27 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
                                             className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-50' : ''}`}
                                         >
                                             {booking.properties?.title || "Casa"}
+                                        </motion.button>
+                                    );
+                                })}
+
+                                {/* Services */}
+                                {(dayServices || []).map(svc => {
+                                    const isCleaning = svc.service_type === 'cleaning';
+                                    const colorClass = isCleaning
+                                        ? 'bg-teal-50 text-teal-700 border-teal-100'
+                                        : 'bg-orange-50 text-orange-700 border-orange-100';
+                                    const Icon = isCleaning ? Sparkles : Wrench;
+
+                                    return (
+                                        <motion.button
+                                            key={svc.id}
+                                            whileHover={{ scale: 1.02 }}
+                                            onClick={() => setSelectedService(svc)}
+                                            className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm flex items-center gap-1 ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                        >
+                                            <Icon size={10} className="shrink-0" />
+                                            {isCleaning ? 'Aseo' : 'Mtto'}
                                         </motion.button>
                                     );
                                 })}
@@ -178,6 +212,50 @@ export function CalendarGrid({ bookings, onScheduleCleaning }: CalendarGridProps
                                 <Sparkles className="mr-2" size={18} />
                                 Programar Limpieza de Salida
                             </Button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Service Detail Modal */}
+            <Dialog open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Detalle del Servicio</DialogTitle>
+                    </DialogHeader>
+                    {selectedService && (
+                        <div className="space-y-4">
+                            <div className={`p-4 rounded-xl border ${selectedService.service_type === 'cleaning' ? 'bg-teal-50 border-teal-100' : 'bg-orange-50 border-orange-100'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-white ${selectedService.service_type === 'cleaning' ? 'text-teal-500' : 'text-orange-500'}`}>
+                                        {selectedService.service_type === 'cleaning' ? <Sparkles size={24} /> : <Wrench size={24} />}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-gray-900 capitalize">{selectedService.service_type === 'cleaning' ? 'Limpieza Hotelera' : 'Mantenimiento'}</h4>
+                                        <p className="text-sm text-gray-500">{format(parseISO(selectedService.requested_date), "PPPP", { locale: es })}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <p className="text-xs text-gray-400 uppercase font-bold mb-1">Propiedad</p>
+                                <p className="font-bold text-gray-700">{selectedService.properties?.title}</p>
+                            </div>
+
+                            {selectedService.notes && (
+                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <p className="text-xs text-gray-400 uppercase font-bold mb-1">Notas</p>
+                                    <p className="text-sm text-gray-600">{selectedService.notes}</p>
+                                </div>
+                            )}
+
+                            <div className="flex justify-end">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${selectedService.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                    selectedService.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'
+                                    }`}>
+                                    {selectedService.status === 'completed' ? 'Completado' : 'Pendiente'}
+                                </span>
+                            </div>
                         </div>
                     )}
                 </DialogContent>

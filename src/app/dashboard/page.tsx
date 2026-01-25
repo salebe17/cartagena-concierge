@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { DashboardView } from '@/components/DashboardView';
-import { getUserPropertiesBySession, getUserAlerts, getOwnerBookings } from '@/app/actions/dashboard';
+import { getUserPropertiesBySession, getUserAlerts, getOwnerBookings, getOwnerServices } from '@/app/actions/dashboard';
 import ServiceHistory from '@/components/dashboard/ServiceHistory';
 import { Suspense } from 'react';
 import { DashboardSkeleton } from '@/components/skeletons';
@@ -37,10 +37,11 @@ export default async function DashboardPage() {
 
 // Wrapper component to handle data fetching inside Suspense
 async function DashboardContent({ userName, currentUserId }: { userName: string, currentUserId: string }) {
-    const [properties, alerts, bookings] = await Promise.all([
+    const [properties, alerts, bookings, services] = await Promise.all([
         getUserPropertiesBySession(),
         getUserAlerts(),
-        getOwnerBookings()
+        getOwnerBookings(),
+        getOwnerServices()
     ]);
 
     return (
@@ -51,6 +52,7 @@ async function DashboardContent({ userName, currentUserId }: { userName: string,
             alerts={alerts}
             serviceHistory={<ServiceHistory />}
             bookings={bookings}
+            services={services}
         />
     );
 }
