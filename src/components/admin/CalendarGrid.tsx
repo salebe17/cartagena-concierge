@@ -214,3 +214,101 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
         </div>
     );
 }
+
+const getPlatformColor = (platform: string) => {
+    if (platform.toLowerCase().includes('airbnb')) return 'bg-rose-100 text-rose-700 border-rose-200';
+    if (platform.toLowerCase().includes('direct')) return 'bg-blue-100 text-blue-700 border-blue-200';
+    return 'bg-purple-100 text-purple-700 border-purple-200';
+};
+
+interface MonthDaysProps {
+    baseDate: Date;
+    bookings: Booking[];
+    services: any[];
+    mounted: boolean;
+    onBookingClick: (b: Booking) => void;
+    onServiceClick: (s: any) => void;
+}
+
+function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onServiceClick }: MonthDaysProps) {
+    const monthStart = startOfMonth(baseDate);
+    const monthEnd = endOfMonth(monthStart);
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
+
+    const getBookingsForDay = (day: Date) => {
+        return bookings.filter(b => {
+            const dayStr = format(day, "yyyy-MM-dd");
+            return dayStr >= b.start_date && dayStr <= b.end_date;
+        });
+    };
+
+    const getServicesForDay = (day: Date) => {
+        return services.filter(s => {
+            if (!s.requested_date) return false;
+            const serviceDay = format(parseISO(s.requested_date), "yyyy-MM-dd");
+            const dayStr = format(day, "yyyy-MM-dd");
+            return serviceDay === dayStr;
+        });
+    };
+
+    return (
+        <>
+            {calendarDays.map((day) => {
+                const dayBookings = getBookingsForDay(day);
+                const dayServices = getServicesForDay(day);
+                const isCurrentMonth = isSameMonth(day, monthStart);
+                const isToday = isSameDay(day, new Date());
+
+                return (
+                    <div
+                        key={day.toString()}
+                        className={`min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors ${!isCurrentMonth ? 'bg-gray-50/30 text-gray-300' : ''}`}
+                    >
+                        <div className="flex justify-between items-start">
+                            <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
+                                {mounted ? format(day, "d") : "--"}
+                            </span>
+                        </div>
+
+                        <div className="space-y-1 mt-1 overflow-y-auto max-h-[90px] no-scrollbar">
+                            {(dayBookings || []).map(booking => {
+                                if (!booking || !booking.id) return null;
+                                return (
+                                    <motion.button
+                                        key={booking.id}
+                                        whileHover={{ scale: 1.02 }}
+                                        onClick={() => onBookingClick(booking)}
+                                        className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                    >
+                                        {booking.properties?.title || "Casa"}
+                                    </motion.button>
+                                );
+                            })}
+                            {(dayServices || []).map(svc => {
+                                const isCleaning = svc.service_type === 'cleaning';
+                                const colorClass = isCleaning
+                                    ? 'bg-teal-50 text-teal-700 border-teal-100'
+                                    : 'bg-orange-50 text-orange-700 border-orange-100';
+                                const Icon = isCleaning ? Sparkles : Wrench;
+
+                                return (
+                                    <motion.button
+                                        key={svc.id}
+                                        whileHover={{ scale: 1.02 }}
+                                        onClick={() => onServiceClick(svc)}
+                                        className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm flex items-center gap-1 ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                    >
+                                        <Icon size={10} className="shrink-0" />
+                                        {isCleaning ? 'Aseo' : 'Mtto'}
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            })}
+        </>
+    );
+}
