@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, ShieldCheck, Clock, Globe } from "lucide-react";
+import { LayoutDebugWidget } from "@/components/LayoutDebugWidget";
 
 export default function LandingPage() {
   return (
@@ -100,6 +101,8 @@ export default function LandingPage() {
           </Link>
         </div>
       </div>
+
+      <LayoutDebugWidget />
     </div>
   );
 }
