@@ -68,7 +68,7 @@ export default function StaffJobPage({ params }: { params: { requestId: string }
         setUploading(true);
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("requestId", params.requestId);
+        formData.append("requestId", requestId);
 
         const res = await uploadEvidence(formData);
         setUploading(false);
@@ -87,7 +87,7 @@ export default function StaffJobPage({ params }: { params: { requestId: string }
     const handleFinish = async () => {
         if (!logId) return;
         setLoading(true);
-        const res = await finishJob(logId, params.requestId, evidence);
+        const res = await finishJob(logId, requestId, evidence);
         setLoading(false);
 
         if (res.success) {
@@ -104,7 +104,7 @@ export default function StaffJobPage({ params }: { params: { requestId: string }
                 <h1 className="text-xl font-bold uppercase tracking-wider flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Staff Portal
                 </h1>
-                <p className="text-gray-400 text-xs mt-1">ID Misión: {params.requestId.slice(0, 6)}</p>
+                <p className="text-gray-400 text-xs mt-1">ID Misión: {requestId ? requestId.slice(0, 6) : "..."}</p>
             </div>
 
             <main className="flex-1 p-6 max-w-md mx-auto w-full">
