@@ -28,6 +28,41 @@ export async function getAdminSystemStatus() {
         .from('service_requests')
         .select('*', { count: 'exact', head: true });
 
+    // 4. TEST FULL FETCH (To see if Joins are breaking it)
+    let fullFetchCount = 0;
+    let fullFetchError = null;
+    try {
+        const { data, error } = await supabase
+            .from('service_requests')
+            .select(`
+                *,
+                properties (
+                    id,
+                    title,
+                    address,
+                    owner_id
+                ),
+                service_logs (
+                    id,
+                    started_at,
+                    ended_at,
+                    staff_name,
+                    notes,
+                    start_photos,
+                    end_photos
+                )
+            `)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            fullFetchError = error.message;
+        } else {
+            fullFetchCount = data?.length || 0;
+        }
+    } catch (e: any) {
+        fullFetchError = "Exception: " + e.message;
+    }
+
     // Try via Admin Client (if key exists)
     let adminCount = 'N/A';
     let adminError = 'No Key';
@@ -62,6 +97,7 @@ export async function getAdminSystemStatus() {
         },
         dataAccess: {
             viaUserClient: { count: userCount, error: userError?.message },
+            fullQueryCheck: { count: fullFetchCount, error: fullFetchError },
             viaAdminClient: { count: adminCount, error: adminError }
         }
     };

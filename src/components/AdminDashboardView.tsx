@@ -72,12 +72,22 @@ function DebugStatusWidget() {
                     <div>
                         <span className="text-gray-500 block">Database Visibility (Rows Found)</span>
                         <div className="flex justify-between">
-                            <span>Via User Client:</span>
+                            <span>Via User Client (Count):</span>
                             <span className={status.dataAccess.viaUserClient.count > 0 ? "text-emerald-400" : "text-yellow-400"}>
                                 {status.dataAccess.viaUserClient.count} {status.dataAccess.viaUserClient.error && `(${status.dataAccess.viaUserClient.error})`}
                             </span>
                         </div>
-                        <div className="flex justify-between opacity-75">
+                        <div className="flex justify-between border-t border-gray-800 mt-1 pt-1">
+                            <span>Full Query (Simulated):</span>
+                            {status.dataAccess.fullQueryCheck.error ? (
+                                <span className="text-red-400 text-right w-1/2 break-words text-[10px] leading-tight">
+                                    {status.dataAccess.fullQueryCheck.error}
+                                </span>
+                            ) : (
+                                <span className="text-emerald-400">{status.dataAccess.fullQueryCheck.count} items</span>
+                            )}
+                        </div>
+                        <div className="flex justify-between opacity-75 mt-2">
                             <span>Via Admin Key:</span>
                             <span>{status.dataAccess.viaAdminClient.count} ({status.dataAccess.viaAdminClient.error})</span>
                         </div>
