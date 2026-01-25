@@ -187,7 +187,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                                 onClick={() => setActiveTab(tab as any)}
                                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${activeTab === tab ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}
                             >
-                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {tab === 'mensajes' ? 'Soporte' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
                         ))}
                         <button onClick={() => setActiveTab('servicios')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">

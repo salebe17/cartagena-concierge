@@ -13,7 +13,7 @@ export function BottomNav({ activeTab, onChange, unreadMessages = 0 }: BottomNav
         { id: 'hoy', label: 'Hoy', icon: Home },
         { id: 'calendario', label: 'Calendario', icon: Calendar },
         { id: 'anuncios', label: 'Anuncios', icon: NotebookPen },
-        { id: 'mensajes', label: 'Mensajes', icon: MessageSquare },
+        { id: 'mensajes', label: 'Soporte', icon: MessageSquare },
         { id: 'servicios', label: 'Servicios', icon: LayoutGrid },
     ];
 

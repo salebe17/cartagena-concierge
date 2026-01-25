@@ -14,7 +14,7 @@ export function HostMessagesView({ bookings, currentUserId, userName }: HostMess
         <div className="pb-24 animate-in fade-in duration-500 h-[calc(100vh-140px)] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 shrink-0">
-                <h1 className="text-3xl font-black text-[#222222] tracking-tight">Mensajes</h1>
+                <h1 className="text-3xl font-black text-[#222222] tracking-tight">Soporte</h1>
             </div>
 
             {/* Chat Interface - Direct to Support for now */}
