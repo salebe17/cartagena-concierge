@@ -15,8 +15,6 @@ import { Loader2 } from "lucide-react";
 import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
 import { BillingSection } from "./dashboard/BillingSection";
 import { Property } from "@/lib/types";
-import { FloatingChatWidget } from "./chat/FloatingChatWidget";
-
 import { BottomNav } from "./host/BottomNav";
 import { HostMenu } from "./host/HostMenu";
 import { HostTodayView } from "./host/HostTodayView";
@@ -163,7 +161,11 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                 );
             case 'mensajes':
                 return (
-                    <HostMessagesView bookings={bookings} />
+                    <HostMessagesView
+                        bookings={bookings}
+                        currentUserId={currentUserId}
+                        userName={userName}
+                    />
                 );
             case 'menu':
                 return <HostMenu
@@ -216,11 +218,6 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
 
             {/* Mobile Bottom Navigation */}
             <BottomNav activeTab={activeTab} onChange={setActiveTab} />
-
-            {/* Keeping Floating Chat Accessible always? Or hiding if on 'mensajes' tab? */}
-            <div id="floating-chat-container">
-                <FloatingChatWidget currentUserId={currentUserId} userName={userName} />
-            </div>
 
             {/* Modals */}
             <RegisterPropertyModal isOpen={isPropModalOpen} onClose={() => setPropModalOpen(false)} />
