@@ -3,62 +3,150 @@
 import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { startJob, finishJob, uploadEvidence, saveStartPhotos } from "@/app/actions/staff";
-// ... imports
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { Check, Camera, Play, CheckCircle2, User, MapPin, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "next/navigation";
+
+// Mock Checklist for Demo
+const TASKS = [
+    { id: '0', label: 'Encender y verificar TVs', zone: 'General' },
+    { id: '1', label: 'Verificar nevera (Items olvidados)', zone: 'Cocina' },
+    { id: '2', label: 'Sacar basura y cambiar bolsas', zone: 'Cocina' },
+    { id: '3', label: 'Cambiar sábanas y toallas', zone: 'Habitaciones' },
+    { id: '4', label: 'Limpiar espejos y grifería', zone: 'Baños' },
+    { id: '5', label: 'Barrer y trapear pisos', zone: 'General' },
+    { id: '6', label: 'Apagar luces y A/C', zone: 'Salida' },
+];
 
 export default function StaffJobPage() {
     const params = useParams();
     const requestId = params.requestId as string;
     const [step, setStep] = useState<'welcome' | 'initial_inspection' | 'checklist' | 'checkout' | 'success'>('welcome');
-    // ... setup
+    const [staffName, setStaffName] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [logId, setLogId] = useState<string | null>(null);
+    const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+    const [evidence, setEvidence] = useState<string[]>([]);
     const [startEvidence, setStartEvidence] = useState<string[]>([]);
-    // ... setup
 
-    // ... (keep handleStart modifications)
-    if (res.success && res.data) {
-        setLogId(res.data.id);
-        setStep('initial_inspection'); // NEW FLOW
-    } else {
-        // ...
+    // New Upload State
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-        // NEW HANDLER for start photos
-        const handleInitialPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
+    const { toast } = useToast();
 
-            setUploading(true);
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("requestId", requestId);
+    const handleStart = async () => {
+        if (!staffName.trim()) {
+            toast({ title: "Nombre requerido", description: "Por favor escribe tu nombre.", variant: "destructive" });
+            return;
+        }
+        setLoading(true);
+        const res = await startJob(requestId, staffName);
+        setLoading(false);
 
-            const res = await uploadEvidence(formData);
+        if (res.success && res.data) {
+            setLogId(res.data.id);
+            setStep('initial_inspection'); // NEW FLOW
+        } else {
+            toast({ title: "Error", description: res.error || "No se pudo iniciar.", variant: "destructive" });
+        }
+    };
 
-            // Clear input
-            if (fileInputRef.current) fileInputRef.current.value = "";
+    const handleInitialPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-            if (res.success && res.data) {
-                const newPhotos = [...startEvidence, res.data.url];
-                setStartEvidence(newPhotos);
-                // Auto-save to DB just in case
-                if (logId) await saveStartPhotos(logId, newPhotos);
-                toast({ title: "Foto guardada", description: "Evidencia inicial registrada." });
-            } else {
-                toast({ title: "Error", description: res.error, variant: "destructive" });
-            }
-            setUploading(false);
-        };
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("requestId", requestId);
 
-        const finishInitialInspection = async () => {
-            setStep('checklist');
-        };
+        const res = await uploadEvidence(formData);
 
-        return (
-            // ... (header)
+        // Clear input
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        if (res.success && res.data) {
+            const newPhotos = [...startEvidence, res.data.url];
+            setStartEvidence(newPhotos);
+            // Auto-save to DB just in case
+            if (logId) await saveStartPhotos(logId, newPhotos);
+            toast({ title: "Foto guardada", description: "Evidencia inicial registrada." });
+        } else {
+            toast({ title: "Error", description: res.error, variant: "destructive" });
+        }
+        setUploading(false);
+    };
+
+    const finishInitialInspection = async () => {
+        setStep('checklist');
+    };
+
+    const toggleTask = (taskId: string) => {
+        setCompletedTasks(prev =>
+            prev.includes(taskId) ? prev.filter(id => id !== taskId) : [...prev, taskId]
+        );
+    };
+
+    const handlePhotoClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("requestId", requestId);
+
+        const res = await uploadEvidence(formData);
+        setUploading(false);
+
+        // Clear input to allow re-uploading same file if needed
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        if (res.success && res.data) {
+            setEvidence(prev => [...prev, res.data.url]);
+            toast({ title: "Foto subida", description: "Evidencia guardada correctamente." });
+        } else {
+            toast({ title: "Error", description: res.error || "Falló la subida.", variant: "destructive" });
+        }
+    };
+
+    const handleFinish = async () => {
+        if (!logId) return;
+        setLoading(true);
+        const res = await finishJob(logId, requestId, evidence);
+        setLoading(false);
+
+        if (res.success) {
+            setStep('success');
+        } else {
+            toast({ title: "Error", description: res.error || "No se pudo finalizar.", variant: "destructive" });
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+            {/* Header */}
+            <div className="bg-black text-white p-6 shadow-lg">
+                <h1 className="text-xl font-bold uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Staff Portal
+                </h1>
+                <p className="text-gray-400 text-xs mt-1">ID Misión: {requestId ? requestId.slice(0, 6) : "..."}</p>
+            </div>
+
             <main className="flex-1 p-6 max-w-md mx-auto w-full">
                 <AnimatePresence mode="wait">
 
-                    {/* STEP 1: WELCOME (Keep same) */}
+                    {/* STEP 1: WELCOME */}
                     {step === 'welcome' && (
-                        // ... existing welcome code ...
                         <motion.div
                             key="welcome"
                             initial={{ opacity: 0, y: 20 }}
@@ -170,7 +258,7 @@ export default function StaffJobPage() {
                         </motion.div>
                     )}
 
-                    {/* STEP 2: CHECKLIST (Keep same) */}
+                    {/* STEP 2: CHECKLIST */}
                     {step === 'checklist' && (
                         <motion.div
                             key="checklist"
@@ -304,6 +392,6 @@ export default function StaffJobPage() {
                     )}
                 </AnimatePresence>
             </main>
-        </div >
+        </div>
     );
-    }
+}
