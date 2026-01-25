@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isWithinInterval, parseISO } from "date-fns";
+import { startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Sparkles, User, Info, Calendar as CalendarIcon, Wrench } from "lucide-react";
+import { ChevronLeft, ChevronRight, Sparkles, User, Info, Calendar as CalendarIcon, Wrench, Trash2, Edit2, Save, X, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { deleteServiceRequest, updateServiceRequest } from "@/app/actions/admin_services";
 
 // Types
 interface Booking {
@@ -34,9 +36,59 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
     const [selectedService, setSelectedService] = useState<any | null>(null);
     const [mounted, setMounted] = useState(false);
 
+    // Edit/Delete States
+    const [isEditing, setIsEditing] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [editNotes, setEditNotes] = useState("");
+    const { toast } = useToast();
+
+    // Reset edit state on close
     useEffect(() => {
-        setMounted(true);
-    }, []);
+        if (!selectedService) {
+            setIsEditing(false);
+            setEditNotes("");
+        } else {
+            setEditNotes(selectedService.notes || "");
+        }
+    }, [selectedService]);
+
+    const handleDeleteService = async () => {
+        if (!selectedService) return;
+        if (!confirm("¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.")) return;
+
+        setIsProcessing(true);
+        const res = await deleteServiceRequest(selectedService.id);
+        setIsProcessing(false);
+
+        if (res.success) {
+            toast({ title: "Eliminado", description: "El servicio ha sido eliminado." });
+            setSelectedService(null);
+            // Ideally trigger a refresh of data or optimistic update, 
+            // but the parent passes `services` prop. 
+            // `revalidatePath` in action should update the parent server component, 
+            // causing a prop update here if it's a server component tree. 
+            // If Client Component, we rely on parent re-render.
+        } else {
+            toast({ title: "Error", description: res.error, variant: "destructive" });
+        }
+    };
+
+    const handleUpdateService = async () => {
+        if (!selectedService) return;
+        setIsProcessing(true);
+        const res = await updateServiceRequest(selectedService.id, { notes: editNotes });
+        setIsProcessing(false);
+
+        if (res.success) {
+            toast({ title: "Actualizado", description: "Información guardada." });
+            setIsEditing(false);
+            setSelectedService(null); // Close to refresh? Or keep open with new data? 
+            // Since props come from parent, local state `selectedService` might be stale.
+            // Closing is safer.
+        } else {
+            toast({ title: "Error", description: res.error, variant: "destructive" });
+        }
+    };
 
     const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
     const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -172,10 +224,11 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
             <Dialog open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Detalle del Servicio</DialogTitle>
+                        <DialogTitle>Detalle del Servicio {isEditing && "(Editando)"}</DialogTitle>
                     </DialogHeader>
                     {selectedService && (
                         <div className="space-y-4">
+                            {/* Header Card */}
                             <div className={`p-4 rounded-xl border ${selectedService.service_type === 'cleaning' ? 'bg-teal-50 border-teal-100' : 'bg-orange-50 border-orange-100'}`}>
                                 <div className="flex items-center gap-3">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-white ${selectedService.service_type === 'cleaning' ? 'text-teal-500' : 'text-orange-500'}`}>
@@ -188,24 +241,61 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
                                 </div>
                             </div>
 
+                            {/* Property Info */}
                             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                                 <p className="text-xs text-gray-400 uppercase font-bold mb-1">Propiedad</p>
                                 <p className="font-bold text-gray-700">{selectedService.properties?.title}</p>
                             </div>
 
-                            {selectedService.notes && (
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                    <p className="text-xs text-gray-400 uppercase font-bold mb-1">Notas</p>
-                                    <p className="text-sm text-gray-600">{selectedService.notes}</p>
-                                </div>
-                            )}
+                            {/* Editable Notes */}
+                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <p className="text-xs text-gray-400 uppercase font-bold mb-1 w-full flex justify-between">
+                                    Notas
+                                    {isEditing && <span className="text-rose-500 text-[10px]">Editando...</span>}
+                                </p>
+                                {isEditing ? (
+                                    <textarea
+                                        value={editNotes}
+                                        onChange={(e) => setEditNotes(e.target.value)}
+                                        className="w-full text-sm p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black"
+                                        rows={3}
+                                    />
+                                ) : (
+                                    <p className="text-sm text-gray-600">{selectedService.notes || "Sin notas adicionales."}</p>
+                                )}
+                            </div>
 
-                            <div className="flex justify-end">
+                            {/* Action Buttons */}
+                            <div className="flex items-center justify-between pt-2">
+                                {/* Left: Status Badge (Read-only for now) */}
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${selectedService.status === 'completed' ? 'bg-green-100 text-green-700' :
                                     selectedService.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'
                                     }`}>
                                     {selectedService.status === 'completed' ? 'Completado' : 'Pendiente'}
                                 </span>
+
+                                {/* Right: CRUD Actions */}
+                                <div className="flex gap-2">
+                                    {isEditing ? (
+                                        <>
+                                            <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)} disabled={isProcessing}>
+                                                <X size={18} className="text-gray-500" />
+                                            </Button>
+                                            <Button size="sm" onClick={handleUpdateService} disabled={isProcessing} className="bg-black text-white hover:bg-gray-800">
+                                                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                                                <Edit2 size={16} className="text-gray-700" />
+                                            </Button>
+                                            <Button variant="destructive" size="sm" onClick={handleDeleteService} disabled={isProcessing}>
+                                                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
