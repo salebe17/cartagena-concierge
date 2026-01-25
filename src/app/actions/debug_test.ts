@@ -1,6 +1,6 @@
 'use server'
 
-export const runtime = 'nodejs';
+// runtime config removed - invalid in actions
 
 export async function debugTestPing() {
     console.log("Serverside debug ping detected");
