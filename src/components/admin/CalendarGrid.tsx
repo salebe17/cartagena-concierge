@@ -38,46 +38,13 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
         setMounted(true);
     }, []);
 
-    // Grid Calculation
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(monthStart);
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday start
-    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
-
-    const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
-
     const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
     const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
-    // Helper: Find bookings for a specific day
-    const getBookingsForDay = (day: Date) => {
-        return bookings.filter(b => {
-            const dayStr = format(day, "yyyy-MM-dd");
-            return dayStr >= b.start_date && dayStr <= b.end_date;
-        });
-    };
-
-    // Helper: Find services for a specific day
-    const getServicesForDay = (day: Date) => {
-        return services.filter(s => {
-            if (!s.requested_date) return false;
-            // Service date strings can be full ISO. Compare just YYYY-MM-DD
-            const serviceDay = format(parseISO(s.requested_date), "yyyy-MM-dd");
-            const dayStr = format(day, "yyyy-MM-dd");
-            return serviceDay === dayStr;
-        });
-    };
-
-    const getPlatformColor = (platform: string) => {
-        if (platform.toLowerCase().includes('airbnb')) return 'bg-rose-100 text-rose-700 border-rose-200';
-        if (platform.toLowerCase().includes('direct')) return 'bg-blue-100 text-blue-700 border-blue-200';
-        return 'bg-purple-100 text-purple-700 border-purple-200'; // iCal Sync default
-    };
-
     return (
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="p-6 flex items-center justify-between border-b border-gray-100">
+            {/* Desktop Header */}
+            <div className="hidden md:flex p-6 items-center justify-between border-b border-gray-100">
                 <h2 className="text-2xl font-black text-gray-900 capitalize flex items-center gap-2">
                     <CalendarIcon className="text-rose-500" />
                     {mounted ? format(currentDate, "MMMM yyyy", { locale: es }) : "Cargando..."}
@@ -92,8 +59,16 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
                 </div>
             </div>
 
-            {/* Week Days */}
-            <div className="grid grid-cols-7 bg-gray-50/50 border-b border-gray-100">
+            {/* Mobile Header (Simple Title, no Nav) */}
+            <div className="md:hidden p-6 border-b border-gray-100 sticky top-0 bg-white z-20">
+                <h2 className="text-2xl font-black text-gray-900 capitalize flex items-center gap-2">
+                    <CalendarIcon className="text-rose-500" />
+                    Calendario
+                </h2>
+            </div>
+
+            {/* Week Days Header - Sticky on Mobile */}
+            <div className="grid grid-cols-7 bg-gray-50/95 backdrop-blur border-b border-gray-100 sticky top-[80px] md:static z-10 w-full">
                 {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
                     <div key={day} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                         {day}
@@ -101,67 +76,43 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
                 ))}
             </div>
 
-            {/* Days Grid */}
-            <div className="grid grid-cols-7 auto-rows-fr bg-gray-100 gap-px border-b border-gray-100">
-                {calendarDays.map((day, dayIdx) => {
-                    const dayBookings = getBookingsForDay(day);
-                    const dayServices = getServicesForDay(day);
+            {/* Content Container */}
+            <div className="bg-gray-100">
+                {/* Desktop View: Single Month */}
+                <div className="hidden md:grid grid-cols-7 auto-rows-fr gap-px bg-gray-100 border-b border-gray-100">
+                    <MonthDays
+                        baseDate={currentDate}
+                        bookings={bookings}
+                        services={services}
+                        mounted={mounted}
+                        onBookingClick={setSelectedBooking}
+                        onServiceClick={setSelectedService}
+                    />
+                </div>
 
-                    const isCurrentMonth = isSameMonth(day, monthStart);
-                    const isToday = isSameDay(day, new Date());
-
-                    return (
-                        <div
-                            key={day.toString()}
-                            className={`min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors ${!isCurrentMonth ? 'bg-gray-50/30 text-gray-300' : ''}`}
-                        >
-                            <div className="flex justify-between items-start">
-                                <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
-                                    {mounted ? format(day, "d") : "--"}
-                                </span>
+                {/* Mobile View: Vertical Scroll (12 Months) */}
+                <div className="md:hidden flex flex-col gap-2">
+                    {Array.from({ length: 12 }).map((_, i) => {
+                        const monthDate = addMonths(new Date(), i);
+                        return (
+                            <div key={i} className="bg-white pb-8">
+                                <div className="p-4 font-black text-lg text-gray-900 capitalize bg-white sticky top-[125px] z-10 border-b border-gray-50">
+                                    {format(monthDate, "MMMM yyyy", { locale: es })}
+                                </div>
+                                <div className="grid grid-cols-7 auto-rows-fr gap-px bg-gray-100 border-b border-gray-100">
+                                    <MonthDays
+                                        baseDate={monthDate}
+                                        bookings={bookings}
+                                        services={services}
+                                        mounted={mounted}
+                                        onBookingClick={setSelectedBooking}
+                                        onServiceClick={setSelectedService}
+                                    />
+                                </div>
                             </div>
-
-                            {/* Items Container */}
-                            <div className="space-y-1 mt-1 overflow-y-auto max-h-[90px] no-scrollbar">
-                                {/* Bookings */}
-                                {(dayBookings || []).map(booking => {
-                                    if (!booking || !booking.id) return null;
-                                    return (
-                                        <motion.button
-                                            key={booking.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            onClick={() => setSelectedBooking(booking)}
-                                            className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-50' : ''}`}
-                                        >
-                                            {booking.properties?.title || "Casa"}
-                                        </motion.button>
-                                    );
-                                })}
-
-                                {/* Services */}
-                                {(dayServices || []).map(svc => {
-                                    const isCleaning = svc.service_type === 'cleaning';
-                                    const colorClass = isCleaning
-                                        ? 'bg-teal-50 text-teal-700 border-teal-100'
-                                        : 'bg-orange-50 text-orange-700 border-orange-100';
-                                    const Icon = isCleaning ? Sparkles : Wrench;
-
-                                    return (
-                                        <motion.button
-                                            key={svc.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            onClick={() => setSelectedService(svc)}
-                                            className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm flex items-center gap-1 ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
-                                        >
-                                            <Icon size={10} className="shrink-0" />
-                                            {isCleaning ? 'Aseo' : 'Mtto'}
-                                        </motion.button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })}
+                </div>
             </div>
 
             {/* Booking Detail Modal */}
