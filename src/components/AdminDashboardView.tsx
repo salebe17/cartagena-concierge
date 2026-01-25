@@ -192,11 +192,13 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [filterPropertyId, setFilterPropertyId] = useState<string | null>(null);
     const [staffList, setStaffList] = useState<StaffMember[]>([]);
+    const [mounted, setMounted] = useState(false);
     const [isCharging, setIsCharging] = useState<string | null>(null);
     const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
     const { toast } = useToast();
 
     useEffect(() => {
+        setMounted(true);
         const getU = async () => {
             const supabase = createBrowserClient();
             const { data: { user } } = await supabase.auth.getUser();
@@ -342,7 +344,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                                                     </div>
                                                     <div className="flex items-center justify-between border-l border-gray-200 pl-4">
                                                         <div>
-                                                            <p className="text-[9px] font-black text-gray-400 uppercase">{new Date(req.requested_date).toLocaleDateString()}</p>
+                                                            <p className="text-[9px] font-black text-gray-400 uppercase">{mounted ? new Date(req.requested_date).toLocaleDateString() : '--/--/----'}</p>
                                                             <p className="text-xs font-bold text-gray-800">Fecha Misi&oacute;n</p>
                                                         </div>
                                                         <button onClick={() => setActiveTab('inbox')} className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors shadow-sm">

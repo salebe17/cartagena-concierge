@@ -4,6 +4,16 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/lib/types';
 
+function serialize<T>(data: T): T {
+    try {
+        return JSON.parse(JSON.stringify(data, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        ));
+    } catch (e) {
+        return data;
+    }
+}
+
 export async function sendMessage(content: string, requestId?: string, receiverId?: string): Promise<ActionResponse> {
     try {
         const supabase = await createClient();
@@ -52,7 +62,7 @@ export async function getConversation(requestId?: string, userId?: string): Prom
 
         const { data, error } = await query;
         if (error) throw error;
-        return data || [];
+        return serialize(data || []);
     } catch (e) {
         console.error("GetConversation Error:", e);
         return [];
@@ -104,7 +114,7 @@ export async function getAdminInbox(): Promise<any[]> {
             }
         });
 
-        return Object.values(conversations);
+        return serialize(Object.values(conversations));
     } catch (e) {
         console.error("GetAdminInbox Error:", e);
         return [];

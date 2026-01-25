@@ -358,7 +358,7 @@ export async function adminCreateServiceRequest(data: {
     }
 
     revalidatePath('/admin');
-    return { success: true, data: newRequest, message: "Solicitud creada exitosamente" };
+    return serialize({ success: true, data: newRequest, message: "Solicitud creada exitosamente" });
 }
 
 export async function assignStaffToRequest(requestId: string, staffId: string): Promise<ActionResponse> {
@@ -412,7 +412,7 @@ export async function getFinancialStats(): Promise<any> {
             }
         });
 
-        return stats;
+        return serialize(stats);
     } catch (e) {
         console.error("Finance Stats Error:", e);
         return { total: 0, byService: { cleaning: 0, maintenance: 0, concierge: 0, other: 0 } };
@@ -447,10 +447,10 @@ export async function getRevenueByProperty(): Promise<any[]> {
         });
 
         // Convert to array and sort
-        return Object.entries(propertyMap)
+        return serialize(Object.entries(propertyMap)
             .map(([id, data]) => ({ id, ...data }))
             .filter(p => p.revenue > 0)
-            .sort((a, b) => b.revenue - a.revenue);
+            .sort((a, b) => b.revenue - a.revenue));
 
     } catch (e) {
         console.error("Revenue By Property Error:", e);

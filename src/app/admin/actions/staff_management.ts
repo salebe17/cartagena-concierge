@@ -20,6 +20,16 @@ export type StaffMember = {
     }
 }
 
+function serialize<T>(data: T): T {
+    try {
+        return JSON.parse(JSON.stringify(data, (key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+        ));
+    } catch (e) {
+        return data;
+    }
+}
+
 export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> {
     try {
         const supabase = await createClient();
@@ -62,7 +72,7 @@ export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> 
             };
         });
 
-        return { success: true, data: staffWithMetrics };
+        return { success: true, data: serialize(staffWithMetrics) };
     } catch (e: any) {
         return { success: false, error: e.message };
     }
