@@ -18,6 +18,7 @@ import { AdminChatInbox } from "./chat/AdminChatInbox";
 import { MessageSquare as MessageIcon } from "lucide-react";
 
 import { getAdminSystemStatus } from "@/app/actions/debug";
+import { DiagnosticOverlay } from "./debug/DiagnosticOverlay";
 
 function StatsOverview({ requests = [], staff = [] }: { requests: ServiceRequest[], staff: StaffMember[] }) {
     const safeRequests = (requests || []).filter(r => r && typeof r === 'object');
@@ -386,6 +387,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
                             </AnimatePresence>
                             {requests.length === 0 && <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 font-bold">Sin solicitudes pendientes.</div>}
                             <DebugStatusWidget />
+                            <DiagnosticOverlay />
                         </div>
                     ) : activeTab === 'calendar' ? (
                         <CalendarGrid bookings={filteredBookings} onScheduleCleaning={handleScheduleCleaning} />
