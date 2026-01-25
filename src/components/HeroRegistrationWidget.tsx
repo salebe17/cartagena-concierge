@@ -1,11 +1,10 @@
 "use client";
 
-import { Search, MapPin, Home } from "lucide-react";
+import { Search, Home } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export function HeroRegistrationWidget() {
-    const [location, setLocation] = useState("Cartagena, Colombia");
     const [propertyType, setPropertyType] = useState("Apartamento Turístico");
 
     return (
@@ -21,19 +20,7 @@ export function HeroRegistrationWidget() {
             </div>
 
             {/* Main Inputs Container */}
-            <div className="flex flex-col border border-gray-200 rounded-2xl mt-2 overflow-hidden shadow-sm divide-y divide-gray-200">
-
-                {/* Location Input */}
-                <div className="relative hover:bg-gray-50 transition-colors p-4 cursor-pointer group">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-800 mb-0.5">Ubicación</div>
-                    <input
-                        type="text"
-                        value={location}
-                        readOnly
-                        className="w-full bg-transparent text-sm text-gray-600 font-medium outline-none cursor-pointer group-hover:text-gray-900"
-                    />
-                    <MapPin size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                </div>
+            <div className="flex flex-col border border-gray-200 rounded-2xl mt-2 overflow-hidden shadow-sm">
 
                 {/* Type Input */}
                 <div className="relative hover:bg-gray-50 transition-colors p-4 cursor-pointer group">
