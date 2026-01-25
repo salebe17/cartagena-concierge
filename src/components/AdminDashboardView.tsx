@@ -1,3 +1,5 @@
+"use client";
+
 import { ActionResponse, ServiceRequest } from '@/lib/types';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
