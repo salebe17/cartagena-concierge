@@ -357,8 +357,8 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                         className={`min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors ${!isCurrentMonth ? 'bg-gray-50/30 text-gray-300' : ''}`}
                     >
                         <div className="flex justify-between items-start">
-                            <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
-                                {mounted ? format(day, "d") : "--"}
+                            <span suppressHydrationWarning className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
+                                {format(day, "d")}
                             </span>
                         </div>
 
