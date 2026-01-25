@@ -6,7 +6,7 @@ import { ActionResponse } from '@/lib/types';
 import { deepSerialize } from '@/lib/utils/serialization';
 
 
-export async function sendMessage(content: string, requestId?: string, receiverId?: string): Promise<ActionResponse> {
+export async function sendMessage(content: string, requestId?: string, receiverId?: string, mediaUrl?: string, mediaType: 'text' | 'image' | 'file' = 'text'): Promise<ActionResponse> {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -22,7 +22,9 @@ export async function sendMessage(content: string, requestId?: string, receiverI
                 content: safeContent,
                 sender_id: user.id,
                 receiver_id: safeReceiverId,
-                service_request_id: safeRequestId
+                service_request_id: safeRequestId,
+                media_url: mediaUrl,
+                media_type: mediaType
             });
 
         if (error) throw error;
