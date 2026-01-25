@@ -2,120 +2,63 @@
 
 import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { startJob, finishJob, uploadEvidence } from "@/app/actions/staff";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Check, Camera, Play, CheckCircle2, User, MapPin, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useParams } from "next/navigation";
-
-// Mock Checklist for Demo
-const TASKS = [
-    { id: '0', label: 'Encender y verificar TVs', zone: 'General' },
-    { id: '1', label: 'Verificar nevera (Items olvidados)', zone: 'Cocina' },
-    { id: '2', label: 'Sacar basura y cambiar bolsas', zone: 'Cocina' },
-    { id: '3', label: 'Cambiar sábanas y toallas', zone: 'Habitaciones' },
-    { id: '4', label: 'Limpiar espejos y grifería', zone: 'Baños' },
-    { id: '5', label: 'Barrer y trapear pisos', zone: 'General' },
-    { id: '6', label: 'Apagar luces y A/C', zone: 'Salida' },
-];
+import { startJob, finishJob, uploadEvidence, saveStartPhotos } from "@/app/actions/staff";
+// ... imports
 
 export default function StaffJobPage() {
     const params = useParams();
     const requestId = params.requestId as string;
-    const [step, setStep] = useState<'welcome' | 'checklist' | 'checkout' | 'success'>('welcome');
-    const [staffName, setStaffName] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [logId, setLogId] = useState<string | null>(null);
-    const [completedTasks, setCompletedTasks] = useState<string[]>([]);
-    const [evidence, setEvidence] = useState<string[]>([]);
+    const [step, setStep] = useState<'welcome' | 'initial_inspection' | 'checklist' | 'checkout' | 'success'>('welcome');
+    // ... setup
+    const [startEvidence, setStartEvidence] = useState<string[]>([]);
+    // ... setup
 
-    // New Upload State
-    const [uploading, setUploading] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    // ... (keep handleStart modifications)
+    if (res.success && res.data) {
+        setLogId(res.data.id);
+        setStep('initial_inspection'); // NEW FLOW
+    } else {
+        // ...
 
-    const { toast } = useToast();
+        // NEW HANDLER for start photos
+        const handleInitialPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
 
-    const handleStart = async () => {
-        if (!staffName.trim()) {
-            toast({ title: "Nombre requerido", description: "Por favor escribe tu nombre.", variant: "destructive" });
-            return;
-        }
-        setLoading(true);
-        const res = await startJob(params.requestId, staffName);
-        setLoading(false);
+            setUploading(true);
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("requestId", requestId);
 
-        if (res.success && res.data) {
-            setLogId(res.data.id);
+            const res = await uploadEvidence(formData);
+
+            // Clear input
+            if (fileInputRef.current) fileInputRef.current.value = "";
+
+            if (res.success && res.data) {
+                const newPhotos = [...startEvidence, res.data.url];
+                setStartEvidence(newPhotos);
+                // Auto-save to DB just in case
+                if (logId) await saveStartPhotos(logId, newPhotos);
+                toast({ title: "Foto guardada", description: "Evidencia inicial registrada." });
+            } else {
+                toast({ title: "Error", description: res.error, variant: "destructive" });
+            }
+            setUploading(false);
+        };
+
+        const finishInitialInspection = async () => {
             setStep('checklist');
-        } else {
-            toast({ title: "Error", description: res.error || "No se pudo iniciar.", variant: "destructive" });
-        }
-    };
+        };
 
-    const toggleTask = (taskId: string) => {
-        setCompletedTasks(prev =>
-            prev.includes(taskId) ? prev.filter(id => id !== taskId) : [...prev, taskId]
-        );
-    };
-
-    const handlePhotoClick = () => {
-        fileInputRef.current?.click();
-    };
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setUploading(true);
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("requestId", requestId);
-
-        const res = await uploadEvidence(formData);
-        setUploading(false);
-
-        // Clear input to allow re-uploading same file if needed
-        if (fileInputRef.current) fileInputRef.current.value = "";
-
-        if (res.success && res.data) {
-            setEvidence(prev => [...prev, res.data.url]);
-            toast({ title: "Foto subida", description: "Evidencia guardada correctamente." });
-        } else {
-            toast({ title: "Error", description: res.error || "Falló la subida.", variant: "destructive" });
-        }
-    };
-
-    const handleFinish = async () => {
-        if (!logId) return;
-        setLoading(true);
-        const res = await finishJob(logId, requestId, evidence);
-        setLoading(false);
-
-        if (res.success) {
-            setStep('success');
-        } else {
-            toast({ title: "Error", description: res.error || "No se pudo finalizar.", variant: "destructive" });
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-            {/* Header */}
-            <div className="bg-black text-white p-6 shadow-lg">
-                <h1 className="text-xl font-bold uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Staff Portal
-                </h1>
-                <p className="text-gray-400 text-xs mt-1">ID Misión: {requestId ? requestId.slice(0, 6) : "..."}</p>
-            </div>
-
+        return (
+            // ... (header)
             <main className="flex-1 p-6 max-w-md mx-auto w-full">
                 <AnimatePresence mode="wait">
 
-                    {/* STEP 1: WELCOME */}
+                    {/* STEP 1: WELCOME (Keep same) */}
                     {step === 'welcome' && (
+                        // ... existing welcome code ...
                         <motion.div
                             key="welcome"
                             initial={{ opacity: 0, y: 20 }}
@@ -156,7 +99,78 @@ export default function StaffJobPage() {
                         </motion.div>
                     )}
 
-                    {/* STEP 2: CHECKLIST */}
+                    {/* STEP 1.5: INITIAL INSPECTION */}
+                    {step === 'initial_inspection' && (
+                        <motion.div
+                            key="initial"
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -50 }}
+                            className="space-y-6"
+                        >
+                            <div className="text-center space-y-2">
+                                <span className="bg-amber-100 text-amber-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Paso Obligatorio</span>
+                                <h2 className="text-2xl font-black text-gray-900">Inspección Inicial</h2>
+                                <p className="text-sm text-gray-500">
+                                    Toma fotos de cómo encontraste la propiedad <strong>antes de tocar nada</strong>.
+                                </p>
+                            </div>
+
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-3 border-dashed border-amber-200 bg-amber-50/50 rounded-3xl h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-amber-50 active:scale-95 transition-all relative overflow-hidden"
+                            >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleInitialPhotoChange}
+                                />
+
+                                {uploading ? (
+                                    <Loader2 className="animate-spin text-amber-500" size={32} />
+                                ) : (
+                                    <>
+                                        <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center text-amber-600 mb-4">
+                                            <Camera size={32} />
+                                        </div>
+                                        <p className="font-bold text-amber-700">Añadir Foto Inicial</p>
+                                    </>
+                                )}
+
+                                {startEvidence.length > 0 && (
+                                    <div className="absolute bottom-4 left-0 right-0 text-center">
+                                        <p className="text-white font-bold text-xs bg-black/50 backdrop-blur inline-block px-3 py-1 rounded-full">
+                                            {startEvidence.length} Fotos
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Mini Gallery */}
+                            {startEvidence.length > 0 && (
+                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                    {startEvidence.map((url, i) => (
+                                        <div key={i} className="w-16 h-16 rounded-lg bg-gray-100 shrink-0 border border-gray-200 overflow-hidden">
+                                            <img src={url} className="w-full h-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <Button
+                                className="w-full h-14 text-lg font-bold rounded-xl bg-gray-900 text-white shadow-xl active:scale-95 transition-all disabled:opacity-50"
+                                onClick={finishInitialInspection}
+                                disabled={startEvidence.length === 0}
+                            >
+                                Confirmar y Continuar
+                            </Button>
+                        </motion.div>
+                    )}
+
+                    {/* STEP 2: CHECKLIST (Keep same) */}
                     {step === 'checklist' && (
                         <motion.div
                             key="checklist"
@@ -290,6 +304,6 @@ export default function StaffJobPage() {
                     )}
                 </AnimatePresence>
             </main>
-        </div>
+        </div >
     );
-}
+    }

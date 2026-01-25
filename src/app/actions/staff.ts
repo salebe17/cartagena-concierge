@@ -46,6 +46,21 @@ export async function startJob(requestId: string, staffName: string): Promise<Ac
     }
 }
 
+export async function saveStartPhotos(logId: string, photos: string[]): Promise<ActionResponse> {
+    try {
+        const supabase = await createClient();
+        const { error } = await supabase
+            .from('service_logs')
+            .update({ start_photos: photos })
+            .eq('id', logId);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
 export async function finishJob(logId: string, requestId: string, evidence: string[]): Promise<ActionResponse> {
     try {
         const supabase = await createClient();
