@@ -31,6 +31,9 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
     };
 
     useEffect(() => {
+        setMessages([]); // Clear previous state immediately to prevent leak/flash
+        setLoading(true);
+
         const load = async () => {
             try {
                 // Determine Query Params
@@ -71,22 +74,57 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
 
 
         // REALTIME SUBSCRIPTION
-        const channel = supabase.channel(`chat_${requestId || 'general'}`)
+        // If we have a requestId, we trust the DB filter.
+        // If we have a userId (Direct Chat), we must be careful not to listen to the world.
+        const filter = requestId ? `service_request_id=eq.${requestId}` : undefined;
+
+        const channel = supabase.channel(`chat_${requestId || userId || 'general'}`)
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'messages',
-                filter: requestId ? `service_request_id=eq.${requestId}` : undefined
+                filter: filter // If undefined, listens to all messages (we must filter client-side)
             }, async (payload) => {
-                setMessages(prev => [...prev, payload.new]);
+                const msg = payload.new;
+
+                // STRICT CLIENT-SIDE FILTERING for Data Isolation
+                // 1. If looking at a specific Request, ignore if msg doesn't match ID
+                if (requestId && msg.service_request_id !== requestId) return;
+
+                // 2. If Direct Message (no Request ID), check participants
+                if (!requestId && userId) {
+                    // Must be between ME and TARGET user
+                    // (Sender is ME and Receiver is TARGET) OR (Sender is TARGET and Receiver is ME)
+                    // Actually, just checking if TARGET is involved is usually enough for the Admin view of that user
+                    const involved = (msg.sender_id === userId && msg.receiver_id === currentUserId) ||
+                        (msg.receiver_id === userId && msg.sender_id === currentUserId) ||
+                        (msg.sender_id === userId && msg.receiver_id === userId); // For self-messages in a DM context
+                    if (!involved) return;
+
+                    // Also exclude messages that belong to a specific Service Request?
+                    // If I am in "Direct Chat", do I want to see "Service Request" updates?
+                    // Maybe. But usually Direct Chat is for non-contextual or booking-agnostic chat.
+                    // For now, let's allow it if the user is involved, to capture all history.
+                }
+
+                setMessages(prev => [...prev, msg]);
                 setTimeout(scrollToBottom, 50);
+
+                // Mark as read immediately if it's incoming and I'm watching
+                if (isAdmin && msg.sender_id !== currentUserId) {
+                    fetch('/api/chat/mark-read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids: [msg.id] })
+                    });
+                }
             })
             .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [requestId, isAdmin, currentUserId]);
+    }, [requestId, isAdmin, currentUserId, userId]); // ADDED userId dependency
 
     const handleSend = async (e?: React.FormEvent, fileUrl?: string, fileType: 'text' | 'image' = 'text') => {
         if (e) e.preventDefault();
