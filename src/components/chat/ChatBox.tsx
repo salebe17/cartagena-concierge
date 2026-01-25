@@ -12,9 +12,10 @@ interface ChatBoxProps {
     userId?: string; // For general thread
     currentUserId: string;
     isAdmin?: boolean;
+    className?: string; // Allow style overrides
 }
 
-export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxProps) {
+export function ChatBox({ requestId, userId, currentUserId, isAdmin, className = '' }: ChatBoxProps) {
     const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
@@ -216,7 +217,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
     if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-gray-300" /></div>;
 
     return (
-        <div className="flex flex-col h-full md:h-[500px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative">
+        <div className={`flex flex-col h-full md:h-[500px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative ${className}`}>
 
             {/* Messages Area */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50/50">
