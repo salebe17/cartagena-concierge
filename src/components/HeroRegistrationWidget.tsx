@@ -11,12 +11,9 @@ export function HeroRegistrationWidget() {
         <div className="bg-white rounded-3xl shadow-2xl p-2 max-w-lg w-full border border-gray-100 animate-in fade-in slide-in-from-bottom-5 duration-700">
             {/* Header Tabs */}
             <div className="flex gap-6 px-6 pt-4 pb-2">
-                <button className="text-sm font-bold text-gray-900 border-b-2 border-gray-900 pb-1">
+                <span className="text-sm font-bold text-gray-900 border-b-2 border-gray-900 pb-1">
                     Registrar Propiedad
-                </button>
-                <button className="text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors">
-                    Solicitar Servicio
-                </button>
+                </span>
             </div>
 
             {/* Main Inputs Container */}
