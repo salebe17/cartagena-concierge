@@ -46,7 +46,7 @@ export default async function HistoryPage() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {orders.map((order) => (
+                        {orders.map((order: any) => (
                             <Card key={order.id} className="border-none shadow-sm hover:shadow-md transition-shadow bg-white overflow-hidden">
                                 <CardContent className="p-0">
                                     <div className="flex">

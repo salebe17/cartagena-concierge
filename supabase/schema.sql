@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
     notes TEXT,                   -- "Sábanas extra por favor"
     requested_date TIMESTAMP WITH TIME ZONE, 
     status TEXT DEFAULT 'pending', -- 'pending', 'confirmed', 'completed'
+    assigned_staff_id UUID REFERENCES staff_members(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

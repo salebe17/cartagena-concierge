@@ -115,6 +115,8 @@ export async function registerProperty(formData: FormData): Promise<ActionRespon
         const title = formData.get('title') as string;
         const address = formData.get('address') as string;
         const ical_url = formData.get('ical_url') as string;
+        const image_url = formData.get('image_url') as string;
+        const bedrooms = parseInt(formData.get('bedrooms') as string || '0');
 
         if (!title || !address) return { success: false, error: "El título y la dirección son obligatorios." };
 
@@ -122,7 +124,10 @@ export async function registerProperty(formData: FormData): Promise<ActionRespon
             owner_id: user.id,
             title,
             address,
-            ical_url: ical_url || null
+            ical_url: ical_url || null,
+            image_url: image_url || null,
+            bedrooms: bedrooms || null,
+            status: 'vacant'
         });
 
         if (error) throw error;

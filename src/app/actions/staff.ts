@@ -8,10 +8,10 @@ export async function startJob(requestId: string, staffName: string): Promise<Ac
     try {
         const supabase = await createClient();
 
-        // 1. Validate Request exists
+        // 1. Validate Request exists and get assignment
         const { data: request, error: reqError } = await supabase
             .from('service_requests')
-            .select('id, status')
+            .select('id, status, assigned_staff_id')
             .eq('id', requestId)
             .single();
 
@@ -23,7 +23,8 @@ export async function startJob(requestId: string, staffName: string): Promise<Ac
             .insert({
                 service_request_id: requestId,
                 started_at: new Date().toISOString(),
-                staff_name: staffName, // Assuming we added this column or store in notes
+                staff_name: staffName,
+                staff_member_id: request.assigned_staff_id, // Link if assigned
                 notes: `Iniciado por: ${staffName}`
             })
             .select()

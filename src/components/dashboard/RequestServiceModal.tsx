@@ -101,6 +101,28 @@ export function RequestServiceModal({
                                 </div>
                             </div>
 
+                            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl space-y-2">
+                                <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-[#FF5A5F]">
+                                    <span>Estimado de Cobro</span>
+                                    {serviceType === 'cleaning' && <span>Base</span>}
+                                </div>
+                                <div className="flex justify-between items-end">
+                                    <p className="text-2xl font-black text-gray-900">
+                                        {serviceType === 'cleaning' ? '$40.000' :
+                                            serviceType === 'maintenance' ? '$50.000' : '$15.000'}
+                                        <span className="text-sm ml-1 text-gray-400">COP</span>
+                                    </p>
+                                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter bg-white px-2 py-1 rounded-lg">
+                                        Pago Automático
+                                    </p>
+                                </div>
+                                <p className="text-[10px] text-gray-400 leading-tight italic">
+                                    {serviceType === 'cleaning' ? '* El cobro final depende del tamaño de la unidad.' :
+                                        serviceType === 'maintenance' ? '* Cubre diagnóstico y primera hora de labor.' :
+                                            '* Tarifa base por gestión de pedidos o compras.'}
+                                </p>
+                            </div>
+
                             <button
                                 type="submit"
                                 disabled={isLoading}

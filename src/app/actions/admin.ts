@@ -260,7 +260,7 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
         }
 
         const TIMEOUT_MS = 9000;
-        const syncPromises = properties.map(async (prop) => {
+        const syncPromises = properties.map(async (prop: any) => {
             try {
                 // Pass correct client to internal sync
                 await syncPropertyCalendarInternal(dbClient, prop.id);
@@ -359,4 +359,101 @@ export async function adminCreateServiceRequest(data: {
 
     revalidatePath('/admin');
     return { success: true, data: newRequest, message: "Solicitud creada exitosamente" };
+}
+
+export async function assignStaffToRequest(requestId: string, staffId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createClient();
+        const { error } = await supabase
+            .from('service_requests')
+            .update({ assigned_staff_id: staffId })
+            .eq('id', requestId);
+
+        if (error) throw error;
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
+export async function getFinancialStats(): Promise<any> {
+    try {
+        const adminSupabase = await createAdminClient();
+
+        const { data: invoices, error } = await adminSupabase
+            .from('invoices')
+            .select(`
+                amount,
+                service_requests (service_type)
+            `)
+            .eq('status', 'paid');
+
+        if (error) throw error;
+
+        const stats = {
+            total: 0,
+            byService: {
+                cleaning: 0,
+                maintenance: 0,
+                concierge: 0,
+                other: 0
+            }
+        };
+
+        invoices.forEach((inv: any) => {
+            const amount = inv.amount || 0;
+            stats.total += amount;
+            const type = inv.service_requests?.service_type || 'other';
+            if (type in stats.byService) {
+                (stats.byService as any)[type] += amount;
+            } else {
+                stats.byService.other += amount;
+            }
+        });
+
+        return stats;
+    } catch (e) {
+        console.error("Finance Stats Error:", e);
+        return { total: 0, byService: { cleaning: 0, maintenance: 0, concierge: 0, other: 0 } };
+    }
+}
+
+export async function getRevenueByProperty(): Promise<any[]> {
+    try {
+        const adminSupabase = await createAdminClient();
+
+        // 1. Get all properties for the map
+        const { data: props } = await adminSupabase.from('properties').select('id, title');
+        const propertyMap: Record<string, { title: string, revenue: number }> = {};
+        props?.forEach(p => { propertyMap[p.id] = { title: p.title, revenue: 0 }; });
+
+        // 2. Fetch all paid invoices with property relation
+        const { data: invoices, error } = await adminSupabase
+            .from('invoices')
+            .select(`
+                amount,
+                service_requests (property_id)
+            `)
+            .eq('status', 'paid');
+
+        if (error) throw error;
+
+        invoices.forEach((inv: any) => {
+            const propId = inv.service_requests?.property_id;
+            if (propId && propertyMap[propId]) {
+                propertyMap[propId].revenue += inv.amount;
+            }
+        });
+
+        // Convert to array and sort
+        return Object.entries(propertyMap)
+            .map(([id, data]) => ({ id, ...data }))
+            .filter(p => p.revenue > 0)
+            .sort((a, b) => b.revenue - a.revenue);
+
+    } catch (e) {
+        console.error("Revenue By Property Error:", e);
+        return [];
+    }
 }

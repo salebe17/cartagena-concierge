@@ -29,6 +29,7 @@ export interface ServiceRequest {
     notes?: string;
     requested_date?: string;
     status: ServiceStatus;
+    assigned_staff_id?: string;
     created_at: string;
     properties?: Pick<Property, 'title' | 'address' | 'owner_id' | 'id'>;
     service_logs?: {

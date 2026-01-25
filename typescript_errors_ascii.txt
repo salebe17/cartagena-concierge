@@ -1,0 +1,5 @@
+src/app/business/page.tsx(7,10): error TS2305: Module '"@/lib/thirdweb"' has no exported member 'client'.
+src/app/business/page.tsx(7,18): error TS2305: Module '"@/lib/thirdweb"' has no exported member 'chain'.
+src/app/driver/page.tsx(30,31): error TS7006: Parameter 'order' implicitly has an 'any' type.
+src/app/history/page.tsx(49,38): error TS7006: Parameter 'order' implicitly has an 'any' type.
+src/components/dashboard/ServiceHistory.tsx(64,36): error TS7006: Parameter 'req' implicitly has an 'any' type.

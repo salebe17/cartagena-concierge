@@ -25,6 +25,17 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
+function EfficiencyBadge({ minutes }: { minutes: number }) {
+    if (minutes === 0) return null;
+    const isFast = minutes < 45;
+    return (
+        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${isFast ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+            }`}>
+            {isFast ? '⚡ Alta Eficiencia' : '🕒 Ritmo Estándar'}
+        </span>
+    );
+}
+
 export function StaffManagementView() {
     const [staff, setStaff] = useState<StaffMember[]>([]);
     const [loading, setLoading] = useState(true);
@@ -157,6 +168,7 @@ export function StaffManagementView() {
                                             {member.role === 'cleaner' ? 'Limpieza' :
                                                 member.role === 'maintenance' ? 'Mantenimiento' : member.role}
                                         </span>
+                                        {member.metrics && <div className="mt-1"><EfficiencyBadge minutes={member.metrics.avgCompletionTimeMinutes} /></div>}
                                     </div>
                                 </div>
                                 <button onClick={() => handleDelete(member.id, member.full_name)} className="text-gray-300 hover:text-rose-500 transition-colors">
@@ -175,6 +187,18 @@ export function StaffManagementView() {
                                     <Award size={14} className="text-amber-400" />
                                     <span className="font-bold">Rating: {member.rating.toFixed(1)}</span>
                                 </div>
+                                {member.metrics && (
+                                    <div className="grid grid-cols-2 gap-2 pt-1">
+                                        <div className="bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
+                                            <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Misiones</span>
+                                            <span className="text-sm font-black text-gray-900">{member.metrics.totalJobs}</span>
+                                        </div>
+                                        <div className="bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
+                                            <span className="text-[8px] font-black uppercase text-gray-400 block leading-none mb-1">Promedio</span>
+                                            <span className="text-sm font-black text-gray-900">{member.metrics.avgCompletionTimeMinutes}m</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">

@@ -112,11 +112,7 @@ export async function fetchICalEvents(url: string): Promise<ICalEvent[]> {
             // Be lenient, maybe just VEVENT fragment
         }
 
-        // 4. Manual Parse Only
         const events = parseICS(text);
-
-        // Log info
-        console.log(`Manual parser found ${events.length} events from ${url}`);
 
         return events;
 

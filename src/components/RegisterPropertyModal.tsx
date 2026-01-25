@@ -52,6 +52,16 @@ export function RegisterPropertyModal({ isOpen, onClose }: RegisterPropertyModal
                     <Label htmlFor="address">Dirección / Apto</Label>
                     <Input name="address" placeholder="Ej. Apto 1201" required disabled={loading} />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="bedrooms">Habitaciones</Label>
+                        <Input name="bedrooms" type="number" placeholder="2" disabled={loading} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="image_url">URL de Imagen</Label>
+                        <Input name="image_url" placeholder="https://..." disabled={loading} />
+                    </div>
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="ical_url">Link de Calendario (Airbnb iCal)</Label>
                     <Input name="ical_url" placeholder="https://airbnb.com/calendar/..." disabled={loading} />

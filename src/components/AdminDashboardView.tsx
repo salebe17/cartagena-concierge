@@ -1,33 +1,49 @@
-"use client";
-
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-    Clock,
-    CheckCircle2,
-    Sparkles,
-    Wrench,
-    Ship,
-    User,
-    Home,
-    ExternalLink,
-    Loader2,
-    Check,
-    X,
-    RefreshCw,
-    Calendar as CalendarIcon
-} from "lucide-react";
-import { adminUpdateServiceStatus, forceSyncAllCalendars, adminCreateServiceRequest } from "@/app/actions/admin";
-import { useToast } from "@/hooks/use-toast";
+import { ActionResponse, ServiceRequest } from '@/lib/types';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createClient as createBrowserClient } from '@/lib/supabase/client';
+import { adminUpdateServiceStatus, forceSyncAllCalendars, adminCreateServiceRequest, assignStaffToRequest, getFinancialStats, getRevenueByProperty } from '@/app/actions/admin';
+import { getStaffMembers, StaffMember } from '@/app/admin/actions/staff_management';
+import { chargeServiceRequest } from '@/app/actions/billing';
+import { useToast } from '@/hooks/use-toast';
+import { Sparkles, Wrench, Ship, Clock, RefreshCw, CheckCircle2, User, Home, UserPlus, ExternalLink, Calendar as CalendarIcon, Copy, Users, Check, CreditCard, Loader2, X, TrendingUp, DollarSign, Wallet, MapPin } from 'lucide-react';
 import { Button } from "./ui/button";
 import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
-import { ServiceRequest } from "@/lib/types";
 import { CalendarGrid } from "./admin/CalendarGrid";
 import { LogDetailsModal } from "./dashboard/LogDetailsModal";
 import { StaffManagementView } from "./admin/StaffManagementView";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AdminChatInbox } from "./chat/AdminChatInbox";
+import { MessageSquare as MessageIcon } from "lucide-react";
 
 import { getAdminSystemStatus } from "@/app/actions/debug";
-import { Copy } from "lucide-react";
+
+function StatsOverview({ requests, staff }: { requests: ServiceRequest[], staff: StaffMember[] }) {
+    const pending = requests.filter(r => r.status === 'pending').length;
+    const active = requests.filter(r => r.status === 'confirmed').length;
+    const completed = requests.filter(r => r.status === 'completed').length;
+
+    return (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Pendientes</p>
+                <p className="text-3xl font-black text-gray-900">{pending}</p>
+            </div>
+            <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Confirmados</p>
+                <p className="text-3xl font-black text-blue-600">{active}</p>
+            </div>
+            <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Completados</p>
+                <p className="text-3xl font-black text-emerald-600">{completed}</p>
+            </div>
+            <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Total Staff</p>
+                <p className="text-3xl font-black text-gray-900">{staff.length}</p>
+            </div>
+        </div>
+    );
+}
 
 function DebugStatusWidget() {
     const [status, setStatus] = useState<any>(null);
@@ -41,7 +57,7 @@ function DebugStatusWidget() {
     };
 
     return (
-        <div className="bg-gray-900 rounded-xl p-4 text-xs font-mono text-gray-300 overflow-hidden">
+        <div className="bg-gray-900 rounded-2xl p-4 text-xs font-mono text-gray-300 overflow-hidden border border-gray-800">
             <div className="flex justify-between items-center mb-2 border-b border-gray-800 pb-2">
                 <span className="font-bold text-white uppercase tracking-wider">System Diagnostic</span>
                 <button onClick={checkStatus} className="text-cyan-400 hover:text-cyan-300 underline">
@@ -62,42 +78,6 @@ function DebugStatusWidget() {
                             <span>User: {status.auth.userId ? status.auth.userId.slice(0, 8) + '...' : 'None'}</span>
                         </div>
                     </div>
-                    <div>
-                        <span className="text-gray-500 block">Profile Check</span>
-                        {status.profile.error ? (
-                            <span className="text-red-400">Error: {status.profile.error}</span>
-                        ) : (
-                            <span className="text-blue-300">Role: {status.profile.data?.role || 'None'}</span>
-                        )}
-                    </div>
-                    <div>
-                        <span className="text-gray-500 block">Database Visibility (Rows Found)</span>
-                        <div className="flex justify-between">
-                            <span>Via User Client (Count):</span>
-                            <span className={status.dataAccess.viaUserClient.count > 0 ? "text-emerald-400" : "text-yellow-400"}>
-                                {status.dataAccess.viaUserClient.count} {status.dataAccess.viaUserClient.error && `(${status.dataAccess.viaUserClient.error})`}
-                            </span>
-                        </div>
-                        <div className="flex justify-between border-t border-gray-800 mt-1 pt-1">
-                            <span>Full Query (Simulated):</span>
-                            {status.dataAccess.fullQueryCheck.error ? (
-                                <span className="text-red-400 text-right w-1/2 break-words text-[10px] leading-tight">
-                                    {status.dataAccess.fullQueryCheck.error}
-                                </span>
-                            ) : (
-                                <span className="text-emerald-400">{status.dataAccess.fullQueryCheck.count} items</span>
-                            )}
-                        </div>
-                        <div className="flex justify-between opacity-75 mt-2">
-                            <span>Via Admin Key:</span>
-                            <span>{status.dataAccess.viaAdminClient.count} ({status.dataAccess.viaAdminClient.error})</span>
-                        </div>
-                    </div>
-                    <div className="pt-2 border-t border-gray-800 flex justify-end">
-                        <button onClick={() => navigator.clipboard.writeText(JSON.stringify(status, null, 2))} className="flex items-center gap-1 text-gray-500 hover:text-white">
-                            <Copy size={12} /> Copy JSON
-                        </button>
-                    </div>
                 </div>
             ) : (
                 <div className="text-center py-4 text-gray-600 italic">
@@ -113,59 +93,160 @@ interface AdminDashboardViewProps {
     bookings?: any[];
 }
 
+function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
+    const [stats, setStats] = useState<any>(null);
+    const [propRevenue, setPropRevenue] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const EX_RATE = 4000;
+
+    const format = (amt: number) => {
+        const val = currency === 'USD' ? amt / EX_RATE : amt;
+        return (currency === 'USD' ? '$' : '$') + Math.round(val).toLocaleString() + (currency === 'USD' ? ' USD' : '');
+    };
+
+    useEffect(() => {
+        const load = async () => {
+            const [s, p] = await Promise.all([getFinancialStats(), getRevenueByProperty()]);
+            setStats(s);
+            setPropRevenue(p);
+            setLoading(false);
+        };
+        load();
+    }, []);
+
+    if (loading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-gray-300" size={40} /></div>;
+
+    return (
+        <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <DollarSign size={80} className="text-emerald-500" />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Ingresos Totales ({currency})</p>
+                    <p className="text-4xl font-black text-emerald-600">{format(stats.total)}</p>
+                </div>
+
+                <div className="bg-gray-950 p-6 rounded-3xl shadow-xl relative overflow-hidden text-white md:col-span-2">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1">Distribución por Servicio</p>
+                            <h3 className="text-xl font-bold">Performance de Misiones</h3>
+                        </div>
+                        <Wallet className="text-gray-700" size={32} />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        {['cleaning', 'maintenance', 'concierge'].map(type => (
+                            <div key={type} className="space-y-1">
+                                <p className="text-[10px] uppercase font-bold text-gray-500 truncate">{type}</p>
+                                <p className="text-lg font-black">{format(stats.byService[type] || 0)}</p>
+                                <div className="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-emerald-500 transition-all duration-1000"
+                                        style={{ width: `${(stats.byService[type] / stats.total) * 100 || 0}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex justify-between items-center">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                        <Home size={16} className="text-rose-500" /> Ingresos por Propiedad
+                    </h3>
+                </div>
+                <div className="divide-y divide-gray-50">
+                    {propRevenue.map((prop, idx) => (
+                        <div key={prop.id} className="p-4 hover:bg-gray-50 transition-colors flex justify-between items-center group">
+                            <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-black text-gray-400 group-hover:bg-rose-500 group-hover:text-white transition-all text-xs">
+                                    {idx + 1}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-gray-800">{prop.title}</p>
+                                    <p className="text-[10px] text-gray-400">ID: {prop.id.slice(0, 8)}</p>
+                                </div>
+                            </div>
+                            <p className="text-lg font-black text-gray-900">{format(prop.revenue)}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function AdminDashboardView({ requests: initialRequests, bookings = [] }: AdminDashboardViewProps) {
-    const [requests, setRequests] = useState(initialRequests || []);
+    const [requests, setRequests] = useState<any[]>(initialRequests || []);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
-    const [activeTab, setActiveTab] = useState<'requests' | 'calendar' | 'staff'>('requests');
+    const [activeTab, setActiveTab] = useState<'requests' | 'calendar' | 'staff' | 'finance' | 'inbox'>('requests');
+    const [currentUser, setCurrentUser] = useState<any>(null);
     const [filterPropertyId, setFilterPropertyId] = useState<string | null>(null);
+    const [staffList, setStaffList] = useState<StaffMember[]>([]);
+    const [isCharging, setIsCharging] = useState<string | null>(null);
+    const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
     const { toast } = useToast();
+
+    useEffect(() => {
+        const getU = async () => {
+            const supabase = createBrowserClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            setCurrentUser(user);
+        };
+        getU();
+        fetchStaff();
+    }, []);
+
+    const fetchStaff = async () => {
+        const res = await getStaffMembers();
+        if (res.success && res.data) setStaffList(res.data);
+    };
 
     const handleSync = async () => {
         setIsSyncing(true);
         const res = await forceSyncAllCalendars();
         setIsSyncing(false);
-
-        if (res.success) {
-            toast({ title: "Sincronización Completada", description: res.message || "Calendarios actualizados." });
-        } else {
-            toast({ title: "Error de Sincronización", description: res.error, variant: "destructive" });
-        }
+        if (res.success) toast({ title: "Sincronización Completada" });
     };
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         setUpdatingId(id);
         const res = await adminUpdateServiceStatus(id, newStatus);
         setUpdatingId(null);
-
-        if (res.error) {
-            toast({ title: "Error", description: res.error, variant: "destructive" });
-        } else {
+        if (!res.error) {
             setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
-            toast({ title: "Estado Actualizado", description: `Solicitud marcada como ${newStatus}.` });
+            toast({ title: "Estado Actualizado" });
         }
     };
 
-    const handleScheduleCleaning = async (booking: any) => {
-        // Calculate cleanup date (End Date at 11:00 AM)
-        const cleanupDate = new Date(booking.end_date);
-        cleanupDate.setHours(11, 0, 0, 0);
+    const handleAssignStaff = async (requestId: string, staffId: string) => {
+        const res = await assignStaffToRequest(requestId, staffId);
+        if (res.success) {
+            setRequests(prev => prev.map(r => r.id === requestId ? { ...r, assigned_staff_id: staffId } : r));
+            toast({ title: "Staff Asignado" });
+        }
+    };
 
+    const handleCharge = async (requestId: string) => {
+        setIsCharging(requestId);
+        const res = await chargeServiceRequest(requestId);
+        setIsCharging(null);
+        if (res.success) toast({ title: "Pago Procesado" });
+    };
+
+    const handleScheduleCleaning = async (booking: any) => {
         const res = await adminCreateServiceRequest({
             property_id: booking.property_id,
             service_type: 'cleaning',
-            notes: `Limpieza de salida. Huésped: ${booking.guest_name || 'Desconocido'}. (Auto-generado)`,
-            requested_date: cleanupDate.toISOString()
+            notes: `Limpieza automatica salida: ${booking.guest_name}`,
+            requested_date: new Date(booking.end_date).toISOString()
         });
-
-        if (res.success) {
-            toast({ title: "Limpieza Programada", description: `Para el ${booking.end_date} a las 11:00 AM.` });
-            if (res.data) {
-                setRequests(prev => [res.data, ...prev]);
-            }
-        } else {
-            toast({ title: "Error", description: res.error, variant: "destructive" });
-        }
+        if (res.success && res.data) setRequests(prev => [res.data, ...prev]);
     };
 
     const getIcon = (type: string) => {
@@ -191,238 +272,121 @@ export function AdminDashboardView({ requests: initialRequests, bookings = [] }:
         setActiveTab('calendar');
     };
 
-    const filteredBookings = filterPropertyId
-        ? bookings.filter(b => b.property_id === filterPropertyId)
-        : bookings;
+    const filteredBookings = filterPropertyId ? bookings.filter(b => b.property_id === filterPropertyId) : bookings;
 
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-8">
             <div className="max-w-5xl mx-auto space-y-8">
-
-                {/* 1. Admin Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="space-y-1">
-                        <h1 className="text-3xl font-black tracking-tight text-gray-900 uppercase">
-                            Command Center
-                        </h1>
-                        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-                            {requests.length} Solicitudes | {bookings.length} Reservas
-                        </p>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-black uppercase tracking-tight">Command Center</h1>
+                        <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{requests.length} Solicitudes Activas</p>
                     </div>
-                    <Button
-                        onClick={handleSync}
-                        disabled={isSyncing}
-                        variant="outline"
-                        className="gap-2"
-                    >
-                        <RefreshCw size={16} className={isSyncing ? "animate-spin" : ""} />
-                        {isSyncing ? "Sincronizando..." : "Sincronizar Calendarios"}
+                    <Button onClick={handleSync} disabled={isSyncing} variant="outline" className="rounded-2xl">
+                        <RefreshCw size={14} className={isSyncing ? "animate-spin mr-2" : "mr-2"} /> Sincronizar
                     </Button>
                 </div>
 
-                <div className="flex justify-between items-end border-b border-gray-200 mb-6">
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => setActiveTab('requests')}
-                            className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'requests' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            Solicitudes ({requests.length})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('calendar')}
-                            className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'calendar' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            Calendario Global
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('staff')}
-                            className={`pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'staff' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            Staff
-                        </button>
+                <StatsOverview requests={requests} staff={staffList} />
+
+                <div className="sticky top-0 z-20 bg-gray-50/80 backdrop-blur-md pt-4 flex justify-between items-end border-b border-gray-200">
+                    <div className="flex gap-6">
+                        {['requests', 'calendar', 'staff', 'finance', 'inbox'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all ${activeTab === tab ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
 
-                    {activeTab === 'calendar' && filterPropertyId && (
-                        <Button
-                            variant="ghost"
-                            onClick={() => setFilterPropertyId(null)}
-                            className="mb-2 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                        >
-                            <X size={14} className="mr-1" /> Borrar Filtro
-                        </Button>
-                    )}
+                    <div className="flex bg-gray-200 p-1 rounded-xl text-[10px] font-black mb-3">
+                        <button onClick={() => setCurrency('COP')} className={`px-2 py-1 rounded-lg ${currency === 'COP' ? 'bg-white shadow-sm' : 'text-gray-400'}`}>COP</button>
+                        <button onClick={() => setCurrency('USD')} className={`px-2 py-1 rounded-lg ${currency === 'USD' ? 'bg-white shadow-sm' : 'text-gray-400'}`}>USD</button>
+                    </div>
                 </div>
 
-                {activeTab === 'requests' ? (
-                    /* 2. Requests Feed */
-                    <div className="space-y-4">
-                        <AnimatePresence mode="popLayout">
-                            {requests.map((req, index) => (
-                                <motion.div
-                                    key={req.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.05 }}
-                                    className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row"
-                                >
-                                    {/* Left: Service Type Info */}
-                                    <div className="p-6 flex items-start gap-4 flex-1">
-                                        <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
-                                            {getIcon(req.service_type)}
-                                        </div>
-                                        <div className="space-y-3">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${getStatusColor(req.status)}`}>
-                                                        {req.status}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => {
-                                                            navigator.clipboard.writeText(`${window.location.origin}/staff/${req.id}`);
-                                                            toast({ title: "Enlace Copiado", description: "Link de Staff listo para compartir." });
-                                                        }}
-                                                        className="text-xs text-gray-400 font-medium hover:text-blue-500 hover:underline flex items-center gap-1 group"
-                                                        title="Copiar enlace de Staff"
+                <div className="min-h-[400px]">
+                    {activeTab === 'requests' ? (
+                        <div className="space-y-4">
+                            <AnimatePresence mode="popLayout">
+                                {requests.map((req, index) => (
+                                    <motion.div
+                                        key={req.id}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row group"
+                                    >
+                                        <div className="p-6 flex items-start gap-4 flex-1">
+                                            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform">
+                                                {getIcon(req.service_type)}
+                                            </div>
+                                            <div className="space-y-4 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${getStatusColor(req.status)}`}>{req.status}</span>
+                                                    <span className="text-[10px] text-gray-300 font-mono">#{req.id.slice(0, 5)}</span>
+                                                </div>
+                                                <h3 className="text-xl font-black text-gray-900 leading-none">{req.service_type === 'cleaning' ? 'Limpieza de Unidad' : 'Servicio Especial'}</h3>
+
+                                                <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50 grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <p className="text-[13px] font-black text-gray-900 flex items-center gap-1.5"><Home size={14} className="text-rose-500" /> {req.properties?.title}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><MapPin size={10} /> {req.properties?.address || 'Cartagena'}</p>
+                                                    </div>
+                                                    <div className="flex items-center justify-between border-l border-gray-200 pl-4">
+                                                        <div>
+                                                            <p className="text-[9px] font-black text-gray-400 uppercase">{new Date(req.requested_date).toLocaleDateString()}</p>
+                                                            <p className="text-xs font-bold text-gray-800">Fecha Misi&oacute;n</p>
+                                                        </div>
+                                                        <button onClick={() => setActiveTab('inbox')} className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors shadow-sm">
+                                                            <MessageIcon size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <Users size={12} className="text-gray-400" />
+                                                    <select
+                                                        value={req.assigned_staff_id || ""}
+                                                        onChange={(e) => handleAssignStaff(req.id, e.target.value)}
+                                                        className="text-[11px] font-bold border-none bg-transparent p-0 focus:ring-0 text-gray-500 cursor-pointer"
                                                     >
-                                                        #{req.id.slice(0, 5)}...
-                                                        <Copy size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                    </button>
-                                                </div>
-                                                <h3 className="text-lg font-bold text-gray-900 leading-none">
-                                                    {req.service_type === 'cleaning' ? 'Limpieza de Unidad' :
-                                                        req.service_type === 'maintenance' ? 'Ticket de Mantenimiento' : 'Concierge VIP'}
-                                                </h3>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                        <Home size={14} className="text-gray-400" />
-                                                        <span className="font-bold">{req.properties?.title}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-xs text-gray-400">
-                                                        <User size={14} />
-                                                        <span>Prop ID: {req.properties?.id.slice(0, 8)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-medium text-gray-600 italic">"{req.notes}"</p>
-                                                    {req.requested_date && (
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">
-                                                            Agenda: {new Date(req.requested_date).toLocaleString('es-CO', { timeZone: 'America/Bogota' })}
-                                                        </p>
-                                                    )}
+                                                        <option value="">Asignar Personal...</option>
+                                                        {staffList.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
+                                                    </select>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Right: Admin Actions */}
-                                    <div className="bg-gray-50/50 p-6 border-t md:border-t-0 md:border-l border-gray-100 flex flex-col justify-center gap-2 min-w-[200px]">
-                                        {req.status === 'pending' && (
-                                            <Button
-                                                onClick={() => handleStatusUpdate(req.id, 'confirmed')}
-                                                disabled={updatingId === req.id}
-                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-11 rounded-xl shadow-sm"
-                                            >
-                                                {updatingId === req.id ? <Loader2 className="animate-spin" /> : "Confirmar Visita"}
-                                            </Button>
-                                        )}
-                                        {req.status === 'confirmed' && (
-                                            <Button
-                                                onClick={() => handleStatusUpdate(req.id, 'completed')}
-                                                disabled={updatingId === req.id}
-                                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl shadow-sm"
-                                            >
-                                                {updatingId === req.id ? <Loader2 className="animate-spin" /> : "Finalizar Servicio"}
-                                            </Button>
-                                        )}
-                                        {req.status === 'completed' && (
-                                            <div className="flex flex-col items-center gap-2 py-2">
-                                                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                                    <Check size={20} />
-                                                </div>
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Atendido</span>
+                                        <div className="bg-gray-50/50 p-6 border-l border-gray-100 flex flex-col justify-center gap-3 min-w-[220px]">
+                                            {req.status === 'pending' && <Button onClick={() => handleStatusUpdate(req.id, 'confirmed')} className="w-full bg-blue-600 font-bold rounded-xl h-11">Confirmar</Button>}
+                                            {req.status === 'confirmed' && <Button onClick={() => handleStatusUpdate(req.id, 'completed')} className="w-full bg-emerald-600 font-bold rounded-xl h-11">Finalizar</Button>}
+                                            {req.status === 'completed' && <Button onClick={() => handleCharge(req.id)} className="w-full bg-gray-950 font-bold rounded-xl h-11">Cobrar</Button>}
+
+                                            <div className="flex gap-2">
+                                                <RequestDetailsModal request={req} onViewCalendar={handleViewCalendar} triggerButton={<Button variant="ghost" className="flex-1 text-[10px] font-bold">INFO</Button>} />
+                                                <LogDetailsModal request={req} triggerButton={<Button variant="ghost" className="flex-1 text-[10px] font-bold text-emerald-600">LOGS</Button>} />
                                             </div>
-                                        )}
-
-
-
-                                        <div className="flex gap-2 w-full">
-                                            <RequestDetailsModal
-                                                request={req}
-                                                onViewCalendar={handleViewCalendar}
-                                                triggerButton={
-                                                    <Button variant="ghost" className="flex-1 text-[10px] font-bold text-gray-400 hover:text-gray-900 group">
-                                                        Info <ExternalLink size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                    </Button>
-                                                }
-                                            />
-                                            <LogDetailsModal
-                                                request={req}
-                                                triggerButton={
-                                                    <Button variant="ghost" className="flex-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50" disabled={!req.service_logs?.length}>
-                                                        Evidencia {req.service_logs?.length ? `(${req.service_logs[0].end_photos?.length || 0})` : ''}
-                                                    </Button>
-                                                }
-                                            />
                                         </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-
-                        {requests.length === 0 && (
-                            <div className="space-y-6">
-                                <div className="bg-white rounded-3xl p-12 border border-gray-100 text-center space-y-4 shadow-sm">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
-                                        <CheckCircle2 size={32} />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h3 className="text-xl font-bold text-gray-900">Todo al día</h3>
-                                        <p className="text-sm text-gray-400 max-w-xs mx-auto">No hay solicitudes pendientes de gestión.</p>
-                                    </div>
-
-                                    {bookings.length > 0 && (
-                                        <div className="pt-4">
-                                            <Button
-                                                onClick={() => setActiveTab('calendar')}
-                                                variant="outline"
-                                                className="gap-2 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-                                            >
-                                                <CalendarIcon size={16} /> Ver mis {bookings.length} Reservas
-                                            </Button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* DEBUG WIDGET - Only visible if empty to troubleshoot */}
-                                <div className="mx-auto max-w-2xl opacity-80 hover:opacity-100 transition-opacity">
-                                    <DebugStatusWidget />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    /* 3. Calendar View */
-                    <div className="space-y-4">
-                        <CalendarGrid
-                            bookings={filteredBookings}
-                            onScheduleCleaning={handleScheduleCleaning}
-                        />
-
-                        {/* Legend */}
-                        <div className="flex gap-4 justify-center text-xs text-gray-400 pt-4">
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span> Airbnb</span>
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500"></span> Directo</span>
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500"></span> iCal Sync</span>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                            {requests.length === 0 && <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 font-bold">Sin solicitudes pendientes.</div>}
+                            <DebugStatusWidget />
                         </div>
-                    </div>
-                )}
-
-                {activeTab === 'staff' && (
-                    <StaffManagementView />
-                )}
+                    ) : activeTab === 'calendar' ? (
+                        <CalendarGrid bookings={filteredBookings} onScheduleCleaning={handleScheduleCleaning} />
+                    ) : activeTab === 'staff' ? (
+                        <StaffManagementView />
+                    ) : activeTab === 'finance' ? (
+                        <FinanceView currency={currency} />
+                    ) : activeTab === 'inbox' && currentUser ? (
+                        <AdminChatInbox currentUserId={currentUser.id} />
+                    ) : null}
+                </div>
             </div>
         </div>
     );

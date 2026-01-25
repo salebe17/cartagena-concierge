@@ -27,7 +27,7 @@ export default async function DriverPage() {
             </div>
 
             <div className="grid gap-4">
-                {orders?.map((order) => (
+                {orders?.map((order: any) => (
                     <Link key={order.id} href={`/driver/order/${order.id}`}>
                         <Card className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer">
                             <CardHeader className="flex flex-row items-center justify-between pb-2">

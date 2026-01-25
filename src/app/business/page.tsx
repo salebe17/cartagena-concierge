@@ -4,7 +4,10 @@ import Link from "next/link";
 import { ArrowLeft, Building2, Key, Truck, ShieldCheck } from "lucide-react";
 import { ThirdwebProvider, ConnectButton, useActiveAccount } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
-import { client, chain } from "@/lib/thirdweb";
+import { getThirdwebClient, getChain } from "@/lib/thirdweb";
+
+const client = getThirdwebClient();
+const chain = getChain();
 import { HostCatalog } from "@/components/HostCatalog";
 import Navbar from "@/components/Navbar";
 

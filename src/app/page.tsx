@@ -113,11 +113,7 @@ export default function LandingPage() {
               Tu propiedad en tu bolsillo.
             </p>
           </div>
-          <Link href="/register">
-            <Button variant="outline" className="h-12 px-8 rounded-xl border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white font-semibold transition-colors">
-              Ver Demo del Dashboard
-            </Button>
-          </Link>
+
         </div>
       </div>
 

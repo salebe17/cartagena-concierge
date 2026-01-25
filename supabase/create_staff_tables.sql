@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS service_logs (
     end_photos TEXT[],   -- Array of URLs
     completed_tasks JSONB DEFAULT '[]'::jsonb, -- Array of task IDs
     status TEXT DEFAULT 'in_progress', -- 'in_progress', 'completed'
+    staff_member_id UUID REFERENCES staff_members(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

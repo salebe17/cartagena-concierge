@@ -4,7 +4,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ServiceRequest } from "@/lib/types";
-import { MapPin, User, Calendar, FileText, Clock, Phone } from "lucide-react";
+import { MapPin, User, Calendar, FileText, Clock, Phone, MessageCircle } from "lucide-react";
+import { ChatBox } from "../chat/ChatBox";
+import { useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface RequestDetailsModalProps {
     request: ServiceRequest;
@@ -14,6 +17,19 @@ interface RequestDetailsModalProps {
 
 export function RequestDetailsModal({ request, triggerButton, onViewCalendar }: RequestDetailsModalProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [showChat, setShowChat] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            const getU = async () => {
+                const supabase = createClient();
+                const { data: { user } } = await supabase.auth.getUser();
+                setCurrentUser(user);
+            };
+            getU();
+        }
+    }, [isOpen]);
 
     const handleViewCalendar = () => {
         if (onViewCalendar && request.property_id) {
@@ -90,10 +106,31 @@ export function RequestDetailsModal({ request, triggerButton, onViewCalendar }: 
 
                     {/* Notes Section */}
                     <div className="space-y-2">
-                        <h5 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Notas / Requerimientos</h5>
-                        <div className="bg-yellow-50/50 p-4 rounded-xl border border-yellow-100 text-yellow-900 text-sm font-medium italic">
-                            "{request.notes || 'Sin notas adicionales'}"
+                        <div className="flex justify-between items-center">
+                            <h5 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Notas / Requerimientos</h5>
+                            <button
+                                onClick={() => setShowChat(!showChat)}
+                                className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5
+                                    ${showChat ? 'bg-gray-900 text-white' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}
+                            >
+                                <MessageCircle size={12} />
+                                {showChat ? 'Ver Detalles' : 'Contactar Soporte'}
+                            </button>
                         </div>
+
+                        {!showChat ? (
+                            <div className="bg-yellow-50/50 p-4 rounded-xl border border-yellow-100 text-yellow-900 text-sm font-medium italic">
+                                "{request.notes || 'Sin notas adicionales'}"
+                            </div>
+                        ) : (
+                            <div className="animate-in fade-in zoom-in-95 duration-300">
+                                {currentUser ? (
+                                    <ChatBox requestId={request.id} currentUserId={currentUser.id} />
+                                ) : (
+                                    <div className="h-40 flex items-center justify-center text-gray-400 text-xs italic">Cargando chat...</div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </DialogContent>

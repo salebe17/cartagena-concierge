@@ -61,7 +61,7 @@ export default async function ServiceHistory() {
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="divide-y divide-gray-50">
-                    {requests.map((req) => (
+                    {requests.map((req: any) => (
                         <div key={req.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
 
                             <div className="flex items-center gap-4">

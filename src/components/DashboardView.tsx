@@ -13,6 +13,8 @@ import { createServiceRequest } from "@/app/actions/dashboard";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
+import { BillingSection } from "./dashboard/BillingSection";
+import { Property } from "@/lib/types";
 
 interface DashboardViewProps {
     userName: string;
@@ -27,7 +29,7 @@ const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00
 export function DashboardView({ userName, properties, alerts = [], serviceHistory = null, bookings = [] }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'portfolio' | 'calendar'>('portfolio');
+    const [activeTab, setActiveTab] = useState<'portfolio' | 'calendar' | 'billing'>('portfolio');
     const { toast } = useToast();
 
     const handleScheduleCleaning = async (booking: any) => {
@@ -86,6 +88,12 @@ export function DashboardView({ userName, properties, alerts = [], serviceHistor
                                     className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'calendar' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                                 >
                                     Calendario
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('billing')}
+                                    className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'billing' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                                >
+                                    Facturación
                                 </button>
                             </div>
                             <Button
@@ -202,9 +210,13 @@ export function DashboardView({ userName, properties, alerts = [], serviceHistor
                             </div>
                         )}
                     </>
-                ) : (
+                ) : activeTab === 'calendar' ? (
                     <div className="space-y-4">
                         <CalendarGrid bookings={bookings} onScheduleCleaning={handleScheduleCleaning} />
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+                        <BillingSection />
                     </div>
                 )}
 
@@ -222,6 +234,6 @@ export function DashboardView({ userName, properties, alerts = [], serviceHistor
                 />
 
             </div>
-        </div>
+        </div >
     );
 }
