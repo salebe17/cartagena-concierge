@@ -54,6 +54,8 @@ export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> 
                         const end = new Date(log.ended_at).getTime();
                         if (isNaN(start) || isNaN(end)) return acc;
                         const duration = end - start;
+                        // Guard against negative duration or future dates
+                        if (duration < 0 || duration > 86400000) return acc;
                         return acc + (duration / 1000 / 60);
                     } catch { return acc; }
                 }, 0);
@@ -64,13 +66,14 @@ export async function getStaffMembers(): Promise<ActionResponse<StaffMember[]>> 
                 ...member,
                 metrics: {
                     totalJobs,
-                    avgCompletionTimeMinutes: Math.round(avgTime) || 0 // Fix NaN
+                    avgCompletionTimeMinutes: Math.round(Number(avgTime) || 0) // Force Number
                 }
             };
         });
 
         return { success: true, data: deepSerialize(staffWithMetrics) };
     } catch (e: any) {
+        console.error("Staff Fetch Error:", e);
         return { success: false, error: e.message };
     }
 }

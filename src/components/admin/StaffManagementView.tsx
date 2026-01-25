@@ -56,9 +56,16 @@ export function StaffManagementView() {
 
     const fetchStaff = async () => {
         setLoading(true);
-        const res = await getStaffMembers();
-        if (res.success && res.data) {
-            setStaff(res.data);
+        try {
+            const res = await getStaffMembers();
+            if (res.success && res.data) {
+                setStaff(res.data);
+            } else {
+                toast({ title: "Error", description: res.error || "No se pudo cargar el personal", variant: "destructive" });
+            }
+        } catch (err: any) {
+            console.error("Fetch Staff Client Error:", err);
+            toast({ title: "Error Crítico", description: "Fallo de conexión al cargar staff", variant: "destructive" });
         }
         setLoading(false);
     };
