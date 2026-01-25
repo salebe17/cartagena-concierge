@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { deepSerialize } from '@/lib/utils/serialization';
 
 export async function getAdminSystemStatus() {
     const supabase = await createClient();
@@ -80,7 +81,7 @@ export async function getAdminSystemStatus() {
         }
     }
 
-    return {
+    return deepSerialize({
         timestamp: new Date().toISOString(),
         env: {
             hasServiceKey,
@@ -100,5 +101,5 @@ export async function getAdminSystemStatus() {
             fullQueryCheck: { count: fullFetchCount, error: fullFetchError },
             viaAdminClient: { count: adminCount, error: adminError }
         }
-    };
+    });
 }

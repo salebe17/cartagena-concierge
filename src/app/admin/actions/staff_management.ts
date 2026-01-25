@@ -79,7 +79,7 @@ export async function createStaffMember(data: Partial<StaffMember>): Promise<Act
 
         if (error) throw error;
         revalidatePath('/admin');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -95,7 +95,7 @@ export async function updateStaffMember(id: string, data: Partial<StaffMember>):
 
         if (error) throw error;
         revalidatePath('/admin');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -111,7 +111,7 @@ export async function deleteStaffMember(id: string): Promise<ActionResponse> {
 
         if (error) throw error;
         revalidatePath('/admin');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: e.message };
     }

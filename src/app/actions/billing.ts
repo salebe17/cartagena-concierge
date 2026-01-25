@@ -5,6 +5,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/lib/types';
 import { sendInvoiceEmail } from './notifications';
+import { deepSerialize } from '@/lib/utils/serialization';
 
 export async function getOrCreateStripeCustomer(): Promise<ActionResponse<string>> {
     try {
@@ -19,7 +20,7 @@ export async function getOrCreateStripeCustomer(): Promise<ActionResponse<string
             .eq('profile_id', user.id)
             .single();
 
-        if (existing) return { success: true, data: existing.stripe_customer_id };
+        if (existing) return deepSerialize({ success: true, data: existing.stripe_customer_id });
 
         // 2. Create in Stripe
         const customer = await stripe.customers.create({
@@ -38,7 +39,7 @@ export async function getOrCreateStripeCustomer(): Promise<ActionResponse<string
 
         if (error) throw error;
 
-        return { success: true, data: customer.id };
+        return deepSerialize({ success: true, data: customer.id });
     } catch (e: any) {
         console.error("Stripe Customer Error:", e);
         return { success: false, error: e.message };
@@ -57,7 +58,7 @@ export async function createSetupIntent(): Promise<ActionResponse<{ clientSecret
 
         if (!setupIntent.client_secret) throw new Error("Failed to create SetupIntent");
 
-        return { success: true, data: { clientSecret: setupIntent.client_secret } };
+        return deepSerialize({ success: true, data: { clientSecret: setupIntent.client_secret } });
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -73,7 +74,7 @@ export async function getHostPaymentMethods(): Promise<ActionResponse<any[]>> {
             type: 'card',
         });
 
-        return { success: true, data: paymentMethods.data };
+        return deepSerialize({ success: true, data: paymentMethods.data });
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -155,7 +156,7 @@ export async function chargeServiceRequest(requestId: string): Promise<ActionRes
 
         revalidatePath('/admin');
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         console.error("Charge Error:", e);
         return { success: false, error: e.message };

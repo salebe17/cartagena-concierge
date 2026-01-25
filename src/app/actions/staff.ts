@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/lib/types';
+import { deepSerialize } from '@/lib/utils/serialization';
 
 export async function startJob(requestId: string, staffName: string): Promise<ActionResponse> {
     try {
@@ -40,7 +41,7 @@ export async function startJob(requestId: string, staffName: string): Promise<Ac
         // For now, we assume 'confirmed' is fine, or we can add a log.
 
         revalidatePath(`/staff/${requestId}`);
-        return { success: true, data: log };
+        return deepSerialize({ success: true, data: log });
 
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -56,7 +57,7 @@ export async function saveStartPhotos(logId: string, photos: string[]): Promise<
             .eq('id', logId);
 
         if (error) throw error;
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -88,7 +89,7 @@ export async function finishJob(logId: string, requestId: string, evidence: stri
 
         revalidatePath('/admin');
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
 
     } catch (e: any) {
         return { success: false, error: e.message };
@@ -110,7 +111,7 @@ export async function getJobDetails(requestId: string) {
         .eq('id', requestId)
         .single();
 
-    return request;
+    return deepSerialize(request);
 }
 
 export async function uploadEvidence(formData: FormData): Promise<ActionResponse<{ url: string }>> {

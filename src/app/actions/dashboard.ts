@@ -4,13 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { ActionResponse, Property, ServiceRequest } from '@/lib/types';
+import { deepSerialize } from '@/lib/utils/serialization';
 
-// Helper for BigInt serialization
-function serialize<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data, (key, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-    ));
-}
 
 export async function getUserPropertiesBySession(): Promise<Property[]> {
     try {
@@ -27,7 +22,7 @@ export async function getUserPropertiesBySession(): Promise<Property[]> {
 
         if (error) throw error;
 
-        return serialize(data || []);
+        return deepSerialize(data || []);
     } catch (e) {
         // Silent fail for data fetching to prevent UI crash, but log for monitoring
         console.error("Fetch Properties Error:", e);
@@ -57,7 +52,7 @@ export async function getOwnerBookings(): Promise<any[]> {
             .order('start_date', { ascending: true });
 
         if (error) throw error;
-        return serialize(data || []);
+        return deepSerialize(data || []);
     } catch (e) {
         console.error("Fetch Owner Bookings Error:", e);
         return [];
@@ -99,7 +94,7 @@ export async function createServiceRequest(formData: FormData): Promise<ActionRe
         if (error) throw error;
 
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: "Error al crear la solicitud. Intenta nuevamente." };
     }
@@ -133,7 +128,7 @@ export async function registerProperty(formData: FormData): Promise<ActionRespon
         if (error) throw error;
 
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: "Error al registrar la propiedad." };
     }
@@ -154,7 +149,7 @@ export async function deleteProperty(propertyId: string): Promise<ActionResponse
         if (error) throw error;
 
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: "No se pudo eliminar la propiedad." };
     }
@@ -175,7 +170,7 @@ export async function updatePropertyStatus(propertyId: string, status: 'occupied
         if (error) throw error;
 
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e: any) {
         return { success: false, error: "Error al actualizar estado." };
     }
@@ -204,7 +199,7 @@ export async function getUserAlerts(): Promise<any[]> {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        return serialize(data || []);
+        return deepSerialize(data || []);
     } catch (e) {
         console.error("Fetch Alerts Error:", e);
         return [];
@@ -226,7 +221,7 @@ export async function markAlertRead(alertId: string): Promise<ActionResponse> {
         if (error) throw error;
 
         revalidatePath('/dashboard');
-        return { success: true };
+        return deepSerialize({ success: true });
     } catch (e) {
         return { success: false, error: "Error updating alert" };
     }
