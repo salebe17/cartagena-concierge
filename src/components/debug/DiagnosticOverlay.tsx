@@ -106,8 +106,28 @@ export function DiagnosticOverlay() {
                                 disabled={loading}
                                 className="w-full bg-blue-900/30 border border-blue-800 hover:bg-blue-900/50 text-blue-100 p-3 rounded-xl text-left flex justify-between items-center transition-colors"
                             >
-                                <span>Test getStaffMembers()</span>
+                                <span>Test getStaffMembers() (Original)</span>
                                 {loading && <RefreshCw className="animate-spin" size={14} />}
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    setLoading(true);
+                                    addLog("🚀 PING Debug Action...");
+                                    try {
+                                        // Dynamic import to avoid build dependency if file missing
+                                        const { debugTestPing } = await import("@/app/actions/debug_test");
+                                        const res = await debugTestPing();
+                                        addLog(`✅ PING Success: ${res.message}`);
+                                    } catch (e: any) {
+                                        addLog(`💀 PING Failed: ${e.message}`);
+                                    }
+                                    setLoading(false);
+                                }}
+                                disabled={loading}
+                                className="w-full bg-purple-900/30 border border-purple-800 hover:bg-purple-900/50 text-purple-100 p-3 rounded-xl text-left flex justify-between items-center transition-colors"
+                            >
+                                <span>Test Debug Ping (Clean File)</span>
                             </button>
 
                             <button
