@@ -21,6 +21,8 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin }: ChatBoxPr
     const [sending, setSending] = useState(false);
     const [mounted, setMounted] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const supabase = createClient();
 
     const scrollToBottom = () => {
         if (scrollRef.current) {
