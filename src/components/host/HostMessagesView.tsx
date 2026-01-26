@@ -11,9 +11,9 @@ interface HostMessagesViewProps {
 
 export function HostMessagesView({ bookings, currentUserId, userName }: HostMessagesViewProps) {
     return (
-        <div className="fixed inset-0 z-40 pb-[90px] flex flex-col bg-white md:static md:h-[calc(100vh-140px)] md:bg-transparent md:pb-0 md:z-auto animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-40 flex flex-col bg-white md:static md:h-[calc(100vh-140px)] md:bg-transparent md:z-auto animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4 shrink-0 px-4 md:px-0 mt-4 md:mt-0">
+            <div className="flex items-center justify-between mb-4 shrink-0 px-4 md:px-0 mt-4 md:mt-0 pt-4 md:pt-0">
                 <h1 className="text-3xl font-black text-[#222222] tracking-tight">Soporte</h1>
             </div>
 
@@ -35,6 +35,7 @@ export function HostMessagesView({ bookings, currentUserId, userName }: HostMess
                         userId={currentUserId}
                         isAdmin={false}
                         className="h-full border-none shadow-none rounded-none"
+                        mobileLayout={true}
                     />
                 </div>
             </div>

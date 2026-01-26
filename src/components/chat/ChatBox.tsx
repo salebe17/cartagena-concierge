@@ -11,11 +11,13 @@ interface ChatBoxProps {
     requestId?: string;
     userId?: string; // For general thread
     currentUserId: string;
+    currentUserId: string;
     isAdmin?: boolean;
     className?: string; // Allow style overrides
+    mobileLayout?: boolean;
 }
 
-export function ChatBox({ requestId, userId, currentUserId, isAdmin, className = '' }: ChatBoxProps) {
+export function ChatBox({ requestId, userId, currentUserId, isAdmin, className = '', mobileLayout = false }: ChatBoxProps) {
     const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
@@ -24,6 +26,12 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
     const fileInputRef = useRef<HTMLInputElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
+
+    // Safety timeout to prevent infinite loading
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 5000);
+        return () => clearTimeout(timer);
+    }, []);
 
     const scrollToBottom = () => {
         if (scrollRef.current) {
@@ -220,7 +228,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
         <div className={`flex flex-col h-full md:h-[500px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative ${className}`}>
 
             {/* Messages Area */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50/50">
+            <div ref={scrollRef} className={`flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50/50 ${mobileLayout ? 'pb-40' : ''}`}>
                 {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center space-y-3 opacity-40">
                         <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
@@ -246,7 +254,11 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
             </div>
 
             {/* Input Area */}
-            <form onSubmit={(e) => handleSend(e)} className="p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end z-10 relative shrink-0">
+            <form
+                onSubmit={(e) => handleSend(e)}
+                className={`p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end shrink-0 transition-all 
+                ${mobileLayout ? 'fixed bottom-[74px] left-0 right-0 z-[60] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] md:static md:bottom-auto md:shadow-none' : 'relative z-10'}`}
+            >
                 <input
                     type="file"
                     ref={fileInputRef}
