@@ -12,6 +12,7 @@ import {
     Shirt,    // Lavandería
     Utensils, // Menaje
     BedDouble, // Lenceria
+    PaintRoller, // Acabados
 } from "lucide-react";
 import { RequestServiceModal } from "../dashboard/RequestServiceModal";
 
@@ -26,6 +27,7 @@ export function HostServicesView({ properties }: HostServicesViewProps) {
     const services = [
         { id: 'cleaning', label: 'Limpieza', icon: Sparkles, color: 'bg-teal-50 text-teal-600' },
         { id: 'maintenance', label: 'Mantenimiento', icon: Wrench, color: 'bg-orange-50 text-orange-600' },
+        { id: 'interior_finishes', label: 'Acabado de Interiores', icon: PaintRoller, color: 'bg-emerald-50 text-emerald-600' },
         { id: 'keys', label: 'Cerrajería', icon: Key, color: 'bg-yellow-50 text-yellow-600' },
         { id: 'plumbing', label: 'Plomería', icon: Droplets, color: 'bg-blue-50 text-blue-600' },
         { id: 'electricity', label: 'Electricidad', icon: Zap, color: 'bg-amber-50 text-amber-600' },

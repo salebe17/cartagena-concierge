@@ -31,7 +31,17 @@ export function RequestServiceModal({
     const titleMap: Record<string, string> = {
         cleaning: 'Programar Limpieza',
         maintenance: 'Reportar Mantenimiento',
-        concierge: 'Solicitar Concierge'
+        concierge: 'Solicitar Concierge',
+        interior_finishes: 'Acabado de Interiores',
+        plumbing: 'Solicitar Plomería',
+        electricity: 'Solicitar Electricista',
+        gas: 'Servicio de Gas',
+        keys: 'Cerrajería',
+        insurance: 'Gestión de Seguros',
+        refrigeration: 'Aire Acondicionado',
+        laundry: 'Lavandería',
+        houseware: 'Menaje',
+        linens: 'Lenceria',
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -89,7 +99,7 @@ export function RequestServiceModal({
                                 )}
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">
-                                        {selectedType ? titleMap[selectedType] : "Nueva Solicitud"}
+                                        {selectedType ? (titleMap[selectedType] || 'Nueva Solicitud') : "Nueva Solicitud"}
                                     </h3>
                                     <p className="text-xs text-gray-500">{propertyName}</p>
                                 </div>
@@ -153,7 +163,7 @@ export function RequestServiceModal({
                                         <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
                                         <textarea
                                             name="notes"
-                                            placeholder={selectedType === 'cleaning' ? "Ej. Cambio de sábanas, limpieza profunda..." : "Ej. El aire acondicionado gotea..."}
+                                            placeholder={selectedType === 'cleaning' ? "Ej. Cambio de sábanas, limpieza profunda..." : "Ej. Detalles del servicio requerido..."}
                                             className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#FF5A5F] focus:ring-2 focus:ring-rose-100 h-24 resize-none transition-all"
                                         />
                                     </div>
@@ -167,17 +177,19 @@ export function RequestServiceModal({
                                     <div className="flex justify-between items-end">
                                         <p className="text-2xl font-black text-gray-900">
                                             {selectedType === 'cleaning' ? '$40.000' :
-                                                selectedType === 'maintenance' ? '$50.000' : '$15.000'}
-                                            <span className="text-sm ml-1 text-gray-400">COP</span>
+                                                selectedType === 'maintenance' ? '$50.000' :
+                                                    selectedType === 'interior_finishes' ? 'A Cotizar' : '$15.000'}
+                                            {selectedType !== 'interior_finishes' && <span className="text-sm ml-1 text-gray-400">COP</span>}
                                         </p>
                                         <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter bg-white px-2 py-1 rounded-lg">
-                                            Pago Automático
+                                            {selectedType === 'interior_finishes' ? 'Visita Técnica' : 'Pago Automático'}
                                         </p>
                                     </div>
                                     <p className="text-[10px] text-gray-400 leading-tight italic">
                                         {selectedType === 'cleaning' ? '* El cobro final depende del tamaño de la unidad.' :
                                             selectedType === 'maintenance' ? '* Cubre diagnóstico y primera hora de labor.' :
-                                                '* Tarifa base por gestión de pedidos o compras.'}
+                                                selectedType === 'interior_finishes' ? '* Requiere visita para presupuesto.' :
+                                                    '* Tarifa base por gestión de pedidos o compras.'}
                                     </p>
                                 </div>
 
