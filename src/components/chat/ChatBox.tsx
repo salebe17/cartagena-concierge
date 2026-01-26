@@ -224,7 +224,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
     if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin text-gray-300" /></div>;
 
     return (
-        <div className={`flex flex-col h-full md:h-[500px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative ${className}`}>
+        <div className={`flex flex-col h-full bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm relative ${className}`}>
 
             {/* Messages Area */}
             <div ref={scrollRef} className={`flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50/50 ${mobileLayout ? 'pb-40 md:pb-6' : ''}`}>
@@ -257,7 +257,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                 onSubmit={(e) => handleSend(e)}
                 className={`p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end shrink-0 transition-all w-full
                 ${mobileLayout
-                        ? 'fixed bottom-[74px] left-0 right-0 z-[60] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] md:relative md:bottom-auto md:left-auto md:right-auto md:top-auto md:z-0 md:shadow-none'
+                        ? 'fixed bottom-[74px] left-0 right-0 z-[60] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] md:relative md:bottom-auto md:left-auto md:right-auto md:top-auto md:z-10 md:shadow-none'
                         : 'relative z-10'}`}
             >
                 <input
