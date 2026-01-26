@@ -246,7 +246,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
             </div>
 
             {/* Input Area */}
-            <form onSubmit={(e) => handleSend(e)} className="p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end z-10 relative">
+            <form onSubmit={(e) => handleSend(e)} className="p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end z-10 relative shrink-0">
                 <input
                     type="file"
                     ref={fileInputRef}
