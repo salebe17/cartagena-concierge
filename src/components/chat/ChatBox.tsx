@@ -257,7 +257,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                 onSubmit={(e) => handleSend(e)}
                 className={`p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end shrink-0 transition-all w-full
                 ${mobileLayout
-                        ? 'fixed bottom-[74px] left-0 right-0 z-[60] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] md:relative md:bottom-auto md:left-auto md:right-auto md:z-0 md:shadow-none'
+                        ? 'fixed bottom-[74px] left-0 right-0 z-[60] shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] md:relative md:bottom-auto md:left-auto md:right-auto md:top-auto md:z-0 md:shadow-none'
                         : 'relative z-10'}`}
             >
                 <input
