@@ -165,7 +165,7 @@ function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
                                 <div className="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-emerald-500 transition-all duration-1000"
-                                        style={{ width: `${(stats.byService[type] / stats.total) * 100 || 0}%` }}
+                                        style={{ width: `${stats.total > 0 ? (stats.byService[type] / stats.total) * 100 : 0}%` }}
                                     />
                                 </div>
                             </div>
@@ -181,20 +181,25 @@ function FinanceView({ currency }: { currency: 'COP' | 'USD' }) {
                     </h3>
                 </div>
                 <div className="divide-y divide-gray-50">
-                    {propRevenue.map((prop, idx) => (
-                        <div key={prop.id} className="p-4 hover:bg-gray-50 transition-colors flex justify-between items-center group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-black text-gray-400 group-hover:bg-rose-500 group-hover:text-white transition-all text-xs">
-                                    {idx + 1}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-800">{prop.title}</p>
-                                    <p className="text-[10px] text-gray-400">ID: {prop.id.slice(0, 8)}</p>
-                                </div>
-                            </div>
-                            <p className="text-lg font-black text-gray-900">{format(prop.revenue)}</p>
+                    {propRevenue.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400">
+                            <p className="text-xs font-bold uppercase tracking-widest">Sin datos financieros aún</p>
                         </div>
-                    ))}
+                    ) : (
+                        propRevenue.map((prop, idx) => (
+                            <div key={prop.id} className="p-4 hover:bg-gray-50 transition-colors flex justify-between items-center group">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-black text-gray-400 group-hover:bg-rose-500 group-hover:text-white transition-all text-xs">
+                                        {idx + 1}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-800">{prop.title}</p>
+                                        <p className="text-[10px] text-gray-400">ID: {prop.id.slice(0, 8)}</p>
+                                    </div>
+                                </div>
+                                <p className="text-lg font-black text-gray-900">{format(prop.revenue)}</p>
+                            </div>
+                        )))}
                 </div>
             </div>
         </div>
