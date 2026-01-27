@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
 import { ClientProviders } from "@/components/ClientProviders";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -76,13 +77,15 @@ export default async function RootLayout({
       </head>
       <body className={inter.className}>
         <ClientProviders>
-          {user && (
-            <div className="fixed top-4 right-4 z-50">
-              <LogoutButton />
-            </div>
-          )}
-          {children}
-          <Toaster />
+          <ErrorBoundary>
+            {user && (
+              <div className="fixed top-4 right-4 z-50">
+                <LogoutButton />
+              </div>
+            )}
+            {children}
+            <Toaster />
+          </ErrorBoundary>
         </ClientProviders>
       </body>
     </html>
