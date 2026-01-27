@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS public.staff_members (
     role staff_role DEFAULT 'cleaner',
     status staff_status DEFAULT 'active',
     phone TEXT,
-    email TEXT,
+    email TEXT UNIQUE,
     avatar_url TEXT,
     rating NUMERIC(3, 2) DEFAULT 5.00,
     metrics JSONB DEFAULT '{"totalJobs": 0, "avgCompletionTimeMinutes": 0}',
@@ -163,6 +163,11 @@ CREATE INDEX IF NOT EXISTS idx_requests_property ON public.service_requests(prop
 CREATE INDEX IF NOT EXISTS idx_requests_staff ON public.service_requests(assigned_staff_id);
 CREATE INDEX IF NOT EXISTS idx_messages_request ON public.messages(service_request_id);
 CREATE INDEX IF NOT EXISTS idx_messages_sender ON public.messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_receiver ON public.messages(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_properties_owner ON public.properties(owner_id);
+CREATE INDEX IF NOT EXISTS idx_audit_user ON public.audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_entity ON public.audit_logs(entity_id);
+CREATE INDEX IF NOT EXISTS idx_staff_email ON public.staff_members(email);
 
 -- ==============================================================================
 -- 5. TRIGGERS (Automation)
