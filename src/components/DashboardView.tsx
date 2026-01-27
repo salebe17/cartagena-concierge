@@ -133,22 +133,32 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                             </div>
 
                             {properties.map(prop => (
-                                <div key={prop.id} className="group cursor-pointer">
-                                    <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 mb-4 border border-gray-100 shadow-sm transition-all group-hover:shadow-md">
-                                        <Image
-                                            src={prop.image_url || DEFAULT_IMAGE}
-                                            alt={prop.title}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-700"
-                                        />
-                                        <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
-                                            <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></div>
-                                            <span className="text-xs font-bold text-gray-800">Publicado</span>
+                                <ManagePropertyModal
+                                    key={prop.id}
+                                    propertyId={prop.id}
+                                    propertyTitle={prop.title}
+                                    currentStatus={prop.status || 'vacant'}
+                                    triggerButton={
+                                        <div className="group cursor-pointer h-full">
+                                            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 mb-4 border border-gray-100 shadow-sm transition-all group-hover:shadow-md">
+                                                <Image
+                                                    src={prop.image_url || DEFAULT_IMAGE}
+                                                    alt={prop.title}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                                />
+                                                <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
+                                                    <div className={`w-2 h-2 rounded-full animate-pulse ${prop.status === 'occupied' ? 'bg-indigo-500' : 'bg-green-500'}`}></div>
+                                                    <span className="text-xs font-bold text-gray-800">
+                                                        {prop.status === 'occupied' ? 'Ocupado' : 'Disponible'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <h3 className="text-lg font-bold text-[#222222] leading-tight mb-1">{prop.title}</h3>
+                                            <p className="text-sm text-gray-500">Alojamiento en Cartagena, Bolívar</p>
                                         </div>
-                                    </div>
-                                    <h3 className="text-lg font-bold text-[#222222] leading-tight mb-1">{prop.title}</h3>
-                                    <p className="text-sm text-gray-500">Alojamiento en Cartagena, Bolívar</p>
-                                </div>
+                                    }
+                                />
                             ))}
                         </div>
                     </div>
