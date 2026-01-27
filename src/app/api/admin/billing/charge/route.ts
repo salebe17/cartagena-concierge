@@ -38,9 +38,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Esta solicitud no puede ser cobrada (Completada/Pagada/Cancelada)." }, { status: 400 });
         }
 
+        // 2. Idempotency Check (Database Level)
+        const { data: existingInvoice } = await supabase
+            .from('invoices')
+            .select('id')
+            .eq('service_request_id', requestId)
+            .maybeSingle(); // Use maybeSingle to avoid 406 error if 0 rows
+
+        if (existingInvoice) {
+            return NextResponse.json({ success: false, error: "Ya existe una factura para esta solicitud. No se puede cobrar dos veces." }, { status: 409 });
+        }
+
         const ownerId = (reqData.properties as any).owner_id;
 
-        // 2. Get Stripe Customer
+        // 3. Get Stripe Customer
         const { data: customerMapping } = await supabase
             .from('stripe_customers')
             .select('stripe_customer_id')
@@ -51,7 +62,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Owner has no payment method registered." }, { status: 400 });
         }
 
-        // 3. Define Amount based on type (Mocking logic for now)
+        // 4. Define Amount
         const amounts: Record<string, number> = {
             cleaning: 40000,
             maintenance: 50000,
@@ -59,7 +70,8 @@ export async function POST(request: Request) {
         };
         const amount = amounts[reqData.service_type] || 20000;
 
-        // 4. Create Charge in Stripe
+        // 5. Create Charge in Stripe (with Idempotency Key)
+        // Key logic: charge_{requestId}. If we retry with same ID, Stripe returns same result or error without charging again.
         const stripe = getStripe();
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amount,
@@ -69,6 +81,8 @@ export async function POST(request: Request) {
             off_session: true,
             confirm: true,
             description: `Servicio ${reqData.service_type} - ID: ${requestId}`,
+        }, {
+            idempotencyKey: `charge_${requestId}`
         });
 
         // 5. Create Invoice Record

@@ -9,6 +9,7 @@ export async function GET() {
         const { data: requestsData, error: reqError } = await supabase
             .from('service_requests')
             .select('*')
+            .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
         if (reqError) throw reqError;

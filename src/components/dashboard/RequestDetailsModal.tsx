@@ -23,15 +23,13 @@ export function RequestDetailsModal({ request, triggerButton, onViewCalendar }: 
 
     useEffect(() => {
         setMounted(true);
-        if (isOpen) {
-            const getU = async () => {
-                const supabase = createClient();
-                const { data: { user } } = await supabase.auth.getUser();
-                setCurrentUser(user);
-            };
-            getU();
-        }
-    }, [isOpen]);
+        const getU = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            setCurrentUser(user);
+        };
+        getU();
+    }, []);
 
     const handleViewCalendar = () => {
         if (onViewCalendar && request.property_id) {
