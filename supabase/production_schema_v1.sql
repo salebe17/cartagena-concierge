@@ -193,22 +193,36 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- 6.1 PROFILES POLICIES
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles;
 CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
 -- 6.2 SERVICE REQUESTS POLICIES
 -- Guests: View Own
+DROP POLICY IF EXISTS "Guests view own requests" ON public.service_requests;
 CREATE POLICY "Guests view own requests" ON public.service_requests FOR SELECT USING (requester_id = auth.uid());
+
+DROP POLICY IF EXISTS "Guests create requests" ON public.service_requests;
 CREATE POLICY "Guests create requests" ON public.service_requests FOR INSERT WITH CHECK (requester_id = auth.uid());
+
 -- Admins: View All / Manage All
+DROP POLICY IF EXISTS "Admins view all requests" ON public.service_requests;
 CREATE POLICY "Admins view all requests" ON public.service_requests FOR SELECT USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
+
+DROP POLICY IF EXISTS "Admins update all requests" ON public.service_requests;
 CREATE POLICY "Admins update all requests" ON public.service_requests FOR UPDATE USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
+
 -- Staff: View Assigned
+DROP POLICY IF EXISTS "Staff view assigned requests" ON public.service_requests;
 CREATE POLICY "Staff view assigned requests" ON public.service_requests FOR SELECT USING (
   assigned_staff_id IN (SELECT id FROM public.staff_members WHERE email = (SELECT email FROM auth.users WHERE id = auth.uid()))
   OR
@@ -217,10 +231,13 @@ CREATE POLICY "Staff view assigned requests" ON public.service_requests FOR SELE
 
 
 -- 6.3 MESSAGES POLICIES
+DROP POLICY IF EXISTS "Users view messages they are part of" ON public.messages;
 CREATE POLICY "Users view messages they are part of" ON public.messages FOR SELECT USING (
     sender_id = auth.uid() OR receiver_id = auth.uid() OR 
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
 );
+
+DROP POLICY IF EXISTS "Users send messages" ON public.messages;
 CREATE POLICY "Users send messages" ON public.messages FOR INSERT WITH CHECK (
     sender_id = auth.uid()
 );
@@ -236,7 +253,10 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('chat-attachments', 'chat-attachments', true)
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS "Public Access Chat Media" ON storage.objects;
 CREATE POLICY "Public Access Chat Media" ON storage.objects FOR SELECT USING (bucket_id = 'chat-attachments');
+
+DROP POLICY IF EXISTS "Authenticated Upload Chat Media" ON storage.objects;
 CREATE POLICY "Authenticated Upload Chat Media" ON storage.objects FOR INSERT WITH CHECK (
     bucket_id = 'chat-attachments' AND auth.role() = 'authenticated'
 );
