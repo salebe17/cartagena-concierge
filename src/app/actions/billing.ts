@@ -1,6 +1,6 @@
 'use server'
 
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ActionResponse } from '@/lib/types';
@@ -23,6 +23,7 @@ export async function getOrCreateStripeCustomer(): Promise<ActionResponse<string
         if (existing) return deepSerialize({ success: true, data: existing.stripe_customer_id });
 
         // 2. Create in Stripe
+        const stripe = getStripe();
         const customer = await stripe.customers.create({
             email: user.email,
             metadata: { supabase_id: user.id }
@@ -51,6 +52,7 @@ export async function createSetupIntent(): Promise<ActionResponse<{ clientSecret
         const customerRes = await getOrCreateStripeCustomer();
         if (!customerRes.success || !customerRes.data) throw new Error(customerRes.error);
 
+        const stripe = getStripe();
         const setupIntent = await stripe.setupIntents.create({
             customer: customerRes.data,
             payment_method_types: ['card'],
@@ -69,6 +71,7 @@ export async function getHostPaymentMethods(): Promise<ActionResponse<any[]>> {
         const customerRes = await getOrCreateStripeCustomer();
         if (!customerRes.success || !customerRes.data) return { success: true, data: [] };
 
+        const stripe = getStripe();
         const paymentMethods = await stripe.paymentMethods.list({
             customer: customerRes.data,
             type: 'card',
@@ -118,6 +121,7 @@ export async function chargeServiceRequest(requestId: string): Promise<ActionRes
         const amount = amounts[request.service_type] || 20000;
 
         // 4. Create Charge in Stripe via Payment Intent
+        const stripe = getStripe();
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amount, // stripe uses cents for USD but COP is zero-decimal? 
             // Stripe COP is zero-decimal: https://docs.stripe.com/currencies#special-cases

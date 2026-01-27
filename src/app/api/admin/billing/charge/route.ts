@@ -1,7 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
-// import { sendInvoiceEmail } from '@/app/actions/notifications'; // We can import this utility if it's just a helper
+import { getStripe } from '@/lib/stripe';
+import { sendInvoiceEmail } from '@/app/actions/notifications';
 
 export const runtime = 'nodejs';
 
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
         const amount = amounts[reqData.service_type] || 20000;
 
         // 4. Create Charge in Stripe
+        const stripe = getStripe();
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amount,
             currency: 'cop',
@@ -80,13 +81,13 @@ export async function POST(request: Request) {
             // Calling the notification util directly is fine as long as it doesn't use 'use server' with specific headers/cookies conflicts
             // If sendInvoiceEmail is a server action, better to inline logic or move it to a lib file.
             // Assuming it's safe for now or we just fire and forget.
-            // sendInvoiceEmail({
-            //     email: ownerProfile.email,
-            //     customerName: ownerProfile.full_name || 'Host',
-            //     invoiceId: invoice.id,
-            //     amount: amount,
-            //     serviceType: reqData.service_type
-            // }).catch(e => console.error("Notification trigger failed:", e));
+            sendInvoiceEmail({
+                email: ownerProfile.email,
+                customerName: ownerProfile.full_name || 'Host',
+                invoiceId: invoice.id,
+                amount: amount,
+                serviceType: reqData.service_type
+            }).catch(e => console.error("Notification trigger failed:", e));
         }
 
         // 7. Mark Request as fully closed
