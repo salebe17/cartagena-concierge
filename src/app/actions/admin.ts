@@ -183,8 +183,11 @@ export async function getAllBookings(): Promise<any[]> {
     }
 }
 
+export const runtime = 'nodejs';
+
 export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
     try {
+        console.log(`[Admin] Updating request ${requestId} to ${newStatus}`);
         const supabase = await createClient();
         const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -210,12 +213,23 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
             .update({ status: newStatus })
             .eq('id', requestId);
 
-        if (error) throw error;
+        if (error) {
+            console.error("[Admin] Update Error:", error);
+            throw error;
+        }
 
-        revalidatePath('/admin');
-        revalidatePath('/dashboard');
+        // Robust Revalidation
+        try {
+            revalidatePath('/admin');
+            revalidatePath('/dashboard');
+        } catch (revError) {
+            console.error("[Admin] Revalidation Warning:", revError);
+            // Don't fail the action if revalidation fails
+        }
+
         return { success: true };
     } catch (e: any) {
+        console.error("[Admin] Critical Error:", e);
         return { success: false, error: "Error al actualizar el estado." };
     }
 }
