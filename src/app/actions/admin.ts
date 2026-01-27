@@ -183,7 +183,6 @@ export async function getAllBookings(): Promise<any[]> {
     }
 }
 
-export const runtime = 'nodejs';
 
 export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
     try {
