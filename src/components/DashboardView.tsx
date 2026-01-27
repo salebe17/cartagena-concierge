@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Sparkles, Wrench, Ship, MapPin, Plus, Home, Settings2, MessageSquare, Menu, LayoutGrid } from "lucide-react";
 import { RegisterPropertyModal } from "./RegisterPropertyModal";
@@ -134,7 +135,12 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                             {properties.map(prop => (
                                 <div key={prop.id} className="group cursor-pointer">
                                     <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-gray-200 mb-4 border border-gray-100 shadow-sm transition-all group-hover:shadow-md">
-                                        <img src={prop.image_url || DEFAULT_IMAGE} alt={prop.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                        <Image
+                                            src={prop.image_url || DEFAULT_IMAGE}
+                                            alt={prop.title}
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                        />
                                         <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5">
                                             <div className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></div>
                                             <span className="text-xs font-bold text-gray-800">Publicado</span>
