@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Send, User, Loader2, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatBubble } from './ChatBubble';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatBoxProps {
     requestId?: string;
@@ -25,6 +26,8 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
     const fileInputRef = useRef<HTMLInputElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const supabase = createClient();
+
+    const { toast } = useToast();
 
     // Safety timeout to prevent infinite loading
     useEffect(() => {
@@ -165,7 +168,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
 
         // Optimistic update could go here, but let's wait for server for safety
         if (!navigator.onLine) {
-            alert("No tienes conexión a internet. El mensaje no se pudo enviar.");
+            toast({ title: "Sin Conexión", description: "No tienes internet para enviar el mensaje.", variant: "destructive" });
             setSending(false);
             return;
         }
@@ -193,14 +196,14 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                 setInput('');
             } else {
                 console.error("Send failed:", json.error);
-                alert("Error al enviar mensaje: " + json.error);
+                toast({ title: "Error", description: json.error, variant: "destructive" });
             }
         } catch (err: any) {
             console.error("Send error:", err);
             if (err.name === 'AbortError') {
-                alert("El envío tardó demasiado. Por favor, verifica tu conexión.");
+                toast({ title: "Tiempo de espera agotado", description: "La conexión es muy lenta.", variant: "destructive" });
             } else {
-                alert("Error de red. Intenta nuevamente.");
+                toast({ title: "Error de Red", description: "Intenta nuevamente.", variant: "destructive" });
             }
         }
 

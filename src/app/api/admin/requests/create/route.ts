@@ -31,17 +31,28 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Forbidden: Admin only" }, { status: 403 });
         }
 
-        // Date Validation
+        // Date Validation (Timezone Safe: Colombia UTC-5)
         const reqDate = new Date(requested_date);
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
 
-        if (reqDate < now) {
+        // Get current time in Colombia
+        const now = new Date();
+        const colombiaOffset = -5 * 60; // UTC-5 in minutes
+        const localNow = new Date(now.getTime() + (colombiaOffset * 60 * 1000));
+        localNow.setUTCHours(0, 0, 0, 0); // Start of today in Colombia time
+
+        // Adjust reqDate to compare dates only
+        const reqLocal = new Date(reqDate.getTime());
+        reqLocal.setUTCHours(0, 0, 0, 0);
+
+        if (reqLocal < localNow) {
             return NextResponse.json({ success: false, error: "No se pueden crear solicitudes en fechas pasadas." }, { status: 400 });
         }
 
-        const startOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate()).toISOString();
-        const endOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate(), 23, 59, 59).toISOString();
+        // Create range for the requested day
+        const startOfDay = new Date(reqDate);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(reqDate);
+        endOfDay.setUTCHours(23, 59, 59, 999);
 
         const { data: existing } = await dbClient
             .from('service_requests')

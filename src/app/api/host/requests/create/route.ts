@@ -46,18 +46,27 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Unauthorized property access" }, { status: 403 });
         }
 
-        // 2. Date Validation
+        // 2. Date Validation (Colombia Timezone UTC-5)
         const reqDate = new Date(date);
-        const now = new Date();
-        now.setHours(0, 0, 0, 0); // Start of today
 
-        if (reqDate < now) {
+        // Current time in Colombia
+        const now = new Date();
+        const colombiaOffset = -5 * 60;
+        const localNow = new Date(now.getTime() + (colombiaOffset * 60 * 1000));
+        localNow.setUTCHours(0, 0, 0, 0);
+
+        const reqLocal = new Date(reqDate.getTime());
+        reqLocal.setUTCHours(0, 0, 0, 0);
+
+        if (reqLocal < localNow) {
             return NextResponse.json({ success: false, error: "No puedes solicitar servicios para fechas pasadas." }, { status: 400 });
         }
 
         // 2.5 Duplicate Check
-        const startOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate()).toISOString();
-        const endOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate(), 23, 59, 59).toISOString();
+        const startOfDay = new Date(reqDate);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(reqDate);
+        endOfDay.setUTCHours(23, 59, 59, 999);
 
         const { data: existing } = await supabase
             .from('service_requests')
