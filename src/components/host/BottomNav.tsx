@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Calendar, NotebookPen, MessageSquare, LayoutGrid, Menu } from 'lucide-react';
+import { Home, Calendar, NotebookPen, MessageSquare, LayoutGrid, Menu, Wallet } from 'lucide-react';
 
 interface BottomNavProps {
     activeTab: string;
@@ -12,7 +12,7 @@ export function BottomNav({ activeTab, onChange, unreadMessages = 0 }: BottomNav
     const navItems = [
         { id: 'hoy', label: 'Hoy', icon: Home },
         { id: 'calendario', label: 'Calendario', icon: Calendar },
-        { id: 'anuncios', label: 'Anuncios', icon: NotebookPen },
+        { id: 'finanzas', label: 'Billetera', icon: Wallet },
         { id: 'mensajes', label: 'Soporte', icon: MessageSquare },
         { id: 'menu', label: 'Menú', icon: Menu },
     ];

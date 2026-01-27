@@ -20,6 +20,7 @@ import { HostServicesView } from "./host/HostServicesView";
 import { HostTodayView } from "./host/HostTodayView";
 import { HostMessagesView } from "./host/HostMessagesView";
 import { HostMenu } from "./host/HostMenu";
+import { HostFinanceView } from "./host/HostFinanceView";
 import { signOut } from "@/app/actions/dashboard";
 
 interface DashboardViewProps {
@@ -38,7 +39,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     // Tab State: Unifying to Spanish IDs for consistency with BottomNav
-    const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'anuncios' | 'mensajes' | 'servicios' | 'menu'>('hoy');
+    const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'finanzas' | 'anuncios' | 'mensajes' | 'servicios' | 'menu'>('hoy');
     const { toast } = useToast();
 
     // Map legacy props or usage if needed, but we will stick to new tabs.
@@ -172,8 +173,8 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                         userName={userName}
                     />
                 );
-            case 'servicios':
-                return <HostServicesView properties={properties} />;
+            case 'finanzas':
+                return <HostFinanceView />;
             case 'menu':
                 return (
                     <HostMenu
@@ -195,40 +196,41 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
                     <h1 className="text-xl font-black tracking-tighter">Cartagena<span className="text-rose-500">Concierge</span></h1>
                     <div className="flex gap-4">
-                        {['hoy', 'calendario', 'anuncios', 'mensajes'].map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab as any)}
-                                className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${activeTab === tab ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}
-                            >
-                                {tab === 'mensajes' ? 'Soporte' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        <div className="flex gap-4">
+                            {['hoy', 'calendario', 'finanzas', 'mensajes'].map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab as any)}
+                                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${activeTab === tab ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                                >
+                                    {tab === 'mensajes' ? 'Soporte' : tab === 'finanzas' ? 'Billetera' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                </button>
+                            ))}
+                            <button onClick={() => setActiveTab('menu')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                                <Menu size={20} />
                             </button>
-                        ))}
-                        <button onClick={() => setActiveTab('menu')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                            <Menu size={20} />
-                        </button>
+                        </div>
                     </div>
                 </div>
+
+                <main className="max-w-6xl mx-auto p-4 md:p-8">
+                    {/* Only show "Welcome" header on 'hoy' tab */}
+                    {activeTab === 'hoy' && (
+                        <div className="mb-8 block">
+                            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                                {properties.length > 0 ? "Tu Portafolio" : `¡Bienvenido, ${userName}! 👋`}
+                            </h1>
+                        </div>
+                    )}
+
+                    {renderContent()}
+                </main>
+
+                {/* Mobile Bottom Navigation */}
+                <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+
+                {/* Modals */}
+                <RegisterPropertyModal isOpen={isPropModalOpen} onClose={() => setPropModalOpen(false)} />
             </div>
-
-            <main className="max-w-6xl mx-auto p-4 md:p-8">
-                {/* Only show "Welcome" header on 'hoy' tab */}
-                {activeTab === 'hoy' && (
-                    <div className="mb-8 block">
-                        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                            {properties.length > 0 ? "Tu Portafolio" : `¡Bienvenido, ${userName}! 👋`}
-                        </h1>
-                    </div>
-                )}
-
-                {renderContent()}
-            </main>
-
-            {/* Mobile Bottom Navigation */}
-            <BottomNav activeTab={activeTab} onChange={setActiveTab} />
-
-            {/* Modals */}
-            <RegisterPropertyModal isOpen={isPropModalOpen} onClose={() => setPropModalOpen(false)} />
-        </div>
-    );
+            );
 }
