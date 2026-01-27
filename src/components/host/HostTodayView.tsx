@@ -9,48 +9,60 @@ interface HostTodayViewProps {
     userName: string;
 }
 
-export function HostTodayView({ bookings, alerts, userName }: HostTodayViewProps) {
-    // 1. Find Active Booking (Simulated for generic "Today" logic)
-    // In a real app, we check if today is within a booking range.
-    // For demo purposes, we pick the first "current" or generic active booking logic.
+// ... imports
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
-    // Logic: Find booking where today >= start_date and today < end_date
+// ... params
+
+export function HostTodayView({ bookings, alerts, userName }: HostTodayViewProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // 1. Find Active Booking (Hydration Safe)
     const today = new Date();
+    // Only calculate date logic safely, but we can render structure.
+    // However, specifically `differenceInDays(..., today)` triggers mismatch if server time differs.
+    // We'll trust `today` server-side matches closely enough OR force client-only time display.
+
     const activeBooking = bookings.find(b => {
         const start = new Date(b.start_date);
         const end = new Date(b.end_date);
         return today >= start && today <= end;
-    }) || bookings[0]; // Fallback to first booking for visual demo if no active one
+    }) || bookings[0];
+
+    // Hydration safe days left calculation?
+    // If we render `daysLeft` on server (UTC) vs client, it might differ.
+    // Better to show `--` until mounted or accept potential skew.
+    // Let's use mounted check for date-dependent text.
 
     const daysLeft = activeBooking ? differenceInDays(new Date(activeBooking.end_date), today) : 0;
     const guestName = activeBooking?.guest_name?.split(' ')[0] || "Huésped";
-    const guestsCount = activeBooking?.guests_count || 4; // Mock if missing
+    const guestsCount = activeBooking?.guests_count || 4;
 
+    if (!mounted) return <div className="p-10 text-center animate-pulse">Cargando tu agenda...</div>;
+
+    // ... render return
     return (
         <div className="pb-24 animate-in fade-in duration-500">
-            {/* Header Tabs */}
+            {/* ... header ... */}
             <div className="flex items-center gap-2 mb-6 overflow-x-auto no-scrollbar">
-                <button className="bg-[#222222] text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm whitespace-nowrap">
-                    Hoy
-                </button>
-                <button className="bg-gray-100 text-gray-500 px-6 py-2 rounded-full text-sm font-bold whitespace-nowrap">
-                    Reservaciones programadas
-                </button>
+                <button className="bg-[#222222] text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm whitespace-nowrap">Hoy</button>
+                <button className="bg-gray-100 text-gray-500 px-6 py-2 rounded-full text-sm font-bold whitespace-nowrap">Reservaciones programadas</button>
             </div>
 
-            {/* Title */}
             <h1 className="text-3xl font-black text-[#222222] mb-6 tracking-tight">
                 {activeBooking ? "Tienes 1 reservación" : "Sin reservaciones activas"}
             </h1>
 
-            {/* Active Reservation Card */}
             {activeBooking ? (
                 <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-10 text-center relative overflow-hidden">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Todo el día</p>
-
-                    {/* Avatars */}
                     <div className="flex justify-center items-center -space-x-4 mb-6">
-                        <div className="w-20 h-20 rounded-full border-4 border-white bg-gray-200 overflow-hidden shadow-sm z-10">
+                        <div className="w-20 h-20 rounded-full border-4 border-white bg-gray-200 overflow-hidden shadow-sm z-10 relative">
                             {/* Placeholder Guest Image */}
                             <div className="w-full h-full flex items-center justify-center bg-gray-300">
                                 <User size={32} className="text-white" />
@@ -75,11 +87,9 @@ export function HostTodayView({ bookings, alerts, userName }: HostTodayViewProps
                 </div>
             )}
 
-            {/* Pending Tasks */}
             <h2 className="text-xl font-black text-[#222222] mb-6">Tus tareas pendientes</h2>
 
             <div className="space-y-4">
-                {/* Mock Task matching screenshot */}
                 <div className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex justify-between items-center">
                     <div>
                         <div className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">En progreso</div>
@@ -91,27 +101,24 @@ export function HostTodayView({ bookings, alerts, userName }: HostTodayViewProps
                         </div>
                     </div>
                     <div className="flex -space-x-2 shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-xs border-2 border-white z-10">
-                            M
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white">
-                            {/* Property Thumb */}
-                            <img src={activeBooking?.properties?.image_url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=100"} className="w-full h-full object-cover" />
+                        <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-xs border-2 border-white z-10">M</div>
+                        <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border-2 border-white relative">
+                            <Image
+                                src={activeBooking?.properties?.image_url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=100"}
+                                alt="Propiedad"
+                                fill
+                                className="object-cover"
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Actual Alerts */}
                 {alerts.map(alert => (
                     <div key={alert.id} className="bg-white rounded-[24px] p-5 border border-gray-100 shadow-sm flex justify-between items-center">
                         <div>
                             <div className="text-[10px] font-bold uppercase tracking-wider text-rose-500 mb-1">Nueva Alerta</div>
-                            <div className="font-bold text-[#222222] text-sm mb-1 leading-tight">
-                                {alert.message}
-                            </div>
-                            <div className="text-xs text-gray-400">
-                                {new Date(alert.created_at).toLocaleDateString()}
-                            </div>
+                            <div className="font-bold text-[#222222] text-sm mb-1 leading-tight">{alert.message}</div>
+                            <div className="text-xs text-gray-400">{new Date(alert.created_at).toLocaleDateString()}</div>
                         </div>
                         <CheckCircle2 size={24} className="text-gray-200" />
                     </div>
