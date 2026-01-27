@@ -90,7 +90,7 @@ function parseICS(icsData: string): ICalEvent[] {
 
 export async function fetchICalEvents(url: string): Promise<ICalEvent[]> {
     try {
-        console.log(`[iCal Sync] Fetching: ${url}`);
+        // console.log(`[iCal Sync] Fetching: ${url}`);
 
         // 1. Validate URL format basically
         if (!url.startsWith('http')) {
@@ -115,7 +115,7 @@ export async function fetchICalEvents(url: string): Promise<ICalEvent[]> {
         }
 
         const text = await response.text();
-        console.log(`[iCal Sync] Fetched ${text.length} chars from ${url}`);
+        // console.log(`[iCal Sync] Fetched ${text.length} chars from ${url}`);
 
         // 3. Check if it looks like an ICS
         if (!text.includes('BEGIN:VCALENDAR')) {
@@ -127,7 +127,7 @@ export async function fetchICalEvents(url: string): Promise<ICalEvent[]> {
         }
 
         const events = parseICS(text);
-        console.log(`[iCal Sync] Parsed ${events.length} events`);
+        // console.log(`[iCal Sync] Parsed ${events.length} events`);
 
         return events;
 

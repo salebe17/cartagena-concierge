@@ -184,12 +184,6 @@ export async function getAllBookings(): Promise<any[]> {
 }
 
 
-export async function adminUpdateServiceStatus(requestId: string, newStatus: string): Promise<ActionResponse> {
-    console.log(`[Admin] MOCK UPDATE request ${requestId} to ${newStatus}`);
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true, message: "MOCK SUCCESS: Plumbing is working." };
-}
 
 export async function forceSyncAllCalendars(): Promise<ActionResponse> {
     try {
