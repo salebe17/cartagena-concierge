@@ -66,29 +66,29 @@ function DebugStatusWidget() {
     return (
         <div className="bg-gray-900 rounded-2xl p-4 text-xs font-mono text-gray-300 overflow-hidden border border-gray-800">
             <div className="flex justify-between items-center mb-2 border-b border-gray-800 pb-2">
-                <span className="font-bold text-white uppercase tracking-wider">System Diagnostic</span>
+                <span className="font-bold text-white uppercase tracking-wider">Diagnóstico de Sistema</span>
                 <button onClick={checkStatus} className="text-cyan-400 hover:text-cyan-300 underline">
-                    {loading ? "Checking..." : "Run Check"}
+                    {loading ? "Verificando..." : "Ejecutar"}
                 </button>
             </div>
             {status ? (
                 <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <span className="text-gray-500 block">Environment</span>
+                            <span className="text-gray-500 block">Entorno</span>
                             <span className={status.env.hasServiceKey ? "text-emerald-400" : "text-red-400"}>
-                                Service Key: {status.env.hasServiceKey ? "OK" : "MISSING"}
+                                Service Key: {status.env.hasServiceKey ? "OK" : "FALTA"}
                             </span>
                         </div>
                         <div>
                             <span className="text-gray-500 block">Auth</span>
-                            <span>User: {status.auth.userId ? status.auth.userId.slice(0, 8) + '...' : 'None'}</span>
+                            <span>Usuario: {status.auth.userId ? status.auth.userId.slice(0, 8) + '...' : 'Ninguno'}</span>
                         </div>
                     </div>
                 </div>
             ) : (
                 <div className="text-center py-4 text-gray-600 italic">
-                    Click "Run Check" to verify persistence issues.
+                    Click "Ejecutar" para verificar persistencia.
                 </div>
             )}
         </div>
@@ -421,7 +421,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
             <div className="max-w-5xl mx-auto space-y-8">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tight">Command Center</h1>
+                        <h1 className="text-3xl font-black uppercase tracking-tight">Centro de Comando</h1>
                         <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">{requests.length} Solicitudes Activas</p>
                     </div>
                     <Button onClick={handleSync} disabled={isSyncing} variant="outline" className="rounded-2xl">
@@ -433,11 +433,16 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
 
                 <div className="sticky top-0 z-20 bg-gray-50/80 backdrop-blur-md pt-4 flex justify-between items-end border-b border-gray-200">
                     <div className="flex gap-6">
-                        {['requests', 'calendar', 'staff', 'finance', 'inbox'].map(tab => (
+                        {['solicitudes', 'calendario', 'personal', 'finanzas', 'mensajes'].map(tab => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab as any)}
-                                className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all ${activeTab === tab ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                                onClick={() => setActiveTab(tab === 'solicitudes' ? 'requests' : tab === 'calendario' ? 'calendar' : tab === 'personal' ? 'staff' : tab === 'finanzas' ? 'finance' : 'inbox')}
+                                className={`pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all ${(activeTab === 'requests' && tab === 'solicitudes') ||
+                                    (activeTab === 'calendar' && tab === 'calendario') ||
+                                    (activeTab === 'staff' && tab === 'personal') ||
+                                    (activeTab === 'finance' && tab === 'finanzas') ||
+                                    (activeTab === 'inbox' && tab === 'mensajes')
+                                    ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
                             >
                                 {tab}
                             </button>
