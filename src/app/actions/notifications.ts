@@ -1,6 +1,5 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendInvoiceEmail({
     email,
@@ -19,6 +18,8 @@ export async function sendInvoiceEmail({
         console.warn("RESEND_API_KEY missing. Skipping email.");
         return { success: false, error: "Email provider not configured" };
     }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     try {
         const { data, error } = await resend.emails.send({
