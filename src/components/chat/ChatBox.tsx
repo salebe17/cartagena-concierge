@@ -156,11 +156,12 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
         };
     }, [requestId, isAdmin, currentUserId, userId]); // ADDED userId dependency
 
-    const handleSend = async (e?: React.FormEvent, fileUrl?: string, fileType: 'text' | 'image' = 'text') => {
+    const handleSend = async (e?: React.FormEvent, fileUrl?: string, fileType: 'text' | 'image' = 'text', bypassCheck = false) => {
         if (e) e.preventDefault();
         const contentToSend = input.trim();
 
-        if ((!contentToSend && !fileUrl) || sending) return;
+        // If we are sending (and not bypassing for internal calls like upload), block.
+        if ((!contentToSend && !fileUrl) || (sending && !bypassCheck)) return;
 
         setSending(true);
         // If Admin, receiver is the owner of the thread
@@ -214,6 +215,14 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // LEVEL 21: Client-Side Size Validation (5MB Limit)
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (file.size > MAX_SIZE) {
+            toast({ title: "Archivo muy grande", description: "El límite es de 5MB.", variant: "destructive" });
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         setSending(true);
         try {
             const fileExt = file.name.split('.').pop();
@@ -230,11 +239,12 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                 .from('chat-media')
                 .getPublicUrl(filePath);
 
-            await handleSend(undefined, publicUrl, 'image');
+            // Pass 'true' to bypass the 'sending' check because we set it to true above
+            await handleSend(undefined, publicUrl, 'image', true);
 
         } catch (error) {
             console.error('Upload failed:', error);
-            // toast error?
+            toast({ title: "Error de Subida", description: "No se pudo adjuntar la imagen.", variant: "destructive" });
         } finally {
             setSending(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
