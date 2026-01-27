@@ -491,7 +491,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
                                                         </div>
                                                         <div className="flex items-center justify-between border-l border-gray-200 pl-4">
                                                             <div>
-                                                                <p className="text-[9px] font-black text-gray-400 uppercase">{mounted ? new Date(req.requested_date).toLocaleDateString() : '--/--/----'}</p>
+                                                                <p className="text-[9px] font-black text-gray-400 uppercase">{mounted && req.requested_date ? new Date(req.requested_date).toLocaleDateString() : '--/--/----'}</p>
                                                                 <p className="text-xs font-bold text-gray-800">Fecha Misi&oacute;n</p>
                                                             </div>
                                                             <button
