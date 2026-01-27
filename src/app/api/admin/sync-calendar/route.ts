@@ -62,6 +62,19 @@ async function syncPropertyCalendarInternal(supabase: any, propertyId: string) {
                     message: `Nueva reserva (iCal): ${event.summary} (${startIso} - ${endIso})`,
                     type: 'pending_service'
                 });
+
+                // AUTO-SCHEDULE CLEANING
+                // Schedule for 11:00 AM on checkout date
+                const [cy, cm, cd] = endIso.split('-').map(Number);
+                const cleaningDate = new Date(cy, cm - 1, cd, 11, 0, 0);
+
+                await supabase.from('service_requests').insert({
+                    property_id: propertyId,
+                    service_type: 'cleaning',
+                    status: 'pending',
+                    requested_date: cleaningDate.toISOString(),
+                    notes: `Limpieza de salida automática (Cron) para reserva: ${event.summary || 'Externo'}`
+                });
             }
         }
     }

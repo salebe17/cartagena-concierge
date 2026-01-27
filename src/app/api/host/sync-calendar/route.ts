@@ -77,6 +77,19 @@ export async function POST(request: Request) {
                                 message: `Reserva de ${event.summary} recibida desde Airbnb/iCal.`,
                                 type: 'info'
                             });
+
+                            // AUTO-SCHEDULE CLEANING
+                            // Schedule for 11:00 AM on checkout date
+                            const [cy, cm, cd] = endIso.split('-').map(Number);
+                            const cleaningDate = new Date(cy, cm - 1, cd, 11, 0, 0);
+
+                            await supabase.from('service_requests').insert({
+                                property_id: property.id,
+                                service_type: 'cleaning',
+                                status: 'pending',
+                                requested_date: cleaningDate.toISOString(),
+                                notes: `Limpieza de salida automática (Sync) para reserva: ${event.summary || 'Externo'}`
+                            });
                         }
                     }
                 }
