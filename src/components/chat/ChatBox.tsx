@@ -255,7 +255,6 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
             {/* Input Area */}
             <form
                 onSubmit={(e) => handleSend(e)}
-                className={`p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end shrink-0 transition-all w-full
                 className={`p-3 md:p-4 bg-white border-t border-gray-100 flex gap-2 items-end shrink-0 transition-all w-full relative z-10`}
             >
                 <input

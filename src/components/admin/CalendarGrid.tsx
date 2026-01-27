@@ -327,9 +327,12 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
     const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
+    // Sort bookings for consistent rendering order (Minimizes jumping)
+    const sortedBookings = [...bookings].sort((a, b) => a.start_date.localeCompare(b.start_date) || a.id.localeCompare(b.id));
+
     const getBookingsForDay = (day: Date) => {
-        return bookings.filter(b => {
-            const dayStr = format(day, "yyyy-MM-dd");
+        const dayStr = format(day, "yyyy-MM-dd");
+        return sortedBookings.filter(b => {
             return dayStr >= b.start_date && dayStr <= b.end_date;
         });
     };
@@ -346,6 +349,7 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
     return (
         <>
             {calendarDays.map((day) => {
+                const dayStr = format(day, "yyyy-MM-dd");
                 const dayBookings = getBookingsForDay(day);
                 const dayServices = getServicesForDay(day);
                 const isCurrentMonth = isSameMonth(day, monthStart);
@@ -354,28 +358,54 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                 return (
                     <div
                         key={day.toString()}
-                        className={`min-h-[120px] bg-white p-2 flex flex-col gap-1 transition-colors ${!isCurrentMonth ? 'bg-gray-50/30 text-gray-300' : ''}`}
+                        className={`min-h-[120px] bg-white p-0 py-2 flex flex-col gap-1 transition-colors ${!isCurrentMonth ? 'bg-gray-50/30 text-gray-300' : ''}`}
                     >
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start px-2">
                             <span suppressHydrationWarning className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday && mounted ? 'bg-gray-900 text-white' : ''}`}>
                                 {format(day, "d")}
                             </span>
                         </div>
 
-                        <div className="space-y-1 mt-1 overflow-y-auto max-h-[90px] no-scrollbar">
+                        <div className="flex flex-col gap-1 mt-1 overflow-y-auto max-h-[90px] no-scrollbar">
                             {(dayBookings || []).map(booking => {
                                 if (!booking || !booking.id) return null;
+
+                                const isStart = dayStr === booking.start_date;
+                                const isEnd = dayStr === booking.end_date;
+                                const isMiddle = !isStart && !isEnd;
+
+                                // Airbnb-style Strip Logic
+                                // - Start: Rounded Left, Margin Left (normal), Negative Margin Right (to connect)
+                                // - End: Rounded Right, Margin Right (normal), Negative Margin Left (to connect)
+                                // - Middle: No Rounded, Negative Margins Both Sides
+                                // - Single Day: Rounded Both
+
+                                let stripClasses = "";
+                                if (isStart && isEnd) {
+                                    stripClasses = "mx-2 rounded-md"; // Single day pill
+                                } else if (isStart) {
+                                    stripClasses = "ml-2 -mr-[1px] rounded-l-md rounded-r-none z-10"; // Start of strip
+                                } else if (isEnd) {
+                                    stripClasses = "mr-2 -ml-[1px] rounded-r-md rounded-l-none z-10"; // End of strip
+                                } else {
+                                    stripClasses = "-mx-[1px] rounded-none z-0 relative"; // Middle connection
+                                }
+
                                 return (
                                     <motion.button
                                         key={booking.id}
-                                        whileHover={{ scale: 1.02 }}
+                                        whileHover={{ scale: 1.02, zIndex: 20 }}
                                         onClick={() => onBookingClick(booking)}
-                                        className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                        className={`h-7 text-left text-[10px] font-bold px-2 flex items-center shadow-sm ${stripClasses} ${getPlatformColor(booking.platform)} ${!isCurrentMonth ? 'opacity-40' : ''}`}
                                     >
-                                        {booking.properties?.title || "Casa"}
+                                        <span className="truncate w-full">
+                                            {isStart || (day.getDay() === 1) ? (booking.properties?.title || "Ocupado") : ""}
+                                        </span>
                                     </motion.button>
                                 );
                             })}
+
+                            {/* Services (Keep as pills) */}
                             {(dayServices || []).map(svc => {
                                 const isCleaning = svc.service_type === 'cleaning';
                                 const colorClass = isCleaning
@@ -388,7 +418,7 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                                         key={svc.id}
                                         whileHover={{ scale: 1.02 }}
                                         onClick={() => onServiceClick(svc)}
-                                        className={`w-full text-left text-[10px] font-bold px-2 py-1 rounded border truncate shadow-sm flex items-center gap-1 ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                        className={`mx-2 h-6 text-left text-[10px] font-bold px-2 rounded border truncate shadow-sm flex items-center gap-1 ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
                                     >
                                         <Icon size={10} className="shrink-0" />
                                         {isCleaning ? 'Aseo' : 'Mtto'}
