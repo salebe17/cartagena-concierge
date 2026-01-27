@@ -247,7 +247,7 @@ export async function forceSyncAllCalendars(): Promise<ActionResponse> {
             return { success: true, message: "No hay propiedades con iCal configurado." };
         }
 
-        const TIMEOUT_MS = 9000;
+        const TIMEOUT_MS = 30000;
         const syncPromises = properties.map(async (prop: any) => {
             try {
                 // Pass correct client to internal sync

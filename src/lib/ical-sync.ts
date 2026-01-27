@@ -12,7 +12,8 @@ function parseICS(icsData: string): ICalEvent[] {
     const events: ICalEvent[] = [];
 
     // Normalize line endings and unfold lines (ICAL folding involves newline + space)
-    const unfolded = icsData.replace(/\r\n[ \t]/g, '');
+    // Handle both CRLF (Windows) and LF (Unix) folding
+    const unfolded = icsData.replace(/\r?\n[ \t]/g, '');
     const lines = unfolded.split(/\r\n|\n|\r/);
 
     let currentEvent: Partial<ICalEvent> | null = null;
@@ -87,21 +88,32 @@ function parseICS(icsData: string): ICalEvent[] {
 
 export async function fetchICalEvents(url: string): Promise<ICalEvent[]> {
     try {
+        console.log(`[iCal Sync] Fetching: ${url}`);
+
         // 1. Validate URL format basically
         if (!url.startsWith('http')) {
             throw new Error(`Invalid URL protocol: ${url.substring(0, 10)}...`);
         }
 
-        // 2. Fetch Raw Text
-        const response = await fetch(url);
+        // 2. Fetch Raw Text with User-Agent to avoid blocking
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/calendar, text/plain, */*'
+            },
+            next: { revalidate: 0 } // Disable cache for sync
+        });
+
         if (!response.ok) {
+            console.error(`[iCal Sync] HTTP Error ${response.status} for ${url}`);
             // Check for common issues
             if (response.status === 404) throw new Error("ICS no encontrado (404)");
-            if (response.status === 401 || response.status === 403) throw new Error("Acceso denegado (Auth)");
+            if (response.status === 401 || response.status === 403) throw new Error("Acceso denegado (Auth/Block)");
             throw new Error(`HTTP Error ${response.status}`);
         }
 
         const text = await response.text();
+        console.log(`[iCal Sync] Fetched ${text.length} chars from ${url}`);
 
         // 3. Check if it looks like an ICS
         if (!text.includes('BEGIN:VCALENDAR')) {
@@ -113,6 +125,7 @@ export async function fetchICalEvents(url: string): Promise<ICalEvent[]> {
         }
 
         const events = parseICS(text);
+        console.log(`[iCal Sync] Parsed ${events.length} events`);
 
         return events;
 
