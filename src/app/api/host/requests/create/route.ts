@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { sanitizeInput } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 
