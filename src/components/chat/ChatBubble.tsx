@@ -3,16 +3,10 @@
 import { motion } from "framer-motion";
 import { Check, CheckCheck, User } from "lucide-react";
 
+import { Message } from "@/lib/types";
+
 interface ChatBubbleProps {
-    message: {
-        id: string;
-        content: string;
-        created_at: string;
-        sender_id: string;
-        media_url?: string;
-        media_type?: 'text' | 'image' | 'file';
-        is_read: boolean;
-    };
+    message: Message;
     isMe: boolean;
     senderName?: string;
     avatarUrl?: string; // Optional avatar
@@ -52,7 +46,7 @@ export function ChatBubble({ message, isMe, senderName }: ChatBubbleProps) {
                         }
                     `}
                 >
-                    {/* Media Render */}
+                    {/* Media Render: IMAGE */}
                     {message.media_url && message.media_type === 'image' && (
                         <div className="mb-2 rounded-lg overflow-hidden max-w-full">
                             <img
@@ -60,6 +54,17 @@ export function ChatBubble({ message, isMe, senderName }: ChatBubbleProps) {
                                 alt="Shared image"
                                 className="object-cover max-h-60 w-full hover:scale-105 transition-transform cursor-pointer"
                                 onClick={() => window.open(message.media_url, '_blank')}
+                            />
+                        </div>
+                    )}
+
+                    {/* Media Render: VIDEO */}
+                    {message.media_url && message.media_type === 'video' && (
+                        <div className="mb-2 rounded-lg overflow-hidden max-w-full">
+                            <video
+                                src={message.media_url}
+                                controls
+                                className="max-h-60 w-full bg-black"
                             />
                         </div>
                     )}
