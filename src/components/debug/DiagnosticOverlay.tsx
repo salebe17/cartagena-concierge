@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getStaffMembers } from "@/app/admin/actions/staff_management";
+// import { getStaffMembers } from "@/app/admin/actions/staff_management";
 import { debugTestPing } from "@/app/actions/debug_test";
 import { getAllServiceRequests } from "@/app/actions/admin";
 import { Bug, X, RefreshCw, Activity, Database, AlertCircle } from "lucide-react";
@@ -37,23 +37,16 @@ export function DiagnosticOverlay() {
 
     const runStaffTest = async () => {
         setLoading(true);
-        addLog("🚀 Testing getStaffMembers()...");
+        addLog("🚀 Testing getStaffMembers()... DISABLED (Action Not Found)");
+        /*
         try {
             const start = performance.now();
             const res = await getStaffMembers();
-            const end = performance.now();
-
-            if (res.success) {
-                addLog(`✅ Success (${(end - start).toFixed(0)}ms). Items: ${res.data?.length}`);
-                setStaffTestResult({ status: "OK", count: res.data?.length, sample: res.data?.[0] || "None" });
-            } else {
-                addLog(`🔥 Server Error: ${res.error}`);
-                setStaffTestResult({ status: "ERROR", error: res.error });
-            }
+            // ...
         } catch (e: any) {
-            addLog(`💀 Client Catch: ${e.message}`);
-            setStaffTestResult({ status: "CRASH", error: e.message });
+            // ...
         }
+        */
         setLoading(false);
     };
 
