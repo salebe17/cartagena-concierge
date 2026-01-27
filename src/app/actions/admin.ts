@@ -27,6 +27,11 @@ async function syncPropertyCalendarInternal(supabase: any, propertyId: string) {
     // 3. Process Events
     let newBookingsCount = 0;
     for (const event of externalEvents) {
+        if (!event.start || !event.end || isNaN(event.start.getTime()) || isNaN(event.end.getTime())) {
+            console.warn(`Skipping invalid event: ${event.summary}`);
+            continue;
+        }
+
         const startIso = event.start.toISOString().split('T')[0];
         const endIso = event.end.toISOString().split('T')[0];
 

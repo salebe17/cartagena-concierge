@@ -35,7 +35,8 @@ function parseICS(icsData: string): ICalEvent[] {
             const y = parseInt(clean.substring(0, 4));
             const m = parseInt(clean.substring(4, 6)) - 1;
             const d = parseInt(clean.substring(6, 8));
-            return new Date(Date.UTC(y, m, d));
+            const dateObj = new Date(Date.UTC(y, m, d));
+            return isNaN(dateObj.getTime()) ? null : dateObj;
         }
 
         // YYYYMMDDTHHMMSS
@@ -48,7 +49,8 @@ function parseICS(icsData: string): ICalEvent[] {
                 const h = parseInt(timePart.substring(0, 2));
                 const min = parseInt(timePart.substring(2, 4));
                 const s = parseInt(timePart.substring(4, 6));
-                return new Date(Date.UTC(y, m, d, h, min, s));
+                const dateObj = new Date(Date.UTC(y, m, d, h, min, s));
+                return isNaN(dateObj.getTime()) ? null : dateObj;
             }
         }
         return null;
