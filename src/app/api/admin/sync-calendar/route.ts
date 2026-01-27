@@ -101,41 +101,43 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, message: "No hay propiedades con iCal configurado." });
         }
 
-        const TIMEOUT_MS = 30000;
+        const GLOBAL_TIMEOUT = 55000; // 55s (Vercel limit is 60s for hobby)
+        const PER_CALENDAR_TIMEOUT = 10000; // 10s per calendar
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), GLOBAL_TIMEOUT);
+
         const syncPromises = properties.map(async (prop: any) => {
             try {
-                // Pass correct client to internal sync
-                await syncPropertyCalendarInternal(dbClient, prop.id);
+                // Use a race for individual fetch if supported, or just rely on global strict limit
+                // Ideally propagate signal to fetchICalEvents if it supports init options
+                // For now, wrapper:
+                const calResult = await Promise.race([
+                    syncPropertyCalendarInternal(dbClient, prop.id),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), PER_CALENDAR_TIMEOUT))
+                ]);
                 return { id: prop.id, title: prop.title, success: true };
             } catch (err: any) {
-                console.error(`Sync error ${prop.title}:`, err);
                 return { id: prop.id, title: prop.title, success: false, error: err.message };
             }
         });
 
-        const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve('TIMEOUT'), TIMEOUT_MS)
-        );
+        const results = await Promise.all(syncPromises);
+        clearTimeout(timeoutId);
 
-        const result = await Promise.race([Promise.all(syncPromises), timeoutPromise]);
-
-        if (result === 'TIMEOUT') {
-            return NextResponse.json({ success: true, message: "Sincronización parcial (Timeout)." });
-        }
-
-        const results = result as any[];
         const successCount = results.filter(r => r.success).length;
         const failed = results.filter(r => !r.success)
-            .map(r => `${r.title} (${r.error || 'Unknown'})`);
-        const succeeded = results.filter(r => r.success).map(r => r.title);
+            .map(r => `${r.title}`);
 
-        let msg = `Sincronizadas: ${successCount} de ${properties.length}.`;
-        if (succeeded.length > 0) msg += ` (${succeeded.join(', ')})`;
-        if (failed.length > 0) msg += ` Fallaron: ${failed.join(', ')}.`;
+        let msg = `Sincronizadas: ${successCount}.`;
+        if (failed.length > 0) msg += ` Fallos/Timeouts: ${failed.join(', ')}.`;
 
         return NextResponse.json({ success: true, message: msg });
 
     } catch (e: any) {
+        if (e.name === 'AbortError') {
+            return NextResponse.json({ success: false, error: "Global Sync Timeout (55s limit)" }, { status: 504 });
+        }
         console.error("[API] Critical Sync Error:", e);
         return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
