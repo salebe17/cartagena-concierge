@@ -358,8 +358,9 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                 const isToday = isSameDay(day, new Date());
 
                 // FIX: Hide days from other months in Mobile View to avoid duplicates
+                // User requested WHITE background for these empty spaces, not transparent/gray.
                 if (hideOutsideDays && !isCurrentMonth) {
-                    return <div key={day.toString()} className="min-h-[120px] bg-white/0 invisible" />;
+                    return <div key={day.toString()} className="min-h-[120px] bg-white" />;
                 }
 
                 return (
