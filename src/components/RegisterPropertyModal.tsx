@@ -5,7 +5,7 @@ import { SimpleModal } from "./SimpleModal";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { registerProperty } from "@/app/actions/dashboard";
+// import { registerProperty } from "@/app/actions/dashboard";
 import { useToast } from "@/hooks/use-toast";
 
 interface RegisterPropertyModalProps {
@@ -19,21 +19,28 @@ export function RegisterPropertyModal({ isOpen, onClose }: RegisterPropertyModal
 
     const handleSubmit = async (formData: FormData) => {
         setLoading(true);
-        const res = await registerProperty(formData);
-        setLoading(false);
+        try {
+            const res = await fetch('/api/host/properties/register', { method: 'POST', body: formData });
+            const json = await res.json();
+            setLoading(false);
 
-        if (res.error) {
-            toast({
-                title: "Error",
-                description: res.error,
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "¡Éxito!",
-                description: "Propiedad registrada correctamente.",
-            });
-            onClose(); // Cerrar modal al tener éxito
+            if (!json.success) {
+                toast({
+                    title: "Error",
+                    description: json.error,
+                    variant: "destructive",
+                });
+            } else {
+                toast({
+                    title: "¡Éxito!",
+                    description: "Propiedad registrada correctamente.",
+                });
+                onClose();
+                window.location.reload();
+            }
+        } catch (e) {
+            setLoading(false);
+            toast({ title: "Error de conexión", variant: "destructive" });
         }
     };
 

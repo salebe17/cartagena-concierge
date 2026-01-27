@@ -9,7 +9,6 @@ import { ManagePropertyModal } from "./dashboard/ManagePropertyModal";
 import { Button } from "./ui/button";
 
 import { CalendarGrid } from "./admin/CalendarGrid";
-import { createServiceRequest } from "@/app/actions/dashboard";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { AlertWidget, AlertItem } from "./dashboard/AlertWidget";
@@ -48,26 +47,14 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
     // 'menu' = Account
 
     const handleScheduleCleaning = async (booking: any) => {
-        // 1. Safe Date Construction (Local Time) to prevent Timezone shift
-        // booking.end_date is YYYY-MM-DD
+        // ... (Date construction logic remains same)
         const [year, month, day] = booking.end_date.split('-').map(Number);
-        // Create date at 11:00 AM Local Time
         const cleanupDate = new Date(year, month - 1, day, 11, 0, 0);
 
-        // 2. Duplicate Check (Client Side)
-        // Check if we already have a 'cleaning' service for this property on this date
-        // Compare YYYY-MM-DD parts
-        const dateStr = cleanupDate.toISOString().split('T')[0]; // This gives UTC date part, check if that matches user expectation?
-        // Wait, cleanupDate is Local. toISOString converts to UTC.
-        // If Local is UTC-5, 11:00 AM -> 16:00 UTC. Date part stays same.
-        // But if user is UTC+10? 
-        // Let's compare using the ISO string logic matching the server.
-        // The server stores ISO. 
-        // Let's strictly check if we see any service in `services` that matches the property and the DAY.
-
+        // ... (Client side check remains same for fast feedback)
+        const dateStr = cleanupDate.toISOString().split('T')[0];
         const alreadyExists = services.some(s => {
             if (s.property_id !== booking.properties.id) return false;
-            // s.requested_date is ISO. 
             const sDate = new Date(s.requested_date);
             return s.service_type === 'cleaning' &&
                 sDate.getFullYear() === year &&
@@ -80,19 +67,24 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
             return;
         }
 
-        // 3. Submit
         const formData = new FormData();
-        formData.append('propertyId', booking.property_id); // Ensure booking has property_id
+        formData.append('propertyId', booking.property_id);
         formData.append('serviceType', 'cleaning');
         formData.append('date', cleanupDate.toISOString());
         formData.append('notes', `Limpieza de salida (Auto-generada) para huésped: ${booking.guest_name || 'Desconocido'}`);
 
-        const res = await createServiceRequest(formData);
+        try {
+            const res = await fetch('/api/host/requests/create', { method: 'POST', body: formData });
+            const json = await res.json();
 
-        if (res.success) {
-            toast({ title: "Limpieza Solicitada", description: "Se ha agendado la limpieza de salida." });
-        } else {
-            toast({ title: "Error", description: res.error, variant: "destructive" });
+            if (json.success) {
+                toast({ title: "Limpieza Solicitada", description: "Se ha agendado la limpieza de salida." });
+                window.location.reload(); // Refresh to see new request
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de conexión", description: "No se pudo conectar con el servidor.", variant: "destructive" });
         }
     };
 

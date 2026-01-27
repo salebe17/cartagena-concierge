@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { AlertCircle, X, CheckCircle, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { markAlertRead } from "@/app/actions/dashboard";
+// import { markAlertRead } from "@/app/actions/dashboard";
 
 export interface AlertItem {
     id: string;
@@ -21,8 +21,16 @@ export function AlertWidget({ initialAlerts }: { initialAlerts: AlertItem[] }) {
     if (alerts.length === 0) return null;
 
     const handleDismiss = async (id: string) => {
-        setAlerts(prev => prev.filter(a => a.id !== id));
-        await markAlertRead(id);
+        setAlerts(prev => prev.filter(a => a.id !== id)); // Optimistic UI
+        try {
+            await fetch('/api/host/alerts/read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alertId: id })
+            });
+        } catch (e) {
+            console.error("Failed to mark alert as read", e);
+        }
     };
 
     return (

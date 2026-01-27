@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { deleteProperty, updatePropertyStatus } from '@/app/actions/dashboard'
+// import { deleteProperty, updatePropertyStatus } from '@/app/actions/dashboard'
 import { X, Trash2, Settings2, CheckCircle2, Circle, Loader2 } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -37,47 +37,61 @@ export function ManagePropertyModal({
     const handleStatusChange = async (newStatus: 'vacant' | 'occupied') => {
         if (newStatus === status) return;
 
-        // Optimistic Update
         const previousStatus = status;
         setStatus(newStatus);
         setIsUpdating(true);
 
-        const result = await updatePropertyStatus(propertyId, newStatus)
-        setIsUpdating(false)
+        try {
+            const res = await fetch('/api/host/properties/update-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ propertyId, status: newStatus })
+            });
+            const json = await res.json();
+            setIsUpdating(false);
 
-        if (result.success) {
-            toast({
-                title: "Estado actualizado",
-                description: `${propertyTitle} ahora está ${newStatus === 'occupied' ? 'Ocupado' : 'Disponible'}.`,
-            })
-        } else {
-            setStatus(previousStatus) // Revertir si falla
-            toast({
-                title: "Error al actualizar",
-                description: result.error,
-                variant: "destructive"
-            })
+            if (json.success) {
+                toast({
+                    title: "Estado actualizado",
+                    description: `${propertyTitle} ahora está ${newStatus === 'occupied' ? 'Ocupado' : 'Disponible'}.`,
+                });
+                window.location.reload();
+            } else {
+                setStatus(previousStatus);
+                toast({ title: "Error al actualizar", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            setStatus(previousStatus);
+            setIsUpdating(false);
+            toast({ title: "Error de conexión", variant: "destructive" });
         }
     }
 
     // Manejar eliminación
     const handleDelete = async () => {
-        setIsDeleting(true)
-        const result = await deleteProperty(propertyId)
+        setIsDeleting(true);
+        try {
+            const res = await fetch('/api/host/properties/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ propertyId })
+            });
+            const json = await res.json();
 
-        if (result.success) {
-            setIsOpen(false)
-            toast({
-                title: "Propiedad eliminada",
-                description: "La unidad ha sido removida de tu portafolio.",
-            })
-        } else {
-            setIsDeleting(false)
-            toast({
-                title: "Error al eliminar",
-                description: result.error,
-                variant: "destructive"
-            })
+            if (json.success) {
+                setIsOpen(false);
+                toast({
+                    title: "Propiedad eliminada",
+                    description: "La unidad ha sido removida de tu portafolio.",
+                });
+                window.location.reload();
+            } else {
+                setIsDeleting(false);
+                toast({ title: "Error al eliminar", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            setIsDeleting(false);
+            toast({ title: "Error de conexión", variant: "destructive" });
         }
     }
 
