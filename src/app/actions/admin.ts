@@ -219,8 +219,9 @@ export async function adminUpdateServiceStatus(requestId: string, newStatus: str
 
         // Robust Revalidation
         try {
-            revalidatePath('/admin');
-            revalidatePath('/dashboard');
+            // console.log("[Admin] Triggering revalidation...");
+            // revalidatePath('/admin');
+            // revalidatePath('/dashboard');
         } catch (revError) {
             console.error("[Admin] Revalidation Warning:", revError);
             // Don't fail the action if revalidation fails
