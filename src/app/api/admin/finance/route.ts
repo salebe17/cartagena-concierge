@@ -45,10 +45,11 @@ export async function GET() {
             }
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
         console.error("API Finance Error:", error);
         return NextResponse.json(
-            { success: false, error: error.message },
+            { success: false, error: errorMessage },
             { status: 500 }
         );
     }

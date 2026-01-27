@@ -50,3 +50,15 @@ export interface UserProfile {
     phone?: string;
     avatar_url?: string;
 }
+
+export interface Message {
+    id: string;
+    service_request_id?: string;
+    sender_id: string;
+    receiver_id?: string;
+    content: string;
+    media_url?: string;
+    media_type?: 'text' | 'image' | 'video';
+    is_read: boolean;
+    created_at: string;
+}

@@ -7,6 +7,7 @@ import { Send, User, Loader2, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatBubble } from './ChatBubble';
 import { useToast } from '@/hooks/use-toast';
+import { Message } from '@/lib/types';
 
 interface ChatBoxProps {
     requestId?: string;
@@ -18,7 +19,7 @@ interface ChatBoxProps {
 }
 
 export function ChatBox({ requestId, userId, currentUserId, isAdmin, className = '', mobileLayout = false }: ChatBoxProps) {
-    const [messages, setMessages] = useState<any[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
