@@ -13,23 +13,30 @@ const inter = Inter({ subsets: ["latin"] });
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Cartagena Concierge | Private Logistics",
-  description: "Servicio exclusivo de logística a domicilio en Cartagena. Seguro, rápido y discreto. 24/7.",
+  title: "Cartagena Concierge | Elite Private Services",
+  description: "Logística privada de lujo en Cartagena. Limpieza, mantenimiento y concierge exclusivo para propietarios.",
+  keywords: ["Cartagena", "Concierge", "Luxury", "Cleaning", "Maintenance", "Private Service"],
   openGraph: {
-    title: "Cartagena Concierge | Private Service",
-    description: "Solicita asistencia a domicilio en minutos. Seguridad y discreción garantizada.",
+    title: "Cartagena Concierge | Elite Private Services",
+    description: "Gestión de propiedades y servicios de estilo de vida en Cartagena de Indias.",
     url: "https://cartagena-concierge.vercel.app",
     siteName: "Cartagena Concierge",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1621504450168-b8c437532b3a?q=80&w=1200&auto=format&fit=crop", // Abstract Black/Gold Texture
+        url: "https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200", // Cartagena Streets
         width: 1200,
         height: 630,
-        alt: "Cartagena Concierge Premium Service",
+        alt: "Cartagena Architecture",
       },
     ],
     locale: "es_CO",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cartagena Concierge | Elite Private Services",
+    description: "Logística privada de lujo en Cartagena.",
+    images: ["https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200"],
   },
   icons: {
     icon: "/icon-512.png",

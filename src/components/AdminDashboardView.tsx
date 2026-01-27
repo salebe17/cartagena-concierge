@@ -494,7 +494,11 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
                                                                 <p className="text-[9px] font-black text-gray-400 uppercase">{mounted ? new Date(req.requested_date).toLocaleDateString() : '--/--/----'}</p>
                                                                 <p className="text-xs font-bold text-gray-800">Fecha Misi&oacute;n</p>
                                                             </div>
-                                                            <button onClick={() => setActiveTab('inbox')} className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors shadow-sm">
+                                                            <button
+                                                                onClick={() => setActiveTab('inbox')}
+                                                                aria-label="Abrir Chat"
+                                                                className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-rose-500 transition-colors shadow-sm"
+                                                            >
                                                                 <MessageIcon size={14} />
                                                             </button>
                                                         </div>
@@ -505,6 +509,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
                                                         <select
                                                             value={req.assigned_staff_id || ""}
                                                             onChange={(e) => handleAssignStaff(req.id, e.target.value)}
+                                                            aria-label="Asignar Staff"
                                                             className="text-[11px] font-bold border-none bg-transparent p-0 focus:ring-0 text-gray-500 cursor-pointer"
                                                         >
                                                             <option value="">Asignar Personal...</option>
