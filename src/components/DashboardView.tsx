@@ -213,7 +213,10 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     </div>
                 </div>
 
-                <main className="max-w-6xl mx-auto p-4 md:p-8">
+                </div>
+            </div>
+
+            <main className="max-w-6xl mx-auto p-4 md:p-8">
                     {/* Only show "Welcome" header on 'hoy' tab */}
                     {activeTab === 'hoy' && (
                         <div className="mb-8 block">
@@ -226,11 +229,11 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     {renderContent()}
                 </main>
 
-                {/* Mobile Bottom Navigation */}
-                <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+                {/* Mobile Bottom Navigation */ }
+    <BottomNav activeTab={activeTab} onChange={setActiveTab} />
 
-                {/* Modals */}
-                <RegisterPropertyModal isOpen={isPropModalOpen} onClose={() => setPropModalOpen(false)} />
-            </div>
+    {/* Modals */ }
+    <RegisterPropertyModal isOpen={isPropModalOpen} onClose={() => setPropModalOpen(false)} />
+            </div >
             );
 }
