@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     typescript: {
-        ignoreBuildErrors: true,
+        // ignoreBuildErrors: true, // LEVEL 36: STRICT MODE ENABLED
     },
     images: {
         remotePatterns: [
