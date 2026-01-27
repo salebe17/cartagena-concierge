@@ -2,11 +2,18 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    const correlationId = crypto.randomUUID();
+    const headersWidthId = new Headers(request.headers);
+    headersWidthId.set('x-correlation-id', correlationId);
+
     let response = NextResponse.next({
         request: {
-            headers: request.headers,
+            headers: headersWidthId,
         },
     })
+
+    // Also set it on response so client can see it
+    response.headers.set('x-correlation-id', correlationId);
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

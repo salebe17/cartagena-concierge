@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { sanitizeInput } from '@/lib/utils';
+import { Logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
@@ -108,6 +109,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (e: any) {
+        Logger.error("API Host Create Request Failed", { error: e.message, stack: e.stack });
         return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 }
