@@ -308,7 +308,11 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                         placeholder="Escribe un mensaje..."
                         className="w-full bg-gray-50 border-none focus:ring-2 focus:ring-gray-100 rounded-2xl px-4 py-3 text-sm font-medium resize-none max-h-32 min-h-[46px]"
                         rows={1}
+                        maxLength={1000}
                     />
+                    <div className="absolute bottom-2 right-3 text-[10px] text-gray-300 font-medium">
+                        {input.length}/1000
+                    </div>
                 </div>
 
                 <button
