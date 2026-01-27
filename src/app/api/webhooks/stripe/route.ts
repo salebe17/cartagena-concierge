@@ -4,9 +4,13 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 
 // Initialize Stripe (Env var needed: STRIPE_SECRET_KEY)
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-    apiVersion: '2025-01-27.acacia' as any, // Use latest or matching version
-});
+const getStripe = () => {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error("Missing STRIPE_SECRET_KEY");
+    return new Stripe(key, {
+        apiVersion: '2025-01-27.acacia' as any,
+    });
+};
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -18,6 +22,7 @@ export async function POST(request: Request) {
 
     try {
         if (!endpointSecret) throw new Error("Missing Webhook Secret");
+        const stripe = getStripe();
         event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
     } catch (err: any) {
         console.error(`Webhook Error: ${err.message}`);
