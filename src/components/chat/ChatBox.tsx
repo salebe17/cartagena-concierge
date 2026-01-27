@@ -108,48 +108,60 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
         // If we have a userId (Direct Chat), we must be careful not to listen to the world.
         const filter = requestId ? `service_request_id=eq.${requestId}` : undefined;
 
-        const channel = supabase.channel(`chat_${requestId || userId || 'general'}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'messages',
-                filter: filter // If undefined, listens to all messages (we must filter client-side)
-            }, async (payload) => {
-                const msg = payload.new;
+        let channel: any = null;
 
-                // STRICT CLIENT-SIDE FILTERING for Data Isolation
-                // 1. If looking at a specific Request, ignore if msg doesn't match ID
-                if (requestId && msg.service_request_id !== requestId) return;
+        try {
+            channel = supabase.channel(`chat_${requestId || userId || 'general'}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: filter // If undefined, listens to all messages (we must filter client-side)
+                }, async (payload) => {
+                    const msg = payload.new;
 
-                // 2. If Direct Message (no Request ID), check participants
-                if (!requestId && userId) {
-                    // Must be between ME and TARGET user
-                    // (Sender is ME and Receiver is TARGET) OR (Sender is TARGET and Receiver is ME)
-                    // Actually, just checking if TARGET is involved is usually enough for the Admin view of that user
-                    const involved = (msg.sender_id === userId && msg.receiver_id === currentUserId) ||
-                        (msg.receiver_id === userId && msg.sender_id === currentUserId) ||
-                        (msg.sender_id === userId && msg.receiver_id === userId); // For self-messages in a DM context
-                    if (!involved) return;
+                    // STRICT CLIENT-SIDE FILTERING for Data Isolation
+                    // 1. If looking at a specific Request, ignore if msg doesn't match ID
+                    if (requestId && msg.service_request_id !== requestId) return;
 
-                    // Also exclude messages that belong to a specific Service Request?
-                    // If I am in "Direct Chat", do I want to see "Service Request" updates?
-                    // Maybe. But usually Direct Chat is for non-contextual or booking-agnostic chat.
-                    // For now, let's allow it if the user is involved, to capture all history.
-                }
+                    // 2. If Direct Message (no Request ID), check participants
+                    if (!requestId && userId) {
+                        // Must be between ME and TARGET user
+                        // (Sender is ME and Receiver is TARGET) OR (Sender is TARGET and Receiver is ME)
+                        // Actually, just checking if TARGET is involved is usually enough for the Admin view of that user
+                        const involved = (msg.sender_id === userId && msg.receiver_id === currentUserId) ||
+                            (msg.receiver_id === userId && msg.sender_id === currentUserId) ||
+                            (msg.sender_id === userId && msg.receiver_id === userId); // For self-messages in a DM context
+                        if (!involved) return;
 
-                setMessages(prev => [...prev, msg as Message]);
-                setTimeout(scrollToBottom, 50);
+                        // Also exclude messages that belong to a specific Service Request?
+                        // If I am in "Direct Chat", do I want to see "Service Request" updates?
+                        // Maybe. But usually Direct Chat is for non-contextual or booking-agnostic chat.
+                        // For now, let's allow it if the user is involved, to capture all history.
+                    }
 
-                // Mark as read immediately if it's incoming and I'm watching
-                if (isAdmin && msg.sender_id !== currentUserId) {
-                    fetch('/api/chat/mark-read', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ids: [msg.id] })
-                    });
-                }
-            })
-            .subscribe();
+                    setMessages(prev => [...prev, msg as Message]);
+                    setTimeout(scrollToBottom, 50);
+
+                    // Mark as read immediately if it's incoming and I'm watching
+                    if (isAdmin && msg.sender_id !== currentUserId) {
+                        fetch('/api/chat/mark-read', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ids: [msg.id] })
+                        });
+                    }
+                })
+                .subscribe((status) => {
+                    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        console.error('Realtime subscription error:', status);
+                        // Optional: Show valid toast, but don't crash
+                    }
+                });
+        } catch (e) {
+            console.error("Critical Realtime Setup Error:", e);
+            // Suppress crash. Chat will work via Polling fallback.
+        }
 
         return () => {
             supabase.removeChannel(channel);
