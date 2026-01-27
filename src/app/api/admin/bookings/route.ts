@@ -30,8 +30,9 @@ export async function GET() {
         if (bookingsError) throw bookingsError;
 
         // Manual Join for Safety
-        const userIds = bookingsData.map(b => b.user_id).filter(id => id);
-        let bookingsWithProfiles = bookingsData;
+        const safeBookings = bookingsData || [];
+        const userIds = safeBookings.map((b: any) => b.user_id).filter((id: any) => id);
+        let bookingsWithProfiles = safeBookings;
 
         if (userIds.length > 0) {
             const { data: profiles } = await supabase
@@ -39,9 +40,9 @@ export async function GET() {
                 .select('id, full_name, email, phone') // 'phone' based on schema, not 'phone_number'
                 .in('id', userIds);
 
-            const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+            const profileMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
 
-            bookingsWithProfiles = bookingsData.map(b => ({
+            bookingsWithProfiles = safeBookings.map((b: any) => ({
                 ...b,
                 profiles: profileMap.get(b.user_id) || null
             }));
