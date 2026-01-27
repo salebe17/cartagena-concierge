@@ -31,7 +31,7 @@ export async function GET() {
         // Let's verify if `client_id` exists in `sprint3_schema_updates.sql`?
         // If not, I can only link via property -> owner.
 
-        const propertyIds = requestsData.map(r => r.property_id).filter(id => id);
+        const propertyIds = requestsData.map((r: any) => r.property_id).filter((id: any) => id);
         let enrichedRequests = requestsData;
 
         if (propertyIds.length > 0) {
@@ -41,15 +41,15 @@ export async function GET() {
                 .select('id, title, address, owner_id')
                 .in('id', propertyIds);
 
-            const propMap = new Map(properties?.map(p => [p.id, p]) || []);
-            const ownerIds = properties?.map(p => p.owner_id).filter(id => id) || [];
+            const propMap = new Map(properties?.map((p: any) => [p.id, p]) || []);
+            const ownerIds = properties?.map((p: any) => p.owner_id).filter((id: any) => id) || [];
 
             // Get profiles of owners
             const { data: profiles } = await supabase
                 .from('profiles')
                 .select('id, full_name, email, phone')
                 .in('id', ownerIds);
-            const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+            const profileMap = new Map(profiles?.map((p: any) => [p.id, p]) || []);
 
             enrichedRequests = requestsData.map((r: any) => {
                 const prop = propMap.get(r.property_id);
