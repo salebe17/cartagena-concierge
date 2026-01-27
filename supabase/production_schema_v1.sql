@@ -111,6 +111,21 @@ CREATE TABLE IF NOT EXISTS public.service_requests (
     deleted_at TIMESTAMP WITH TIME ZONE -- Soft delete support
 );
 
+-- LEVEL 30: SCHEMA COMPATIBILITY PATCH
+-- Ensure columns exist if table was created in earlier versions
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS requester_id UUID REFERENCES public.profiles(id);
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS assigned_staff_id UUID REFERENCES public.staff_members(id);
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS evidence_urls TEXT[];
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS quoted_price NUMERIC(10, 2);
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS currency TEXT DEFAULT 'COP';
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT;
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE public.service_requests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS media_url TEXT;
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS media_type TEXT;
+
 -- 3.5 MESSAGES (Chat)
 CREATE TABLE IF NOT EXISTS public.messages (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
