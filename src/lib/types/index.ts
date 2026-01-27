@@ -62,3 +62,16 @@ export interface Message {
     is_read: boolean;
     created_at: string;
 }
+
+export interface StaffMember {
+    id: string;
+    full_name: string;
+    role: 'cleaner' | 'maintenance' | 'driver' | 'concierge' | 'supervisor';
+    status: 'active' | 'inactive' | 'suspended';
+    email?: string;
+    phone?: string;
+    avatar_url?: string;
+    metrics?: Record<string, any>;
+    rating?: number;
+    created_at?: string;
+}
