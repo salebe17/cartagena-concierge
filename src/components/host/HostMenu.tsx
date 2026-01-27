@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft, Ship, CreditCard, Home } from 'lucide-react';
+import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft, Ship, CreditCard, Home, Wallet } from 'lucide-react';
 import { Button } from '../ui/button';
 import { BillingSection } from '../dashboard/BillingSection';
 import { UserFinanceSection } from '../dashboard/UserFinanceSection';
+import { HostFinanceView } from './HostFinanceView';
 
 interface HostMenuProps {
     userName: string;
@@ -20,7 +21,7 @@ interface HostMenuProps {
 
 export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout, properties = [] }: HostMenuProps) {
     const [isSwitching, setIsSwitching] = useState(false);
-    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties'>('main');
+    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet'>('main');
     const router = useRouter();
 
     const handleSwitchToTraveler = () => {
@@ -30,19 +31,6 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
         }, 1500);
     };
 
-    if (view === 'billing') {
-        return (
-            <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
-                <div className="flex items-center gap-4 mb-6">
-                    <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                        <ChevronRight size={20} className="rotate-180 text-gray-600" />
-                    </button>
-                    <h1 className="text-2xl font-black text-[#222222]">Métodos de Pago</h1>
-                </div>
-                <BillingSection />
-            </div>
-        );
-    }
 
     if (view === 'properties') {
         return (
@@ -79,16 +67,22 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
         );
     }
 
-    if (view === 'finance') {
+    if (view === 'wallet') {
         return (
             <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
                 <div className="flex items-center gap-4 mb-6">
                     <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
                         <ChevronRight size={20} className="rotate-180 text-gray-600" />
                     </button>
-                    <h1 className="text-2xl font-black text-[#222222]">Mis Finanzas</h1>
+                    {/* HostFinanceView has its own title, but we can wrap it or let it handle it. 
+                        HostFinanceView has "Billetera" title. Let's just create a wrapper to handle the back button consistently. */}
                 </div>
-                <UserFinanceSection />
+                {/* We need to override the padding/title in HostFinanceView or accept that it duplicates? 
+                    Actually, HostFinanceView has a title. 
+                    Let's render it directly. */}
+                <div className="-mt-12">
+                    <HostFinanceView />
+                </div>
             </div>
         );
     }
@@ -135,7 +129,7 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
             <div className="grid grid-cols-2 gap-4 mb-8">
                 {/* Revenue Card - Clickable to go to Finance */}
                 <div
-                    onClick={() => setView('finance')}
+                    onClick={() => setView('wallet')}
                     className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40 cursor-pointer hover:border-black transition-colors"
                 >
                     <div>
@@ -167,9 +161,8 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                 </div>
             </div>
 
-            {/* Menu List */}
             <div className="space-y-1">
-                <MenuItem icon={CreditCard} label="Métodos de Pago" onClick={() => setView('billing')} />
+                <MenuItem icon={CreditCard} label="Billetera (Métodos de Pago)" onClick={() => setView('wallet')} />
                 <MenuItem icon={Settings} label="Configuración de la cuenta" />
                 <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />
                 <MenuItem icon={HelpCircle} label="Obtén ayuda" />
