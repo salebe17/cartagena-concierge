@@ -24,6 +24,17 @@ export async function POST(request: Request) {
 
         if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
+        // Rate Limit Check (5 requests per minute)
+        const { data: allowed } = await supabase.rpc('check_rate_limit', {
+            p_user_id: user.id,
+            p_action_type: 'create_request',
+            p_max_count: 5
+        });
+
+        if (allowed === false) {
+            return NextResponse.json({ success: false, error: 'Límite de solicitudes excedido. Espera un minuto.' }, { status: 429 });
+        }
+
         // 1. Ownership Check
         const { data: property } = await supabase
             .from('properties')

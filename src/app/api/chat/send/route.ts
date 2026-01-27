@@ -18,6 +18,22 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Rate Limit Check (20 messages per minute)
+        const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+            p_user_id: user.id,
+            p_action_type: 'chat_message',
+            p_max_count: 20
+        });
+
+        if (rlError) {
+            console.error("Rate Limit Error:", rlError);
+            // Fail open if RPC fails? Or close? Let's fail close for security, but log.
+        }
+
+        if (allowed === false) {
+            return NextResponse.json({ success: false, error: 'Demasiados mensajes. Por favor espera un momento.' }, { status: 429 });
+        }
+
         const { error } = await supabase
             .from('messages')
             .insert({
