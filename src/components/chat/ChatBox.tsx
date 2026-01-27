@@ -289,6 +289,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={sending}
+                    aria-label="Adjuntar imagen"
                     className="p-3 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                     <Image size={20} />
@@ -313,6 +314,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                 <button
                     disabled={(!input.trim() && !sending)}
                     type="submit"
+                    aria-label="Enviar mensaje"
                     className={`p-3 rounded-xl flex items-center justify-center transition-all shadow-sm
                         ${input.trim()
                             ? 'bg-rose-500 text-white hover:bg-rose-600 transform hover:scale-105'
