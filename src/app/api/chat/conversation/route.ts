@@ -22,13 +22,14 @@ export async function GET(request: Request) {
             .from('messages')
             .select(`
                 *,
-                profiles!sender_id (
+                profile:profiles!sender_id (
                    full_name,
                    role,
                    avatar_url
                 )
             `)
-            .order('created_at', { ascending: true });
+            .order('created_at', { ascending: false }) // Get NEWEST first
+            .limit(50); // Level 28: Cap at 50 to prevent crash
 
         if (requestId && requestId !== 'null' && requestId !== 'undefined') {
             query = query.eq('service_request_id', requestId);
@@ -56,7 +57,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             success: true,
-            data: data
+            data: (data || []).reverse() // Reverse back to chronological order
         });
 
     } catch (error: any) {

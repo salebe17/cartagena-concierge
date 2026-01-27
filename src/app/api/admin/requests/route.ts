@@ -10,7 +10,8 @@ export async function GET() {
             .from('service_requests')
             .select('*')
             .is('deleted_at', null)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(100); // Level 28: Prevent Timebomb
 
         if (reqError) throw reqError;
 
