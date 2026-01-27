@@ -31,6 +31,25 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Forbidden: Admin only" }, { status: 403 });
         }
 
+        // Duplicate Check (Same as Host API)
+        const reqDate = new Date(requested_date);
+        const startOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate()).toISOString();
+        const endOfDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate(), 23, 59, 59).toISOString();
+
+        const { data: existing } = await dbClient
+            .from('service_requests')
+            .select('id')
+            .eq('property_id', property_id)
+            .eq('service_type', service_type)
+            .neq('status', 'cancelled')
+            .gte('requested_date', startOfDay)
+            .lte('requested_date', endOfDay)
+            .maybeSingle();
+
+        if (existing) {
+            return NextResponse.json({ success: false, error: "Ya existe una solicitud duplicada para esta fecha." }, { status: 409 });
+        }
+
         // Create Request
         const { data: newRequest, error } = await dbClient
             .from('service_requests')

@@ -21,6 +21,7 @@ export async function POST(request: Request) {
             .from('service_requests')
             .select(`
                 id,
+                status,
                 service_type,
                 properties (
                     owner_id
@@ -31,6 +32,10 @@ export async function POST(request: Request) {
 
         if (reqError || !reqData) {
             return NextResponse.json({ success: false, error: "Request not found" }, { status: 404 });
+        }
+
+        if (reqData.status === 'completed' || reqData.status === 'paid') {
+            return NextResponse.json({ success: false, error: "Esta solicitud ya fue pagada." }, { status: 400 });
         }
 
         const ownerId = (reqData.properties as any).owner_id;
