@@ -34,7 +34,7 @@ export async function GET() {
         // Grouping Logic
         const conversations: Record<string, any> = {};
 
-        messages?.forEach(msg => {
+        messages?.forEach((msg: any) => {
             const sender = msg.sender as any;
             const receiver = msg.receiver as any;
 
