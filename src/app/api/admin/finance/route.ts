@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server';
 // Helper to manually aggregate finance stats
 export async function GET() {
     try {
-        console.log("API: Fetching Finance Stats...");
         // Use standard client.
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();

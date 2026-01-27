@@ -49,19 +49,19 @@ export async function GET() {
                 .in('id', ownerIds);
             const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-            enrichedRequests = requestsData.map(r => {
+            enrichedRequests = requestsData.map((r: any) => {
                 const prop = propMap.get(r.property_id);
-                const profile = prop ? profileMap.get(prop.owner_id) : null;
+                const profile = prop ? profileMap.get((prop as any).owner_id) : null;
                 return {
                     ...r,
                     properties: prop,
-                    profiles: profile // Attaching owner profile as 'profiles' to match frontend expectation
+                    profiles: profile
                 };
             });
         }
 
         return NextResponse.json({ success: true, data: enrichedRequests });
-    } catch (error: any) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    } catch (e: any) {
+        return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 }

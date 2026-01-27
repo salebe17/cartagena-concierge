@@ -1,24 +1,28 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
         const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-        // Check Auth using getUser which is secure
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
+        if (!user) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Ideally check for admin role here, but RLS on profiles should handle visibility if set correctly.
-        // However, for an "Admin" feature, we want to see everyone. 
-        // Admin policies usually allow viewing all profiles.
+        // Use Admin Client for consistent admin access
+        const adminDb = await createAdminClient();
 
-        const { data: profiles, error } = await supabase
+        // Verify Admin Role
+        const { data: profile } = await adminDb.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role !== 'admin') {
+            return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+        }
+
+        const { data: profiles, error } = await adminDb
             .from('profiles')
             .select('id, full_name, email, role, avatar_url, phone')
-            .order('full_name', { ascending: true });
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
 
@@ -28,7 +32,6 @@ export async function GET() {
         });
 
     } catch (error: any) {
-        console.error("API Users Error:", error);
         return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }

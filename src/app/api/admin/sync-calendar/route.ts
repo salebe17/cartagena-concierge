@@ -133,7 +133,6 @@ export async function POST(request: Request) {
         if (succeeded.length > 0) msg += ` (${succeeded.join(', ')})`;
         if (failed.length > 0) msg += ` Fallaron: ${failed.join(', ')}.`;
 
-        console.log(`[API] Sync Completed: ${msg}`);
         return NextResponse.json({ success: true, message: msg });
 
     } catch (e: any) {

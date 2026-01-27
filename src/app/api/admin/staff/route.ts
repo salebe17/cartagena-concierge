@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
     try {
-        console.log("API: Fetching staff members...");
         // 1. Init Supabase (Standard Server Client)
         const supabase = await createClient();
 
