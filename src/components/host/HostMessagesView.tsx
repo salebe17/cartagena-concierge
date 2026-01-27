@@ -29,7 +29,7 @@ export function HostMessagesView({ bookings, currentUserId, userName }: HostMess
                     </div>
                 </div>
 
-                <div className="flex-1 relative">
+                <div className="flex-1 min-h-0 relative overflow-hidden">
                     <ChatBox
                         currentUserId={currentUserId}
                         userId={currentUserId}
