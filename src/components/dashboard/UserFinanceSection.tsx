@@ -64,20 +64,21 @@ export function UserFinanceSection() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
-                <p className="text-xs font-black uppercase text-emerald-600 tracking-widest mb-1">Total Gastado</p>
-                <p className="text-2xl font-black text-emerald-800">{formatCurrency(stats.totalSpent)}</p>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
+                    <p className="text-xs font-black uppercase text-emerald-600 tracking-widest mb-1">Total Gastado</p>
+                    <p className="text-2xl font-black text-emerald-800">{formatCurrency(stats.totalSpent)}</p>
+                </div>
+                <div className="bg-orange-50 p-5 rounded-2xl border border-orange-100">
+                    <p className="text-xs font-black uppercase text-orange-600 tracking-widest mb-1">Pendientes</p>
+                    <p className="text-2xl font-black text-orange-800">{stats.pending}</p>
+                </div>
             </div>
-            <div className="bg-orange-50 p-5 rounded-2xl border border-orange-100">
-                <p className="text-xs font-black uppercase text-orange-600 tracking-widest mb-1">Pendientes</p>
-                <p className="text-2xl font-black text-orange-800">{stats.pending}</p>
-            </div>
-        </div>
 
-            {/* Breakdown by Service Type */ }
+            {/* Breakdown by Service Type */}
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                 <h3 className="text-sm font-bold text-[#222222] mb-4">Desglose por Servicio</h3>
-                 <div className="space-y-3">
+                <h3 className="text-sm font-bold text-[#222222] mb-4">Desglose por Servicio</h3>
+                <div className="space-y-3">
                     {/* Cleaning */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -110,8 +111,8 @@ export function UserFinanceSection() {
                         </span>
                     </div>
 
-                     {/* Others */}
-                     <div className="flex items-center justify-between">
+                    {/* Others */}
+                    <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500">
                                 <span className="text-xs">📦</span>
@@ -125,7 +126,7 @@ export function UserFinanceSection() {
                             )}
                         </span>
                     </div>
-                 </div>
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -152,7 +153,7 @@ export function UserFinanceSection() {
                                         <p className="text-xs text-gray-500 mb-0.5">{inv.service_requests?.properties?.title || 'Propiedad desconocida'}</p>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                    inv.status === 'unpaid' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-gray-50 text-gray-500 border-gray-100'
+                                                inv.status === 'unpaid' ? 'bg-orange-50 text-orange-600 border-orange-100' : 'bg-gray-50 text-gray-500 border-gray-100'
                                                 }`}>
                                                 {inv.status === 'paid' ? 'Pagado' : inv.status === 'unpaid' ? 'Pendiente' : inv.status}
                                             </span>
