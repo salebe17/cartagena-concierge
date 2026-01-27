@@ -273,11 +273,26 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         setUpdatingId(id);
-        const res = await adminUpdateServiceStatus(id, newStatus);
-        setUpdatingId(null);
-        if (!res.error) {
-            setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
-            toast({ title: "Estado Actualizado" });
+
+        try {
+            const res = await fetch('/api/admin/requests/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: newStatus })
+            });
+
+            const json = await res.json();
+
+            if (json.success) {
+                setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus as any } : r));
+                toast({ title: "Estado Actualizado (API)" });
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
+        } finally {
+            setUpdatingId(null);
         }
     };
 
