@@ -109,6 +109,30 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
             case 'calendario':
                 return (
                     <div className="animate-in fade-in duration-300">
+                        <div className="flex items-center justify-between mb-6">
+                            <h1 className="text-3xl font-black text-[#222222]">Calendario</h1>
+                            <button
+                                onClick={async () => {
+                                    const toastId = toast({ title: "Sincronizando...", description: "Buscando nuevas reservas en Airbnb...", duration: 10000 });
+                                    try {
+                                        const res = await fetch('/api/host/sync-calendar', { method: 'POST' });
+                                        const json = await res.json();
+                                        if (json.success) {
+                                            toast({ title: "Sincronización Exitosa", description: json.message });
+                                            window.location.reload();
+                                        } else {
+                                            toast({ title: "Error", description: json.error || "Falló la sincronización", variant: "destructive" });
+                                        }
+                                    } catch (e) {
+                                        toast({ title: "Error", description: "Error de conexión", variant: "destructive" });
+                                    }
+                                }}
+                                className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm transition-all"
+                            >
+                                <LayoutGrid size={16} className="text-rose-500" />
+                                Sincronizar Ahora
+                            </button>
+                        </div>
                         <CalendarGrid bookings={bookings} services={services} onScheduleCleaning={handleScheduleCleaning} />
                     </div>
                 );
