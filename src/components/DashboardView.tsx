@@ -122,10 +122,6 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     <div className="animate-in fade-in duration-300 pb-20">
                         <div className="flex items-center justify-between mb-6">
                             <h1 className="text-3xl font-black text-[#222222]">Tus anuncios</h1>
-                            <div className="flex gap-2">
-                                <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"><Sparkles size={18} /></button>
-                                <button className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200" onClick={() => setPropModalOpen(true)}><Plus size={18} /></button>
-                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
