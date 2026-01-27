@@ -159,6 +159,7 @@ export function CalendarGrid({ bookings, services = [], onScheduleCleaning }: Ca
                                         mounted={mounted}
                                         onBookingClick={setSelectedBooking}
                                         onServiceClick={setSelectedService}
+                                        hideOutsideDays={true} // Hides mixed days
                                     />
                                 </div>
                             </div>
@@ -318,9 +319,10 @@ interface MonthDaysProps {
     mounted: boolean;
     onBookingClick: (b: Booking) => void;
     onServiceClick: (s: any) => void;
+    hideOutsideDays?: boolean; // New prop
 }
 
-function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onServiceClick }: MonthDaysProps) {
+function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onServiceClick, hideOutsideDays = false }: MonthDaysProps) {
     const monthStart = startOfMonth(baseDate);
     const monthEnd = endOfMonth(monthStart);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -354,6 +356,11 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                 const dayServices = getServicesForDay(day);
                 const isCurrentMonth = isSameMonth(day, monthStart);
                 const isToday = isSameDay(day, new Date());
+
+                // FIX: Hide days from other months in Mobile View to avoid duplicates
+                if (hideOutsideDays && !isCurrentMonth) {
+                    return <div key={day.toString()} className="min-h-[120px] bg-white/0 invisible" />;
+                }
 
                 return (
                     <div
