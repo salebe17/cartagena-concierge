@@ -538,7 +538,7 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
                             <DiagnosticOverlay />
                         </div>
                     ) : activeTab === 'calendar' ? (
-                        <CalendarGrid bookings={filteredBookings} onScheduleCleaning={handleScheduleCleaning} />
+                        <CalendarGrid bookings={filteredBookings} services={requests} onScheduleCleaning={handleScheduleCleaning} />
                     ) : activeTab === 'staff' ? (
                         <StaffManagementView />
                     ) : activeTab === 'finance' ? (
