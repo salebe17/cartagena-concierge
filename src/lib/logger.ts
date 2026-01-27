@@ -13,7 +13,8 @@ export const Logger = {
 };
 
 function log(level: 'info' | 'warn' | 'error', message: string, meta: any = {}) {
-    const correlationId = headers().get('x-correlation-id') || 'unknown';
+    // const correlationId = headers().get('x-correlation-id') || 'unknown';
+    const correlationId = 'unknown'; // Next.js 15 headers() is async, cannot be called in sync logger.
 
     const entry = {
         timestamp: new Date().toISOString(),
