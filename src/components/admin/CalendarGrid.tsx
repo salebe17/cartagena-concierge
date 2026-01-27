@@ -413,9 +413,10 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                                 );
                             })}
 
-                            {/* Services (Keep as pills) */}
+                            {/* Services (Icon Only as requested) */}
                             {(dayServices || []).map(svc => {
                                 const isCleaning = svc.service_type === 'cleaning';
+                                // Default maintenance style for all other types for now
                                 const colorClass = isCleaning
                                     ? 'bg-teal-50 text-teal-700 border-teal-100'
                                     : 'bg-orange-50 text-orange-700 border-orange-100';
@@ -424,12 +425,13 @@ function MonthDays({ baseDate, bookings, services, mounted, onBookingClick, onSe
                                 return (
                                     <motion.button
                                         key={svc.id}
-                                        whileHover={{ scale: 1.02 }}
+                                        whileHover={{ scale: 1.1 }}
                                         onClick={() => onServiceClick(svc)}
-                                        className={`mx-2 h-6 text-left text-[10px] font-bold px-2 rounded border truncate shadow-sm flex items-center gap-1 ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                        // Changed to icon-only square/circle
+                                        className={`mx-2 h-6 w-8 flex items-center justify-center rounded-md border shadow-sm ${colorClass} ${!isCurrentMonth ? 'opacity-50' : ''}`}
+                                        title={svc.service_type}
                                     >
-                                        <Icon size={10} className="shrink-0" />
-                                        {isCleaning ? 'Aseo' : 'Mtto'}
+                                        <Icon size={14} className="shrink-0" />
                                     </motion.button>
                                 );
                             })}
