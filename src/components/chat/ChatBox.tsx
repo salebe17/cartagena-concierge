@@ -137,7 +137,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                     // For now, let's allow it if the user is involved, to capture all history.
                 }
 
-                setMessages(prev => [...prev, msg]);
+                setMessages(prev => [...prev, msg as Message]);
                 setTimeout(scrollToBottom, 50);
 
                 // Mark as read immediately if it's incoming and I'm watching
