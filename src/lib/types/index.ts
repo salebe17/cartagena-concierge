@@ -19,7 +19,7 @@ export interface Property {
     created_at: string;
 }
 
-export type ServiceType = 'cleaning' | 'maintenance' | 'concierge';
+export type ServiceType = 'cleaning' | 'maintenance' | 'concierge' | 'interior_finishes';
 export type ServiceStatus = 'pending' | 'confirmed' | 'completed';
 
 export interface ServiceRequest {

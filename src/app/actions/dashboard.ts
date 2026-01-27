@@ -144,7 +144,8 @@ export async function createServiceRequest(formData: FormData): Promise<ActionRe
         revalidatePath('/dashboard');
         return deepSerialize({ success: true });
     } catch (e: any) {
-        return { success: false, error: "Error al crear la solicitud. Intenta nuevamente." };
+        console.error("Create Service Request FAILED:", e.message || e);
+        return { success: false, error: e.message || "Error al crear la solicitud. Intenta nuevamente." };
     }
 }
 
