@@ -78,12 +78,7 @@ export async function POST(request: Request) {
         }
 
         // Admin Check
-        const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-        let dbClient = supabase;
-        if (hasServiceKey) {
-            const adminClient = await createAdminClient();
-            dbClient = adminClient;
-        }
+        const dbClient = await createAdminClient();
 
         // Verify Admin Role
         const { data: profile } = await dbClient

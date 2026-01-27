@@ -1,18 +1,28 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 // Helper to manually aggregate finance stats
 export async function GET() {
     try {
         console.log("API: Fetching Finance Stats...");
-        // Use standard client. If RLS blocks invoices, we might need a service role client, 
-        // but for now let's assume the user is an admin and RLS allows it (Policy: "Admins can manage all invoices").
-        // If createClient relies on cookies, it should work for the logged-in admin.
+        // Use standard client.
         const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
+        const dbClient = await createAdminClient();
+        const { data: profile } = await dbClient.from('profiles').select('role').eq('id', user.id).single();
+
+        if (profile?.role !== 'admin') {
+            return NextResponse.json({ success: false, error: "Forbidden: Admin only" }, { status: 403 });
+        }
 
         // 1. Fetch Invoices (Paid) with Service Requests relation
-        // We do manual join to be safe from "missing relationship" errors
-        const { data: invoices, error: invError } = await supabase
+        // We use dbClient (Admin) to ensure we see all invoices
+        const { data: invoices, error: invError } = await dbClient
             .from('invoices')
             .select('*')
             .eq('status', 'paid');
@@ -28,7 +38,7 @@ export async function GET() {
         let requestsMap = new Map(); // id -> { service_type, property_id }
 
         if (requestIds.length > 0) {
-            const { data: requests } = await supabase
+            const { data: requests } = await dbClient
                 .from('service_requests')
                 .select('id, service_type, property_id')
                 .in('id', requestIds);
@@ -39,17 +49,17 @@ export async function GET() {
         // 3. Retrieve Property Info
         // Collect property IDs from the requests
         const propertyIds = new Set<string>();
-        requestsMap.forEach(r => {
+        requestsMap.forEach((r: any) => {
             if (r.property_id) propertyIds.add(r.property_id);
         });
 
         let propsMap = new Map(); // id -> title
         if (propertyIds.size > 0) {
-            const { data: props } = await supabase
+            const { data: props } = await dbClient
                 .from('properties')
                 .select('id, title')
                 .in('id', Array.from(propertyIds));
-            props?.forEach(p => propsMap.set(p.id, p.title));
+            props?.forEach((p: any) => propsMap.set(p.id, p.title));
         }
 
         // 4. Aggregate Stats
@@ -68,7 +78,7 @@ export async function GET() {
         // Init property map for known properties (so we show even those with 0 revenue?? No, usually only positive)
         // Logic in admin.ts only showed positive revenue.
 
-        invoices.forEach(inv => {
+        invoices.forEach((inv: any) => {
             const amount = inv.amount || 0;
             stats.total += amount;
 
@@ -98,8 +108,8 @@ export async function GET() {
 
         // 5. Format Property Revenue List
         const propertyRevenue = Array.from(propertyRevenueMap.entries())
-            .map(([id, data]) => ({ id, ...data }))
-            .sort((a, b) => b.revenue - a.revenue);
+            .map(([id, data]: [string, any]) => ({ id, ...data }))
+            .sort((a: any, b: any) => b.revenue - a.revenue);
 
         return NextResponse.json({
             success: true,
