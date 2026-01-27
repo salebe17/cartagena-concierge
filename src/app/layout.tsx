@@ -71,6 +71,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <meta httpEquiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com; img-src 'self' blob: data: https://*.supabase.co; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com;" />
+      </head>
       <body className={inter.className}>
         <ClientProviders>
           {user && (
