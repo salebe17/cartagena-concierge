@@ -162,7 +162,7 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
             </div>
 
             <div className="space-y-1">
-                <MenuItem icon={CreditCard} label="Billetera (Métodos de Pago)" onClick={() => setView('wallet')} />
+                <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
                 <MenuItem icon={Settings} label="Configuración de la cuenta" />
                 <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />
                 <MenuItem icon={HelpCircle} label="Obtén ayuda" />
@@ -170,12 +170,6 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
             </div>
 
             {/* Toggle Mode Button */}
-            <div className="sticky bottom-24 flex justify-center mt-8 md:hidden">
-                <button onClick={handleSwitchToTraveler} className="bg-[#222222] text-white px-6 py-3 rounded-full font-bold text-sm shadow-xl flex items-center gap-2 active:scale-95 transition-transform hover:bg-[#000000]">
-                    <ArrowRightLeft size={16} />
-                    Cambiar a modo viajero
-                </button>
-            </div>
         </div>
     );
 }
