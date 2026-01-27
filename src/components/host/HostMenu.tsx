@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft, Ship } from 'lucide-react';
+import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft, Ship, CreditCard } from 'lucide-react';
 import { Button } from '../ui/button';
+import { BillingSection } from '../dashboard/BillingSection';
+import { UserFinanceSection } from '../dashboard/UserFinanceSection';
 
 interface HostMenuProps {
     userName: string;
@@ -17,6 +19,7 @@ interface HostMenuProps {
 
 export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout }: HostMenuProps) {
     const [isSwitching, setIsSwitching] = useState(false);
+    const [view, setView] = useState<'main' | 'finance' | 'billing'>('main');
     const router = useRouter();
 
     const handleSwitchToTraveler = () => {
@@ -25,6 +28,34 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
             window.location.href = '/';
         }, 1500);
     };
+
+    if (view === 'billing') {
+        return (
+            <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                    <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                        <ChevronRight size={20} className="rotate-180 text-gray-600" />
+                    </button>
+                    <h1 className="text-2xl font-black text-[#222222]">Métodos de Pago</h1>
+                </div>
+                <BillingSection />
+            </div>
+        );
+    }
+
+    if (view === 'finance') {
+        return (
+            <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                    <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                        <ChevronRight size={20} className="rotate-180 text-gray-600" />
+                    </button>
+                    <h1 className="text-2xl font-black text-[#222222]">Mis Finanzas</h1>
+                </div>
+                <UserFinanceSection />
+            </div>
+        );
+    }
 
     return (
         <div className="pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
@@ -66,11 +97,14 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                {/* Revenue Card */}
-                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40">
+                {/* Revenue Card - Clickable to go to Finance */}
+                <div
+                    onClick={() => setView('finance')}
+                    className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40 cursor-pointer hover:border-black transition-colors"
+                >
                     <div>
-                        <h3 className="text-sm font-bold text-[#222222]">Ingresos</h3>
-                        <p className="text-xs text-gray-500 mt-1">Este mes:</p>
+                        <h3 className="text-sm font-bold text-[#222222]">Gastos</h3>
+                        <p className="text-xs text-gray-500 mt-1">Total invertido:</p>
                         <p className="text-lg font-black text-[#222222] tracking-tight">{revenue} COP</p>
                     </div>
                     {/* Fake Chart */}
@@ -87,36 +121,23 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                 {/* Info / Ratings Card */}
                 <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40">
                     <div>
-                        <h3 className="text-sm font-bold text-[#222222]">Info</h3>
-                        <p className="text-xs text-gray-500 mt-1">{reviewsCount} reseñas</p>
+                        <h3 className="text-sm font-bold text-[#222222]">Nivel</h3>
+                        <p className="text-xs text-gray-500 mt-1">Estado de cuenta</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-4xl font-black text-[#222222]">{rating?.toFixed(2)}</span>
+                        <span className="text-2xl font-black text-emerald-500">Activo</span>
                         <div className="flex text-[#222222]">★</div>
                     </div>
                 </div>
             </div>
 
-            {/* Promo Banner "Create new listing" */}
-            <div className="bg-[#F7F7F7] rounded-2xl p-4 flex gap-4 items-center mb-8 border border-gray-100">
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
-                    <Plus size={24} className="text-rose-500" />
-                </div>
-                <div>
-                    <h3 className="text-sm font-bold text-[#222222]">Crea un nuevo anuncio</h3>
-                    <p className="text-xs text-gray-500 leading-snug">Anfitriona un alojamiento, una Experiencia o un Servicio.</p>
-                </div>
-            </div>
-
             {/* Menu List */}
             <div className="space-y-1">
+                <MenuItem icon={CreditCard} label="Métodos de Pago" onClick={() => setView('billing')} />
                 <MenuItem icon={Settings} label="Configuración de la cuenta" />
                 <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />
                 <MenuItem icon={HelpCircle} label="Obtén ayuda" />
-                <MenuItem icon={Users} label="Encuentra un coanfitrión" />
-                <MenuItem icon={Plus} label="Crea un nuevo anuncio" />
-                <MenuItem icon={Users} label="Recomienda a un anfitrión" />
-                <MenuItem icon={LogOut} label="Cerrar Sessión" onClick={onLogout} isLast />
+                <MenuItem icon={LogOut} label="Cerrar Sesión" onClick={onLogout} isLast />
             </div>
 
             {/* Toggle Mode Button */}

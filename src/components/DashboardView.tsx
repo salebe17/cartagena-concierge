@@ -19,6 +19,7 @@ import { BottomNav } from "./host/BottomNav";
 import { HostServicesView } from "./host/HostServicesView";
 import { HostTodayView } from "./host/HostTodayView";
 import { HostMessagesView } from "./host/HostMessagesView";
+import { HostMenu } from "./host/HostMenu";
 import { signOut } from "@/app/actions/dashboard";
 
 interface DashboardViewProps {
@@ -37,7 +38,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     // Tab State: Unifying to Spanish IDs for consistency with BottomNav
-    const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'anuncios' | 'mensajes' | 'servicios'>('hoy');
+    const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'anuncios' | 'mensajes' | 'servicios' | 'menu'>('hoy');
     const { toast } = useToast();
 
     // Map legacy props or usage if needed, but we will stick to new tabs.
@@ -173,6 +174,15 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                 );
             case 'servicios':
                 return <HostServicesView properties={properties} />;
+            case 'menu':
+                return (
+                    <HostMenu
+                        userName={userName}
+                        onLogout={() => signOut()}
+                        // Pass mock revenue for now or calculated if available
+                        revenue="$1.2M"
+                    />
+                );
             default:
                 return null;
         }
@@ -194,8 +204,8 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                                 {tab === 'mensajes' ? 'Soporte' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
                         ))}
-                        <button onClick={() => setActiveTab('servicios')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                            <LayoutGrid size={20} />
+                        <button onClick={() => setActiveTab('menu')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                            <Menu size={20} />
                         </button>
                     </div>
                 </div>
