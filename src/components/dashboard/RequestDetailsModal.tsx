@@ -82,7 +82,7 @@ export function RequestDetailsModal({ request, triggerButton, onViewCalendar }: 
                         <InfoItem
                             icon={<Calendar size={14} />}
                             label="Fecha Solicitada"
-                            value={request.requested_date && mounted ? new Date(request.requested_date).toLocaleString() : (request.requested_date ? '--/--/----' : 'N/A')}
+                            value={request.requested_date && mounted ? new Date(request.requested_date).toLocaleString('es-CO', { timeZone: 'America/Bogota' }) : (request.requested_date ? '--/--/----' : 'N/A')}
                         />
                         <InfoItem
                             icon={<Clock size={14} />}

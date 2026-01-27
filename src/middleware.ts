@@ -15,6 +15,18 @@ export async function middleware(request: NextRequest) {
     // Also set it on response so client can see it
     response.headers.set('x-correlation-id', correlationId);
 
+    // LEVEL 15: Strict Security Headers
+    response.headers.set('X-Frame-Options', 'DENY'); // Prevent Clickjacking inside iframes
+    response.headers.set('X-Content-Type-Options', 'nosniff'); // Prevent Mime Sniffing
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains'); // HSTS (1 year)
+
+    // Content Security Policy (Basic)
+    // We allow scripts from 'self', 'unsafe-inline' (Next.js needs it sometimes), and Stripe/Supabase domains.
+    // In strict mode, we would use nonces.
+    const csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://*.supabase.co; connect-src 'self' https://*.supabase.co https://api.stripe.com;";
+    response.headers.set('Content-Security-Policy', csp);
+
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
