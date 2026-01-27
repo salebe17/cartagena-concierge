@@ -22,18 +22,31 @@ export async function POST(request: Request) {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
+        import { sanitizeInput } from '@/lib/utils';
+
+        // ...
+
         if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-        // Rate Limit Check (5 requests per minute)
-        const { data: allowed } = await supabase.rpc('check_rate_limit', {
-            p_user_id: user.id,
-            p_action_type: 'create_request',
-            p_max_count: 5
+        // LEVEL 11: Rate Limit Check (5 requests per minute per user)
+        const rateLimitKey = `req_create_${user.id}`;
+        const { data: allowed, error: rlError } = await supabase.rpc('check_rate_limit', {
+            p_key_prefix: rateLimitKey,
+            p_limit: 5,
+            p_window_seconds: 60
         });
 
-        if (allowed === false) {
-            return NextResponse.json({ success: false, error: 'Límite de solicitudes excedido. Espera un minuto.' }, { status: 429 });
+        if (rlError) {
+            console.error("Rate Limit RPC Error:", rlError);
+            // Fail open or closed? Closed for stress test.
         }
+
+        if (allowed === false) {
+            return NextResponse.json({ success: false, error: 'Has excedido el límite de solicitudes. Por favor espera un minuto.' }, { status: 429 });
+        }
+
+        // LEVEL 11: Input Sanitization
+        const cleanNotes = sanitizeInput(notes);
 
         // 1. Ownership Check
         const { data: property } = await supabase
@@ -86,7 +99,7 @@ export async function POST(request: Request) {
         const { error } = await supabase.from('service_requests').insert({
             property_id: propertyId,
             service_type: serviceType,
-            notes: notes,
+            notes: cleanNotes,
             requested_date: new Date(date).toISOString(),
             status: 'pending'
         });
