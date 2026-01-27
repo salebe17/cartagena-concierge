@@ -10,7 +10,7 @@ import { RequestDetailsModal } from "./dashboard/RequestDetailsModal";
 import { CalendarGrid } from "./admin/CalendarGrid";
 import { LogDetailsModal } from "./dashboard/LogDetailsModal";
 import { StaffManagementView } from "./admin/StaffManagementView";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminChatInbox } from "./chat/AdminChatInbox";
 import { MessageSquare as MessageIcon } from "lucide-react";
@@ -19,10 +19,16 @@ import { getAdminSystemStatus } from "@/app/actions/debug";
 import { DiagnosticOverlay } from "./debug/DiagnosticOverlay";
 
 function StatsOverview({ requests = [], staff = [] }: { requests: ServiceRequest[], staff: StaffMember[] }) {
-    const safeRequests = (requests || []).filter(r => r && typeof r === 'object');
-    const pending = safeRequests.filter(r => r.status === 'pending').length;
-    const active = safeRequests.filter(r => r.status === 'confirmed').length;
-    const completed = safeRequests.filter(r => r.status === 'completed').length;
+    const safeRequests = (requests || []);
+
+    // LEVEL 23: Memoize expensive aggregations
+    const { pending, active, completed } = React.useMemo(() => {
+        return {
+            pending: safeRequests.filter(r => r && r.status === 'pending').length,
+            active: safeRequests.filter(r => r && r.status === 'confirmed').length,
+            completed: safeRequests.filter(r => r && r.status === 'completed').length
+        };
+    }, [safeRequests]);
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
