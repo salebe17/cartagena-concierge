@@ -2,7 +2,7 @@
 
 import { ActionResponse, ServiceRequest } from '@/lib/types';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
-import { adminUpdateServiceStatus, forceSyncAllCalendars, adminCreateServiceRequest, assignStaffToRequest, getFinancialStats, getRevenueByProperty } from '@/app/actions/admin';
+import { adminCreateServiceRequest, assignStaffToRequest, getFinancialStats, getRevenueByProperty } from '@/app/actions/admin';
 import { getStaffMembers, StaffMember } from '@/app/admin/actions/staff_management';
 import { chargeServiceRequest } from '@/app/actions/billing';
 import { useToast } from '@/hooks/use-toast';
@@ -266,9 +266,22 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
 
     const handleSync = async () => {
         setIsSyncing(true);
-        const res = await forceSyncAllCalendars();
-        setIsSyncing(false);
-        if (res.success) toast({ title: "Sincronización Completada" });
+        try {
+            const res = await fetch('/api/admin/sync-calendar', {
+                method: 'POST'
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                toast({ title: "Sincronización Completada", description: json.message });
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
