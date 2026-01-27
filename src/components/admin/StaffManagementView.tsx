@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    getStaffMembers,
-    createStaffMember,
-    updateStaffMember,
-    deleteStaffMember,
-    StaffMember
-} from "@/app/admin/actions/staff_management";
+import { StaffMember } from "@/lib/types";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -79,24 +73,44 @@ export function StaffManagementView() {
             return;
         }
         setLoading(true);
-        const res = await createStaffMember(newStaff);
-        if (res.success) {
-            toast({ title: "Staff agregado", description: `${newStaff.full_name} ahora es parte del equipo.` });
-            setNewStaff({ full_name: "", role: "cleaner", phone: "", email: "" });
-            setIsAdding(false);
-            fetchStaff();
-        } else {
-            toast({ title: "Error", description: res.error, variant: "destructive" });
+
+        try {
+            const res = await fetch('/api/admin/staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newStaff)
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                toast({ title: "Staff agregado", description: `${newStaff.full_name} ahora es parte del equipo.` });
+                setNewStaff({ full_name: "", role: "cleaner", phone: "", email: "" });
+                setIsAdding(false);
+                fetchStaff();
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
         }
         setLoading(false);
     };
 
     const handleDelete = async (id: string, name: string) => {
         if (!confirm(`¿Estás seguro de eliminar a ${name}?`)) return;
-        const res = await deleteStaffMember(id);
-        if (res.success) {
-            toast({ title: "Staff eliminado", description: "Miembro removido correctamente." });
-            fetchStaff();
+
+        try {
+            const res = await fetch(`/api/admin/staff?id=${id}`, { method: 'DELETE' });
+            const json = await res.json();
+
+            if (json.success) {
+                toast({ title: "Staff eliminado", description: "Miembro removido correctamente." });
+                fetchStaff();
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
         }
     };
 

@@ -1,8 +1,7 @@
 "use client";
 
-import { ActionResponse, ServiceRequest } from '@/lib/types';
+import { ActionResponse, ServiceRequest, StaffMember } from '@/lib/types';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
-import { getStaffMembers, StaffMember } from '@/app/admin/actions/staff_management';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Wrench, Ship, Clock, RefreshCw, CheckCircle2, User, Home, UserPlus, ExternalLink, Calendar as CalendarIcon, Copy, Users, Check, CreditCard, Loader2, X, TrendingUp, DollarSign, Wallet, MapPin } from 'lucide-react';
 import { Button } from "./ui/button";
