@@ -132,6 +132,7 @@ export async function createServiceRequest(formData: FormData): Promise<ActionRe
         // 2. Insert Request
         const { error } = await supabase.from('service_requests').insert({
             property_id: propertyId,
+            requester_id: user.id, // REQUIRED for RLS Policy
             service_type: serviceType,
             notes: notes,
             requested_date: new Date(date).toISOString(),

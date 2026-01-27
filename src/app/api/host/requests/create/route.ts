@@ -99,6 +99,7 @@ export async function POST(request: Request) {
         // 3. Insert
         const { error } = await supabase.from('service_requests').insert({
             property_id: propertyId,
+            requester_id: user.id, // REQUIRED for RLS Policy
             service_type: serviceType,
             notes: cleanNotes,
             requested_date: new Date(date).toISOString(),
