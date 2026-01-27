@@ -8,8 +8,6 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { id, status } = body;
 
-        const { id, status } = body;
-
         if (!id || !status) {
             return NextResponse.json({ success: false, error: "Missing parameters" }, { status: 400 });
         }
