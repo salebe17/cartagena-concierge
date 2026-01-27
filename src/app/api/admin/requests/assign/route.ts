@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         // 1. Validate Request Status
         const { data: requestRequest } = await dbClient
             .from('service_requests')
-            .select('status')
+            .select('status, requested_date')
             .eq('id', requestId)
             .single();
 
