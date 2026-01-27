@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check, CheckCheck, User } from "lucide-react";
 
 import { Message } from "@/lib/types";
+import Image from "next/image";
 
 interface ChatBubbleProps {
     message: Message;
@@ -48,12 +49,13 @@ export function ChatBubble({ message, isMe, senderName }: ChatBubbleProps) {
                 >
                     {/* Media Render: IMAGE */}
                     {message.media_url && message.media_type === 'image' && (
-                        <div className="mb-2 rounded-lg overflow-hidden max-w-full">
-                            <img
+                        <div className="mb-2 relative w-full h-48 rounded-lg overflow-hidden cursor-pointer" onClick={() => window.open(message.media_url, '_blank')}>
+                            <Image
                                 src={message.media_url}
                                 alt="Shared image"
-                                className="object-cover max-h-60 w-full hover:scale-105 transition-transform cursor-pointer"
-                                onClick={() => window.open(message.media_url, '_blank')}
+                                fill
+                                className="object-cover hover:scale-105 transition-transform"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                         </div>
                     )}
