@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft, Ship, CreditCard } from 'lucide-react';
+import { Bell, User, ChevronRight, Settings, BookOpen, HelpCircle, Users, Plus, LogOut, ArrowRightLeft, Ship, CreditCard, Home } from 'lucide-react';
 import { Button } from '../ui/button';
 import { BillingSection } from '../dashboard/BillingSection';
 import { UserFinanceSection } from '../dashboard/UserFinanceSection';
@@ -15,11 +15,12 @@ interface HostMenuProps {
     rating?: number;
     reviewsCount?: number;
     onLogout: () => void;
+    properties?: any[]; // Allow properties to be passed
 }
 
-export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout }: HostMenuProps) {
+export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout, properties = [] }: HostMenuProps) {
     const [isSwitching, setIsSwitching] = useState(false);
-    const [view, setView] = useState<'main' | 'finance' | 'billing'>('main');
+    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties'>('main');
     const router = useRouter();
 
     const handleSwitchToTraveler = () => {
@@ -39,6 +40,41 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                     <h1 className="text-2xl font-black text-[#222222]">Métodos de Pago</h1>
                 </div>
                 <BillingSection />
+            </div>
+        );
+    }
+
+    if (view === 'properties') {
+        return (
+            <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
+                <div className="flex items-center gap-4 mb-6">
+                    <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                        <ChevronRight size={20} className="rotate-180 text-gray-600" />
+                    </button>
+                    <h1 className="text-2xl font-black text-[#222222]">Mis Propiedades</h1>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                    {/* Minimal Property List */}
+                    {properties.map((prop: any) => (
+                        <div key={prop.id} className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex gap-4">
+                            <div className="w-24 h-24 rounded-2xl bg-gray-200 relative overflow-hidden shrink-0">
+                                <img src={prop.image_url || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=100"} alt={prop.title} className="object-cover w-full h-full" />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                                <h3 className="font-bold text-[#222222]">{prop.title}</h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className={`w-2 h-2 rounded-full ${prop.status === 'occupied' ? 'bg-indigo-500' : 'bg-green-500'}`}></div>
+                                    <span className="text-xs text-gray-500">{prop.status === 'occupied' ? 'Ocupado' : 'Disponible'}</span>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2 line-clamp-1">{prop.address || 'Cartagena, Colombia'}</p>
+                            </div>
+                        </div>
+                    ))}
+                    <div className="p-4 text-center">
+                        <p className="text-sm text-gray-500">Para editar tus propiedades, contáctanos.</p>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -133,6 +169,7 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
 
             {/* Menu List */}
             <div className="space-y-1">
+                <MenuItem icon={Home} label="Mis Propiedades" onClick={() => setView('properties')} />
                 <MenuItem icon={CreditCard} label="Métodos de Pago" onClick={() => setView('billing')} />
                 <MenuItem icon={Settings} label="Configuración de la cuenta" />
                 <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />

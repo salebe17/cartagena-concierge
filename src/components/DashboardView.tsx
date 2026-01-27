@@ -182,6 +182,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                         onLogout={() => signOut()}
                         // Pass mock revenue for now or calculated if available
                         revenue="$1.2M"
+                        properties={properties}
                     />
                 );
             default:
