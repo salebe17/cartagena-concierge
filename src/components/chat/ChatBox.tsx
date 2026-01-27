@@ -164,8 +164,18 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
         const receiverId = isAdmin ? userId : undefined;
 
         // Optimistic update could go here, but let's wait for server for safety
+        if (!navigator.onLine) {
+            alert("No tienes conexión a internet. El mensaje no se pudo enviar.");
+            setSending(false);
+            return;
+        }
+
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
             const res = await fetch('/api/chat/send', {
+                signal: controller.signal,
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -177,14 +187,21 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
                 })
             });
 
+            clearTimeout(timeoutId);
             const json = await res.json();
             if (json.success) {
                 setInput('');
             } else {
                 console.error("Send failed:", json.error);
+                alert("Error al enviar mensaje: " + json.error);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Send error:", err);
+            if (err.name === 'AbortError') {
+                alert("El envío tardó demasiado. Por favor, verifica tu conexión.");
+            } else {
+                alert("Error de red. Intenta nuevamente.");
+            }
         }
 
         setSending(false);
@@ -198,7 +215,7 @@ export function ChatBox({ requestId, userId, currentUserId, isAdmin, className =
         try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}.${fileExt}`;
-            const filePath = `chat/${fileName}`;
+            const filePath = `${currentUserId}/${fileName}`; // ISOLATION: User ID folder
 
             const { error: uploadError } = await supabase.storage
                 .from('chat-media') // Ensure this bucket exists!
