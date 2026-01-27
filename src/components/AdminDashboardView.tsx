@@ -2,9 +2,7 @@
 
 import { ActionResponse, ServiceRequest } from '@/lib/types';
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
-import { adminCreateServiceRequest, assignStaffToRequest, getFinancialStats, getRevenueByProperty } from '@/app/actions/admin';
 import { getStaffMembers, StaffMember } from '@/app/admin/actions/staff_management';
-import { chargeServiceRequest } from '@/app/actions/billing';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Wrench, Ship, Clock, RefreshCw, CheckCircle2, User, Home, UserPlus, ExternalLink, Calendar as CalendarIcon, Copy, Users, Check, CreditCard, Loader2, X, TrendingUp, DollarSign, Wallet, MapPin } from 'lucide-react';
 import { Button } from "./ui/button";
@@ -310,28 +308,70 @@ export function AdminDashboardView({ requests: initialRequests, bookings: initia
     };
 
     const handleAssignStaff = async (requestId: string, staffId: string) => {
-        const res = await assignStaffToRequest(requestId, staffId);
-        if (res.success) {
-            setRequests(prev => prev.map(r => r.id === requestId ? { ...r, assigned_staff_id: staffId } : r));
-            toast({ title: "Staff Asignado" });
+        try {
+            const res = await fetch('/api/admin/requests/assign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId, staffId })
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                setRequests(prev => prev.map(r => r.id === requestId ? { ...r, assigned_staff_id: staffId } : r));
+                toast({ title: "Staff Asignado" });
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
         }
     };
 
     const handleCharge = async (requestId: string) => {
         setIsCharging(requestId);
-        const res = await chargeServiceRequest(requestId);
-        setIsCharging(null);
-        if (res.success) toast({ title: "Pago Procesado" });
+        try {
+            const res = await fetch('/api/admin/billing/charge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId })
+            });
+            const json = await res.json();
+
+            if (json.success) {
+                toast({ title: "Pago Procesado" });
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
+        } finally {
+            setIsCharging(null);
+        }
     };
 
     const handleScheduleCleaning = async (booking: any) => {
-        const res = await adminCreateServiceRequest({
-            property_id: booking.property_id,
-            service_type: 'cleaning',
-            notes: `Limpieza automatica salida: ${booking.guest_name}`,
-            requested_date: new Date(booking.end_date).toISOString()
-        });
-        if (res.success && res.data) setRequests(prev => [res.data, ...prev]);
+        try {
+            const res = await fetch('/api/admin/requests/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    property_id: booking.property_id,
+                    service_type: 'cleaning',
+                    notes: `Limpieza automatica salida: ${booking.guest_name}`,
+                    requested_date: new Date(booking.end_date).toISOString()
+                })
+            });
+            const json = await res.json();
+
+            if (json.success && json.data) {
+                setRequests(prev => [json.data, ...prev]);
+                toast({ title: "Limpieza Programada" });
+            } else {
+                toast({ title: "Error", description: json.error, variant: "destructive" });
+            }
+        } catch (e) {
+            toast({ title: "Error de Conexión", variant: "destructive" });
+        }
     };
 
     const getIcon = (type: string) => {
