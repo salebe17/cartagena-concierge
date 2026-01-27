@@ -32,6 +32,12 @@ export default function Error({
                     No pudimos cargar tus datos en este momento. Puede ser un problema temporal de red o una actualización del sistema.
                 </p>
 
+                <div className="bg-red-50 p-3 rounded-lg text-left text-xs mb-6 border border-red-100">
+                    <p className="font-bold text-red-800 mb-1">Detalles técnicos (Soporte):</p>
+                    <p className="font-mono text-red-600 break-all">{error.message}</p>
+                    {error.digest && <p className="font-mono text-red-400 mt-1">ID: {error.digest}</p>}
+                </div>
+
                 <div className="space-y-3">
                     <Button
                         onClick={() => reset()}
