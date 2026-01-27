@@ -80,11 +80,11 @@ export async function middleware(request: NextRequest) {
                 .single();
 
             const maintenance = settings?.value;
-            // Allow ONLY admin email to bypass
-            if (maintenance?.enabled && (!user || user.email !== 'admin@cartagenaconcierge.com')) {
-                // Secondary check for admin role if user exists
+            // Allow ONLY admin role to bypass
+            if (maintenance?.enabled) {
                 let isAdmin = false;
                 if (user) {
+                    // Check profile role
                     const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
                     if (profile?.role === 'admin') isAdmin = true;
                 }
