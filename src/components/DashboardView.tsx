@@ -198,13 +198,13 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     <h1 className="text-xl font-black tracking-tighter">Cartagena<span className="text-rose-500">Concierge</span></h1>
                     <div className="flex gap-4">
                         <div className="flex gap-4">
-                            {['hoy', 'calendario', 'finanzas', 'mensajes'].map(tab => (
+                            {['hoy', 'calendario', 'anuncios', 'mensajes'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab as any)}
                                     className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${activeTab === tab ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}
                                 >
-                                    {tab === 'mensajes' ? 'Soporte' : tab === 'finanzas' ? 'Billetera' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    {tab === 'mensajes' ? 'Soporte' : tab.charAt(0).toUpperCase() + tab.slice(1)}
                                 </button>
                             ))}
                             <button onClick={() => setActiveTab('menu')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">

@@ -169,7 +169,6 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
 
             {/* Menu List */}
             <div className="space-y-1">
-                <MenuItem icon={Home} label="Mis Propiedades" onClick={() => setView('properties')} />
                 <MenuItem icon={CreditCard} label="Métodos de Pago" onClick={() => setView('billing')} />
                 <MenuItem icon={Settings} label="Configuración de la cuenta" />
                 <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />

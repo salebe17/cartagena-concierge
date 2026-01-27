@@ -12,7 +12,7 @@ export function BottomNav({ activeTab, onChange, unreadMessages = 0 }: BottomNav
     const navItems = [
         { id: 'hoy', label: 'Hoy', icon: Home },
         { id: 'calendario', label: 'Calendario', icon: Calendar },
-        { id: 'finanzas', label: 'Billetera', icon: Wallet },
+        { id: 'anuncios', label: 'Anuncios', icon: NotebookPen },
         { id: 'mensajes', label: 'Soporte', icon: MessageSquare },
         { id: 'menu', label: 'Menú', icon: Menu },
     ];
