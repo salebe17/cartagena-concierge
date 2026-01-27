@@ -15,6 +15,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Missing fields" }, { status: 400 });
         }
 
+        if (notes && notes.length > 500) {
+            return NextResponse.json({ success: false, error: "Las notas no pueden exceder 500 caracteres." }, { status: 400 });
+        }
+
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 

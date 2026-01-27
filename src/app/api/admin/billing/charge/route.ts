@@ -34,8 +34,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Request not found" }, { status: 404 });
         }
 
-        if (reqData.status === 'completed' || reqData.status === 'paid') {
-            return NextResponse.json({ success: false, error: "Esta solicitud ya fue pagada." }, { status: 400 });
+        if (reqData.status === 'completed' || reqData.status === 'paid' || reqData.status === 'cancelled') {
+            return NextResponse.json({ success: false, error: "Esta solicitud no puede ser cobrada (Completada/Pagada/Cancelada)." }, { status: 400 });
         }
 
         const ownerId = (reqData.properties as any).owner_id;

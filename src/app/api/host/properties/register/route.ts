@@ -17,6 +17,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
         }
 
+        if (title.length > 100 || address.length > 200) {
+            return NextResponse.json({ success: false, error: "Título (100) o Dirección (200) exceden el límite." }, { status: 400 });
+        }
+
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });

@@ -19,6 +19,28 @@ export async function POST(request: Request) {
         // Admin Check (Optional but recommended)
         const dbClient = await createAdminClient(); // Use admin client to ensure we can write ignoring some RLS if strict
 
+        // 1. Validate Request Status
+        const { data: requestRequest } = await dbClient
+            .from('service_requests')
+            .select('status')
+            .eq('id', requestId)
+            .single();
+
+        if (requestRequest?.status === 'completed' || requestRequest?.status === 'cancelled') {
+            return NextResponse.json({ success: false, error: "No se puede asignar personal a una solicitud cerrada." }, { status: 400 });
+        }
+
+        // 2. Validate Staff Status
+        const { data: staffMember } = await dbClient
+            .from('staff_members')
+            .select('status')
+            .eq('id', staffId)
+            .single();
+
+        if (staffMember?.status !== 'active') {
+            return NextResponse.json({ success: false, error: "El miembro del staff no está activo." }, { status: 400 });
+        }
+
         const { error } = await dbClient
             .from('service_requests')
             .update({ assigned_staff_id: staffId })
