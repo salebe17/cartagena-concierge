@@ -1,26 +1,26 @@
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { AlertCircle } from 'lucide-react'
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { MapPinOff, Home } from 'lucide-react';
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center">
-            <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800">
-                <AlertCircle className="w-12 h-12 text-[#D4AF37]" />
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6 text-center">
+            <div className="w-24 h-24 bg-gray-50 rounded-3xl flex items-center justify-center mb-8 rotate-12 shadow-sm border border-gray-100">
+                <MapPinOff size={48} className="text-gray-300" />
             </div>
 
-            <h1 className="text-4xl font-serif font-bold text-white mb-2">404</h1>
-            <h2 className="text-xl font-medium text-zinc-400 mb-6">Página No Encontrada</h2>
-
-            <p className="text-zinc-500 max-w-sm mb-8">
-                La ruta que buscas no existe o ha sido movida. Regresa a la zona segura.
+            <h1 className="text-8xl font-black text-gray-900 mb-4 tracking-tighter">404</h1>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Destino Desconocido</h2>
+            <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                La página que buscas no está en nuestro mapa. Permítenos llevarte de vuelta a la civilización.
             </p>
 
-            <Button asChild className="bg-[#D4AF37] hover:bg-[#b5952f] text-black font-bold h-12 px-8 rounded-full">
-                <Link href="/dashboard">
-                    Regresar al Dashboard
-                </Link>
-            </Button>
+            <Link href="/">
+                <Button className="bg-black text-white font-bold rounded-2xl h-14 px-8 text-lg hover:scale-105 transition-transform">
+                    <Home size={20} className="mr-2" />
+                    Regresar a Casa
+                </Button>
+            </Link>
         </div>
-    )
+    );
 }
