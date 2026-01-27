@@ -41,6 +41,26 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: "El miembro del staff no está activo." }, { status: 400 });
         }
 
+        // 3. Workload Check (Prevent burnout/impossible schedules)
+        if (requestRequest?.requested_date) {
+            const reqDate = new Date(requestRequest.requested_date);
+            const startDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate()).toISOString();
+            const endDay = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate(), 23, 59, 59).toISOString();
+
+            const { count } = await dbClient
+                .from('service_requests')
+                .select('id', { count: 'exact', head: true })
+                .eq('assigned_staff_id', staffId)
+                .neq('status', 'cancelled')
+                .neq('status', 'completed')
+                .gte('requested_date', startDay)
+                .lte('requested_date', endDay);
+
+            if (count && count >= 3) {
+                return NextResponse.json({ success: false, error: "Este empleado ya tiene 3 tareas activas para esa fecha. (Límite diario)" }, { status: 400 });
+            }
+        }
+
         const { error } = await dbClient
             .from('service_requests')
             .update({ assigned_staff_id: staffId })
