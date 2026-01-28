@@ -10,6 +10,7 @@ import { UserFinanceSection } from '../dashboard/UserFinanceSection';
 import { HostFinanceView } from './HostFinanceView';
 import { MarketplaceView } from './marketplace/MarketplaceView';
 import { HelpView } from './help/HelpView';
+import { HostSettingsView } from './settings/HostSettingsView';
 
 interface HostMenuProps {
     userName: string;
@@ -85,6 +86,16 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                     </div>
                 </div>
             </div>
+        );
+    }
+
+    if (view === 'settings') {
+        return (
+            <HostSettingsView
+                onBack={() => setView('main')}
+                userName={userName}
+                userImage={userImage}
+            />
         );
     }
 
@@ -193,7 +204,7 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
 
             <div className="space-y-1">
                 <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
-                <MenuItem icon={Settings} label="Configuración de la cuenta" />
+                <MenuItem icon={Settings} label="Configuración de la cuenta" onClick={() => setView('settings')} />
                 <MenuItem icon={BookOpen} label="Aliados VIP & Recursos" onClick={() => setView('resources')} />
                 <MenuItem icon={HelpCircle} label="Obtén ayuda" onClick={() => setView('help')} />
                 <MenuItem icon={LogOut} label="Cerrar Sesión" onClick={onLogout} isLast />
