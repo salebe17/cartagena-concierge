@@ -9,10 +9,14 @@ let stripeInstance: Stripe | null = null;
 
 export const getStripe = () => {
     if (!stripeInstance) {
-        if (!process.env.STRIPE_SECRET_KEY) {
-            console.warn("STRIPE_SECRET_KEY is missing. Stripe calls will fail.");
+        // Reverting to Env Var to pass GitHub Security Scan
+        const secretKey = process.env.STRIPE_SECRET_KEY;
+
+        if (!secretKey) {
+            console.error("FATAL: STRIPE_SECRET_KEY is undefined. Check Vercel Env Vars.");
         }
-        stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY || 'MISSING_KEY', {
+
+        stripeInstance = new Stripe(secretKey || 'MISSING_KEY', {
             apiVersion: '2025-01-27.acacia' as any,
             appInfo: {
                 name: 'Cartagena Concierge',
