@@ -69,42 +69,20 @@ export function WalletGuard({ onUnlock, onClose }: WalletGuardProps) {
     const handleBiometricScan = async () => {
         setIsChecking(true);
 
-        // WEB AUTHENTICATION API (TRUE BIOMETRICS)
-        // This attempts to use the platform authenticator (FaceID / TouchID)
-        // Note: The user handles the "setup" via the browser's native flow usually.
-        // If not set up, we simulate a scan or show error.
+        try {
+            const { verifyBiometrics } = await import('@/lib/biometrics');
+            await verifyBiometrics();
 
-        if (window.PublicKeyCredential) {
-            try {
-                // We try to "get" a credential. 
-                // In a real flow, we need a `challenge` from server and `allowCredentials` list.
-                // Without that, we can't do a REAL "Authentication" against a specific user.
-                // However, for the "Effect" of biometrics in a PWA MVP, we can try a Conditional UI 
-                // or just fallback to simulation for now avoiding the complex backend setup.
-                //
-                // For this specific User Request ("Verdadera autenticación"), they really want to see the FaceID prompt.
-                // The only way to trigger native prompt without pre-registered creds is maybe `navigator.credentials.create` (registration flow) 
-                // used creatively, but that confuses users ("Do you want to key?").
+            // If function returns (didn't throw), it means user successfully verified presence!
+            toast({ title: "Identidad Confirmada", className: "bg-emerald-50 text-emerald-600 border-none" });
+            onUnlock();
 
-                // FALLBACK STRATEGY: 
-                // Since we don't have a backend WebAuthn server running yet, we simulate the UX 
-                // of a successful scan if they click this, assuming the DEVICE itself is secure.
-
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                // If we assume device owner is present:
-                onUnlock();
-
-            } catch (e) {
-                console.error(e);
-                toast({ title: "No se detectó biometría", description: "Usa el PIN de seguridad.", variant: "destructive" });
-            }
-        } else {
-            // No hardware support
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            toast({ title: "Dispositivo no compatible", description: "Usa el PIN de seguridad.", variant: "destructive" });
+        } catch (e) {
+            console.error(e);
+            toast({ title: "Error Biométrico", description: "Usa el PIN o intenta nuevamente.", variant: "destructive" });
+        } finally {
+            setIsChecking(false);
         }
-        setIsChecking(false);
     };
 
     return (
@@ -132,10 +110,10 @@ export function WalletGuard({ onUnlock, onClose }: WalletGuardProps) {
                         <div
                             key={i}
                             className={`w-4 h-4 rounded-full transition-all duration-300 ${digit !== ''
-                                    ? 'bg-rose-500 scale-110'
-                                    : error
-                                        ? 'bg-rose-200 animate-shake'
-                                        : 'bg-gray-200'
+                                ? 'bg-rose-500 scale-110'
+                                : error
+                                    ? 'bg-rose-200 animate-shake'
+                                    : 'bg-gray-200'
                                 }`}
                         />
                     ))}

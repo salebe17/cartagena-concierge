@@ -57,16 +57,36 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
         }
     };
 
-    const handleBiometricToggle = (enabled: boolean) => {
-        setBiometricEnabled(enabled);
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('biometric_enabled', enabled ? 'true' : 'false');
-        }
-
+    const handleBiometricToggle = async (enabled: boolean) => {
         if (enabled) {
-            toast({ title: "Privacidad Activada", description: "Tu saldo ahora está protegido con huella." });
+            // Try to register biometrics first
+            try {
+                // We need to import dynamically or ensure it runs on client
+                const { registerBiometrics } = await import('@/lib/biometrics');
+                toast({ title: "Configurando FaceID/Huella", description: "Por favor confirma en tu dispositivo..." });
+
+                await registerBiometrics();
+
+                // If successful, save state
+                setBiometricEnabled(true);
+                localStorage.setItem('biometric_enabled', 'true');
+                toast({ title: "Biometría Activada", description: "Tu Billetera está protegida." });
+
+            } catch (e: any) {
+                console.error(e);
+                setBiometricEnabled(false); // Revert
+                // Special handling for cancellation or not supported
+                toast({
+                    title: "No se pudo activar",
+                    description: "Tu dispostivo canceló el registro o no es compatible.",
+                    variant: "destructive"
+                });
+            }
         } else {
-            toast({ title: "Privacidad Desactivada", description: "Cualquiera con tu teléfono puede ver tu saldo." });
+            // Disabling is simple
+            setBiometricEnabled(false);
+            localStorage.setItem('biometric_enabled', 'false');
+            toast({ title: "Seguridad Desactivada", description: "Billetera visible sin PIN." });
         }
     };
 
