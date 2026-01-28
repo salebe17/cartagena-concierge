@@ -21,23 +21,33 @@ export default async function DashboardPage() {
     // 2. Fetch User Profile Name (or fallback to metadata)
     const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, avatar_url, phone, bio')
         .eq('id', user.id)
         .single();
 
     const userName = profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Anfitrión";
+    const userFullName = profile?.full_name || user.user_metadata?.full_name || "Anfitrión";
     const userImage = profile?.avatar_url || user.user_metadata?.avatar_url;
+    const userPhone = profile?.phone;
+    const userBio = profile?.bio;
 
     // 3. Render View with Suspense
     return (
         <Suspense fallback={<DashboardSkeleton />}>
-            <DashboardContent userName={userName} userImage={userImage} currentUserId={user.id} />
+            <DashboardContent
+                userName={userName}
+                userFullName={userFullName}
+                userImage={userImage}
+                userPhone={userPhone}
+                userBio={userBio}
+                currentUserId={user.id}
+            />
         </Suspense>
     );
 }
 
 // Wrapper component to handle data fetching inside Suspense
-async function DashboardContent({ userName, userImage, currentUserId }: { userName: string, userImage?: string, currentUserId: string }) {
+async function DashboardContent({ userName, userFullName, userImage, userPhone, userBio, currentUserId }: { userName: string, userFullName: string, userImage?: string, userPhone?: string, userBio?: string, currentUserId: string }) {
     const [properties, alerts, bookings, services] = await Promise.all([
         getUserPropertiesBySession(),
         getUserAlerts(),
@@ -48,7 +58,10 @@ async function DashboardContent({ userName, userImage, currentUserId }: { userNa
     return (
         <DashboardView
             userName={userName}
+            userFullName={userFullName}
             userImage={userImage}
+            userPhone={userPhone}
+            userBio={userBio}
             currentUserId={currentUserId}
             properties={properties}
             alerts={alerts}

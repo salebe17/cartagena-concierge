@@ -11,9 +11,11 @@ interface HostSettingsViewProps {
     onBack: () => void;
     userImage?: string;
     userName?: string;
+    userPhone?: string;
+    userBio?: string;
 }
 
-export function HostSettingsView({ onBack, userImage, userName }: HostSettingsViewProps) {
+export function HostSettingsView({ onBack, userImage, userName, userPhone, userBio }: HostSettingsViewProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     // Persist biometric preference in localStorage
@@ -28,17 +30,29 @@ export function HostSettingsView({ onBack, userImage, userName }: HostSettingsVi
     // Manage profile state locally for editing
     const [profile, setProfile] = useState({
         name: userName || 'Anfitrión',
-        phone: '+57 300 123 4567',
-        bio: 'Superhost apasionado por el servicio.',
+        phone: userPhone || '',
+        bio: userBio || 'Superhost apasionado por el servicio.',
         avatar: userImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
     });
 
     const handleSaveProfile = async () => {
         setIsLoading(true);
-        // Here we would sync with Supabase profiles table
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        toast({ title: "Perfil Actualizado", description: "Los cambios se han guardado correctamente." });
+        try {
+            const { updateProfileInfo } = await import('@/app/actions/profile');
+            const result = await updateProfileInfo({
+                name: profile.name,
+                phone: profile.phone,
+                bio: profile.bio
+            });
+
+            if (!result.success) throw new Error(result.error);
+
+            toast({ title: "Perfil Actualizado", description: "Los cambios se han guardado correctamente." });
+        } catch (error: any) {
+            toast({ title: "Error", description: "No se pudieron guardar los cambios", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleBiometricToggle = (enabled: boolean) => {

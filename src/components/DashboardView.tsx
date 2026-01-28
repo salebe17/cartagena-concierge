@@ -25,7 +25,10 @@ import { signOut } from "@/app/actions/dashboard";
 
 interface DashboardViewProps {
     userName: string;
+    userFullName: string;
     userImage?: string;
+    userPhone?: string;
+    userBio?: string;
     currentUserId: string;
     properties: Property[];
     alerts?: AlertItem[];
@@ -36,7 +39,7 @@ interface DashboardViewProps {
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
-export function DashboardView({ userName, userImage, currentUserId, properties, alerts = [], serviceHistory = null, bookings = [], services = [] }: DashboardViewProps) {
+export function DashboardView({ userName, userFullName, userImage, userPhone, userBio, currentUserId, properties, alerts = [], serviceHistory = null, bookings = [], services = [] }: DashboardViewProps) {
     // Modal States
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     // Tab State: Unifying to Spanish IDs for consistency with BottomNav
@@ -213,7 +216,10 @@ export function DashboardView({ userName, userImage, currentUserId, properties, 
                 return (
                     <HostMenu
                         userName={userName}
+                        userFullName={userFullName}
                         userImage={userImage}
+                        userPhone={userPhone}
+                        userBio={userBio}
                         onLogout={() => signOut()}
                         // Pass mock revenue for now or calculated if available
                         revenue="$1.2M"
