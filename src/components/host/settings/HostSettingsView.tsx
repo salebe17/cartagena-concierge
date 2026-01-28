@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface HostSettingsViewProps {
     onBack: () => void;
@@ -57,49 +58,11 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
         }
     };
 
-    const handleBiometricToggle = async (enabled: boolean) => {
-        if (enabled) {
-            setIsLoading(true);
-            try {
-                const { registerBiometrics, checkBiometricCapability } = await import('@/lib/biometrics');
+    import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-                // 1. Check if device is capable
-                const canBio = await checkBiometricCapability();
-                if (!canBio) {
-                    throw new Error("❌ Tu celular no tiene bloqueo seguro configurado. Ve a Ajustes > Seguridad en tu Android/iOS y configura un PIN o Huella primero.");
-                }
-
-                toast({ title: "Configurando...", description: "Usa tu huella/rostro para crear la llave de acceso." });
-
-                // 2. Register
-                const credentialId = await registerBiometrics();
-
-                // 3. Save
-                setBiometricEnabled(true);
-                localStorage.setItem('biometric_enabled', 'true');
-                localStorage.setItem('biometric_cred_id', credentialId); // Save ID for future reference
-
-                toast({ title: "✅ Seguridad Activada", description: "Tu Billetera está blindada con biometría." });
-
-            } catch (e: any) {
-                console.error(e);
-                setBiometricEnabled(false);
-                toast({
-                    title: "Error de Activación",
-                    description: e.message || "No se pudo completar el registro.",
-                    variant: "destructive",
-                    duration: 5000
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        } else {
-            setBiometricEnabled(false);
-            localStorage.setItem('biometric_enabled', 'false');
-            localStorage.removeItem('biometric_cred_id');
-            toast({ title: "Seguridad Desactivada", description: "Billetera visible sin seguridad." });
-        }
-    };
+    // ... (rest of imports are below, but I should use a cleaner replace strategy)
+    // Actually, I can just replace the top import block AND remove the function.
+    // But MultiReplace is safer for disjoint changes.
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
