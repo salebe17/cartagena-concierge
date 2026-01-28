@@ -81,7 +81,7 @@ export async function verifyBiometrics(storedCredentialId?: string | null) {
     if (storedCredentialId) {
         try {
             publicKey.allowCredentials = [{
-                id: base64UrlToUint8Array(storedCredentialId),
+                id: base64UrlToUint8Array(storedCredentialId) as BufferSource,
                 type: 'public-key',
                 transports: ['internal', 'hybrid'] // 'internal' usually targets built-in sensors
             }];
