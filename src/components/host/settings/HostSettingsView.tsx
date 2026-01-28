@@ -57,15 +57,41 @@ export function HostSettingsView({ onBack, userImage, userName }: HostSettingsVi
         if (!file) return;
 
         setIsUploading(true);
-        // Simulate upload delay and success since we might not have the full Supabase client context here yet
-        // In a real implementation: const { data } = await supabase.storage.from('avatars').upload(...)
 
-        setTimeout(() => {
-            const fakeUrl = URL.createObjectURL(file);
-            setProfile(prev => ({ ...prev, avatar: fakeUrl }));
+        try {
+            // Client-side upload logic would go here, but for simplicity/robustness without client setup in this file:
+            // We'll use a direct fetch or existing client if imported.
+            // Assuming we need to import createClient from local utils
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+            // Save to DB
+            const { updateProfileAvatar } = await import('@/app/actions/profile');
+            const result = await updateProfileAvatar(publicUrl);
+
+            if (!result.success) throw new Error(result.error);
+
+            setProfile(prev => ({ ...prev, avatar: publicUrl }));
+            toast({ title: "Foto Actualizada", description: "Tu nueva foto de perfil se ha guardado." });
+
+            // Should refresh the page or parent to update the menu icon too
+            window.location.reload();
+
+        } catch (error: any) {
+            toast({ title: "Error", description: error.message || "No se pudo subir la imagen", variant: "destructive" });
+        } finally {
             setIsUploading(false);
-            toast({ title: "Foto Actualizada", description: "Tu nueva foto de perfil está visible." });
-        }, 1500);
+        }
     };
 
     return (

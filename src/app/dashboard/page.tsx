@@ -21,22 +21,23 @@ export default async function DashboardPage() {
     // 2. Fetch User Profile Name (or fallback to metadata)
     const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, avatar_url')
         .eq('id', user.id)
         .single();
 
     const userName = profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Anfitrión";
+    const userImage = profile?.avatar_url || user.user_metadata?.avatar_url;
 
     // 3. Render View with Suspense
     return (
         <Suspense fallback={<DashboardSkeleton />}>
-            <DashboardContent userName={userName} currentUserId={user.id} />
+            <DashboardContent userName={userName} userImage={userImage} currentUserId={user.id} />
         </Suspense>
     );
 }
 
 // Wrapper component to handle data fetching inside Suspense
-async function DashboardContent({ userName, currentUserId }: { userName: string, currentUserId: string }) {
+async function DashboardContent({ userName, userImage, currentUserId }: { userName: string, userImage?: string, currentUserId: string }) {
     const [properties, alerts, bookings, services] = await Promise.all([
         getUserPropertiesBySession(),
         getUserAlerts(),
@@ -47,6 +48,7 @@ async function DashboardContent({ userName, currentUserId }: { userName: string,
     return (
         <DashboardView
             userName={userName}
+            userImage={userImage}
             currentUserId={currentUserId}
             properties={properties}
             alerts={alerts}
