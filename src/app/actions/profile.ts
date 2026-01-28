@@ -1,10 +1,11 @@
 'use server';
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfileAvatar(avatarUrl: string) {
-    const supabase = await createClient();
+    const supabase = await createClient(); // Keep normal client for auth check
+    const adminDb = await createAdminClient(); // Admin for writing
 
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -12,9 +13,9 @@ export async function updateProfileAvatar(avatarUrl: string) {
         return { success: false, error: "Unauthorized" };
     }
 
-    // 1. Update Profiles Table
+    // 1. Update Profiles Table (Using Admin to bypass infinite recursion/RLS)
     try {
-        const { error: profileError } = await supabase
+        const { error: profileError } = await adminDb
             .from('profiles')
             .upsert({
                 id: user.id,
