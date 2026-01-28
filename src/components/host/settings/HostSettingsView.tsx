@@ -19,12 +19,14 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
     const [isLoading, setIsLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     // Persist biometric preference in localStorage
-    const [biometricEnabled, setBiometricEnabled] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('biometric_enabled') === 'true';
-        }
-        return false;
-    });
+    // Persist biometric preference in localStorage
+    // Fix: Initialize to false to match server, then update in useEffect to avoid hydration mismatch
+    const [biometricEnabled, setBiometricEnabled] = useState(false);
+
+    useEffect(() => {
+        const stored = localStorage.getItem('biometric_enabled') === 'true';
+        setBiometricEnabled(stored);
+    }, []);
     const { toast } = useToast();
 
     // Manage profile state locally for editing
@@ -193,7 +195,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                     <div className="bg-white rounded-3xl p-0 border border-gray-100 shadow-sm overflow-hidden">
 
                         {/* Biometric Toggle */}
-                        <div className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors relative z-10 cursor-pointer" onClick={() => handleBiometricToggle(!biometricEnabled)}>
                             <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${biometricEnabled ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-400'}`}>
                                     <Fingerprint size={24} />
@@ -203,10 +205,12 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                                     <span className="text-xs text-gray-500">Pedir huella para ver saldo</span>
                                 </div>
                             </div>
-                            <Switch
-                                checked={biometricEnabled}
-                                onCheckedChange={handleBiometricToggle}
-                            />
+                            <div onClick={(e) => e.stopPropagation()}>
+                                <Switch
+                                    checked={biometricEnabled}
+                                    onCheckedChange={handleBiometricToggle}
+                                />
+                            </div>
                         </div>
 
                         <div className="h-px bg-gray-100 mx-6"></div>
