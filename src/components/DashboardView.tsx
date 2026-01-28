@@ -197,6 +197,14 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                         userName={userName}
                     />
                 );
+            case 'servicios':
+                return (
+                    <HostServicesView
+                        properties={properties}
+                        services={services}
+                        bookings={bookings}
+                    />
+                );
             case 'finanzas':
                 return <HostFinanceView />;
             case 'menu':
@@ -222,7 +230,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     <h1 className="text-xl font-black tracking-tighter">Cartagena<span className="text-rose-500">Concierge</span></h1>
                     <div className="flex gap-4">
                         <div className="flex gap-4">
-                            {['hoy', 'calendario', 'anuncios', 'mensajes'].map(tab => (
+                            {['hoy', 'calendario', 'anuncios', 'mensajes', 'servicios'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab as any)}
