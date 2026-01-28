@@ -270,7 +270,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
 
                         {/* PIN Setup Dialog (Inline/Overlay) */}
                         <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
-                            <DialogContent className="max-w-xs rounded-3xl">
+                            <DialogContent className="max-w-xs rounded-3xl bg-white border-none shadow-2xl">
                                 <DialogHeader>
                                     <DialogTitle>{pinStep === 'create' ? "Crea tu PIN" : "Confirma tu PIN"}</DialogTitle>
                                     <DialogDescription>
