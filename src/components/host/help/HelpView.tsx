@@ -16,7 +16,8 @@ export function HelpView({ onBack, onGoToChat }: HelpViewProps) {
         {
             id: 'damage',
             question: '¿Un huésped reportó un daño?',
-            answer: 'Documenta todo con fotos inmediatamente y repórtalo en el Centro de Resoluciones de Airbnb para proteger tu fianza. Si necesitas reparación urgente, usa nuestra sección "Servicios" para enviar un técnico verificado.'
+            answer: 'Documenta todo con fotos y repórtalo en el Centro de Resoluciones de Airbnb inmediatamente. Para la reparación física, puedes solicitar a nuestros técnicos verificados y te enviaremos la factura para tu reclamo.',
+            action: 'Solicitar Mantenimiento'
         },
         {
             id: 'clean_extra',
@@ -25,14 +26,15 @@ export function HelpView({ onBack, onGoToChat }: HelpViewProps) {
             action: 'Ir a Servicios'
         },
         {
-            id: 'allies',
-            question: '¿Quieres ganar comisiones extra?',
-            answer: 'Ofrece a tus huéspedes nuestros Aliados VIP (Botes, Chefs). Genera un código en "Aliados VIP & Recursos", envíalo al huésped, y nosotros nos encargamos del resto.'
+            id: 'vip_xp',
+            question: '¿Cómo mejoro la experiencia del huésped?',
+            answer: 'Usa nuestros Aliados VIP. Al compartir los códigos de descuento para Botes y Chefs, tus huéspedes sienten que reciben un trato preferencial y es más probable que dejen una reseña de 5 estrellas.'
         },
         {
             id: 'maintenance',
             question: 'El aire acondicionado no enfría',
-            answer: 'No pierdas reseñas por calor. Solicita un "Mantenimiento Express" en la app. Nuestros técnicos llevan repuestos universales para soluciones rápidas.'
+            answer: 'El calor en Cartagena es crítico. No arriesgues una cancelación. Solicita un "Mantenimiento Express" y un técnico estará en camino con repuestos universales.',
+            action: 'Solicitar Mantenimiento'
         },
         {
             id: 'supplies',
