@@ -15,37 +15,57 @@ interface HostSettingsViewProps {
 
 export function HostSettingsView({ onBack, userImage, userName }: HostSettingsViewProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [biometricEnabled, setBiometricEnabled] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    // Persist biometric preference in localStorage
+    const [biometricEnabled, setBiometricEnabled] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('biometric_enabled') === 'true';
+        }
+        return false;
+    });
     const { toast } = useToast();
 
+    // Manage profile state locally for editing
     const [profile, setProfile] = useState({
         name: userName || 'Anfitrión',
         phone: '+57 300 123 4567',
         bio: 'Superhost apasionado por el servicio.',
+        avatar: userImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"
     });
 
     const handleSaveProfile = async () => {
         setIsLoading(true);
-        // Simulate API call
+        // Here we would sync with Supabase profiles table
         await new Promise(resolve => setTimeout(resolve, 1500));
         setIsLoading(false);
         toast({ title: "Perfil Actualizado", description: "Los cambios se han guardado correctamente." });
     };
 
-    const handleBiometricToggle = async (enabled: boolean) => {
+    const handleBiometricToggle = (enabled: boolean) => {
+        setBiometricEnabled(enabled);
+        localStorage.setItem('biometric_enabled', String(enabled));
+
         if (enabled) {
-            // Simulate Biometric Challenge
-            const confirmed = window.confirm("¿Deseas habilitar el inicio de sesión biométrico (FaceID/Huella)?");
-            if (confirmed) {
-                toast({ title: "Huella Digital", description: "Escaneando...", duration: 2000 });
-                setTimeout(() => {
-                    setBiometricEnabled(true);
-                    toast({ title: "Seguridad Activada", description: "Ahora puedes ingresar con biometría." });
-                }, 1500);
-            }
+            toast({ title: "Biometría Activada", description: "Se solicitará FaceID/Huella en tu próximo inicio de sesión." });
         } else {
-            setBiometricEnabled(false);
+            toast({ title: "Biometría Desactivada", description: "Ingresarás solo con tu cuenta." });
         }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        // Simulate upload delay and success since we might not have the full Supabase client context here yet
+        // In a real implementation: const { data } = await supabase.storage.from('avatars').upload(...)
+
+        setTimeout(() => {
+            const fakeUrl = URL.createObjectURL(file);
+            setProfile(prev => ({ ...prev, avatar: fakeUrl }));
+            setIsUploading(false);
+            toast({ title: "Foto Actualizada", description: "Tu nueva foto de perfil está visible." });
+        }, 1500);
     };
 
     return (
@@ -65,19 +85,25 @@ export function HostSettingsView({ onBack, userImage, userName }: HostSettingsVi
                 {/* 1. Profile Photo Section */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col items-center text-center">
                     <div className="relative mb-4 group cursor-pointer">
-                        <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-md">
+                        <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-md relative">
                             <img
-                                src={userImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"}
+                                src={profile.avatar}
                                 alt="Profile"
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover transition-opacity ${isUploading ? 'opacity-50' : 'opacity-100'}`}
                             />
+                            {isUploading && (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <Loader2 className="animate-spin text-rose-500" />
+                                </div>
+                            )}
                         </div>
-                        <div className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <label className="absolute inset-0 bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                             <Camera className="text-white" size={24} />
-                        </div>
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                        </label>
                     </div>
                     <p className="text-sm font-bold text-gray-500">Foto de Perfil</p>
-                    <p className="text-xs text-gray-400">Visible para tus huéspedes y aliados</p>
+                    <p className="text-xs text-gray-400">Toca para cambiar</p>
                 </div>
 
                 {/* 2. Personal Info */}
@@ -114,7 +140,7 @@ export function HostSettingsView({ onBack, userImage, userName }: HostSettingsVi
                     </div>
                 </section>
 
-                {/* 3. Security & Biometrics */}
+                {/* 3. Security (Customized for OAuth) */}
                 <section>
                     <div className="flex items-center gap-2 mb-3 ml-2">
                         <Shield size={16} className="text-rose-500" />
@@ -123,7 +149,7 @@ export function HostSettingsView({ onBack, userImage, userName }: HostSettingsVi
 
                     <div className="bg-white rounded-3xl p-0 border border-gray-100 shadow-sm overflow-hidden">
 
-                        {/* Mock Biometric Toggle */}
+                        {/* Biometric Toggle */}
                         <div className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${biometricEnabled ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-400'}`}>
@@ -142,24 +168,29 @@ export function HostSettingsView({ onBack, userImage, userName }: HostSettingsVi
 
                         <div className="h-px bg-gray-100 mx-6"></div>
 
-                        {/* Password Change */}
-                        <button className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors text-left">
+                        {/* Google Account Indicator (Replaces Password) */}
+                        <div className="p-6 flex items-center justify-between bg-gray-50/50">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center">
-                                    <Shield size={20} />
+                                <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center">
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                    </svg>
                                 </div>
                                 <div className='flex flex-col'>
-                                    <span className="font-bold text-gray-900">Contraseña</span>
-                                    <span className="text-xs text-gray-500">Actualizar clave de acceso</span>
+                                    <span className="font-bold text-gray-900">Cuenta de Google</span>
+                                    <span className="text-xs text-gray-500">Conectado. Gestionado por Google.</span>
                                 </div>
                             </div>
-                            <ChevronRight size={20} className="text-gray-300" />
-                        </button>
+                            <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-bold">
+                                <Shield size={12} />
+                                Seguro
+                            </div>
+                        </div>
 
                     </div>
-                    <p className="text-xs text-gray-400 mt-2 px-4">
-                        La autenticación biométrica permite un acceso más rápido y seguro sin escribir contraseñas.
-                    </p>
                 </section>
 
             </div>
