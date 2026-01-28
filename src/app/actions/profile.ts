@@ -25,17 +25,17 @@ export async function updateProfileAvatar(avatarUrl: string) {
 
         if (profileError) {
             console.error("Profile update error:", profileError);
-            // We don't throw yet, we try metadata update too
         }
 
-        // 2. Update Auth Metadata (Backup)
-        const { error: authError } = await supabase.auth.updateUser({
-            data: { avatar_url: avatarUrl }
-        });
+        // 2. Update Auth Metadata (Using Admin - Force Write to DB)
+        const { error: authError } = await adminDb.auth.admin.updateUserById(
+            user.id,
+            { user_metadata: { avatar_url: avatarUrl } }
+        );
 
         if (authError) {
             console.error("Auth metadata update error:", authError);
-            if (profileError) throw profileError; // Throw if both failed
+            if (profileError) throw profileError;
         }
 
         revalidatePath('/dashboard');
