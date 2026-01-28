@@ -19,9 +19,10 @@ interface HostMenuProps {
     reviewsCount?: number;
     onLogout: () => void;
     properties?: any[]; // Allow properties to be passed
+    onNavigate?: (tab: 'hoy' | 'calendario' | 'finanzas' | 'anuncios' | 'mensajes' | 'servicios' | 'menu') => void;
 }
 
-export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout, properties = [] }: HostMenuProps) {
+export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout, properties = [], onNavigate }: HostMenuProps) {
     const [isSwitching, setIsSwitching] = useState(false);
     const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet' | 'resources' | 'help'>('main');
     const router = useRouter();
@@ -42,7 +43,11 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
             <HelpView
                 onBack={() => setView('main')}
                 onGoToChat={() => {
-                    alert("Por favor selecciona la pestaña 'Soporte' en el menú inferior.");
+                    if (onNavigate) {
+                        onNavigate('mensajes');
+                    } else {
+                        alert("Por favor selecciona la pestaña 'Soporte' en el menú inferior.");
+                    }
                 }}
             />
         );

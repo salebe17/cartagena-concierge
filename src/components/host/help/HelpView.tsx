@@ -1,12 +1,12 @@
 'use client';
 
-import { ArrowLeft, Book, MessageCircle, FileText, ChevronDown, PlayCircle } from "lucide-react";
+import { ArrowLeft, Book, MessageCircle, FileText, ChevronDown, PlayCircle, Wrench, Sparkles, Ship, ShieldCheck, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 interface HelpViewProps {
     onBack: () => void;
-    onGoToChat: () => void; // Redirect to chat tab
+    onGoToChat: () => void;
 }
 
 export function HelpView({ onBack, onGoToChat }: HelpViewProps) {
@@ -14,24 +14,55 @@ export function HelpView({ onBack, onGoToChat }: HelpViewProps) {
 
     const faqs = [
         {
-            id: 'market',
-            question: '¿Cómo funcionan los Aliados VIP?',
-            answer: 'Puedes generar códigos de descuento únicos para tus huéspedes en la sección "Aliados VIP". Ellos reciben un beneficio exclusivo (ej. cervezas gratis en bote) y tú aseguras que el servicio sea de calidad garantizada.'
-        },
-        {
-            id: 'money',
-            question: '¿Cuándo recibo mis pagos?',
-            answer: 'Los pagos de estancias se procesan 24 horas después del check-in. Los servicios adicionales se facturan mensualmente y verás el desglose en la sección "Finanzas".'
-        },
-        {
             id: 'damage',
-            question: '¿Qué hago si hay un daño en la propiedad?',
-            answer: 'Reportalo inmediatamente a través del Chat de Soporte. Nuestro equipo de mantenimiento realizará una inspección técnica para gestionar el cobro de la fianza si es necesario.'
+            question: '¿Un huésped reportó un daño?',
+            answer: 'Documenta todo con fotos inmediatamente y repórtalo en el Centro de Resoluciones de Airbnb para proteger tu fianza. Si necesitas reparación urgente, usa nuestra sección "Servicios" para enviar un técnico verificado.'
         },
         {
-            id: 'clean',
-            question: '¿Cómo programo una limpieza de salida?',
-            answer: 'En el "Calendario", selecciona la reserva y elige la opción "Programar Limpieza". También puedes hacerlo desde la pestaña "Servicios".'
+            id: 'clean_extra',
+            question: '¿Necesitas limpieza profunda post-checkout?',
+            answer: 'Nuestros equipos de "Limpieza Diamante" están especializados en devolver el brillo a tu propiedad. Programalo desde la pestaña Servicios y garantiza 5 estrellas en limpieza.',
+            action: 'Ir a Servicios'
+        },
+        {
+            id: 'allies',
+            question: '¿Quieres ganar comisiones extra?',
+            answer: 'Ofrece a tus huéspedes nuestros Aliados VIP (Botes, Chefs). Genera un código en "Aliados VIP & Recursos", envíalo al huésped, y nosotros nos encargamos del resto.'
+        },
+        {
+            id: 'maintenance',
+            question: 'El aire acondicionado no enfría',
+            answer: 'No pierdas reseñas por calor. Solicita un "Mantenimiento Express" en la app. Nuestros técnicos llevan repuestos universales para soluciones rápidas.'
+        },
+        {
+            id: 'supplies',
+            question: 'Reposición de Insumos (Jabón, Papel)',
+            answer: 'No corras al supermercado. Pide nuestro "Kit de Bienvenida" en Servicios y recíbelo en la puerta de la propiedad antes de la llegada.'
+        },
+        {
+            id: 'laundry',
+            question: 'Servicio de Lavandería de Lencería',
+            answer: 'Recogemos sábanas y toallas sucias y te entregamos juegos limpios de calidad hotelera en 24 horas. Solicítalo como "Lavandería Express".'
+        },
+        {
+            id: 'checkin',
+            question: 'No puedo recibir al huésped personalmente',
+            answer: 'Usa nuestro servicio de "Co-Hitrion Check-in". Un agente uniformado recibirá a tus huéspedes, hará el tour y entregará las llaves por ti.'
+        },
+        {
+            id: 'photo',
+            question: 'Mis fotos no atraen reservas',
+            answer: 'Agenda una sesión de "Fotografía Profesional Inmobiliaria" con nosotros. Las propiedades con fotos pro reciben un 40% más de clics.'
+        },
+        {
+            id: 'legal',
+            question: 'Registro Nacional de Turismo (RNT)',
+            answer: '¿Necesitas ayuda renovando tu RNT? Nuestro equipo legal tiene un paquete administrativo para gestionar tus obligaciones fiscales y turísticas.'
+        },
+        {
+            id: 'transport',
+            question: 'Huésped necesita transporte del aeropuerto',
+            answer: 'Coordina una van privada con nuestros Aliados VIP. Es más seguro que un taxi de calle y tú quedas como un excelente anfitrión.'
         }
     ];
 
@@ -44,70 +75,64 @@ export function HelpView({ onBack, onGoToChat }: HelpViewProps) {
                 </button>
                 <div>
                     <h1 className="text-3xl font-black text-[#222222] tracking-tight">Centro de Ayuda</h1>
-                    <p className="text-gray-500 text-sm">Resuelve tus dudas sobre la plataforma</p>
+                    <p className="text-gray-500 text-sm">Respuestas que hacen crecer tu negocio</p>
                 </div>
             </div>
 
             {/* Support Hero */}
-            <div className="bg-[#222222] rounded-[32px] p-6 text-white text-center mb-8 relative overflow-hidden">
+            <div className="bg-[#222222] rounded-[32px] p-8 text-white text-center mb-8 relative overflow-hidden shadow-xl">
                 <div className="relative z-10">
-                    <h2 className="text-xl font-black mb-2">¿Tienes una urgencia operativa?</h2>
-                    <p className="text-gray-400 text-sm mb-6 max-w-xs mx-auto">
-                        Para fugas, daños, problemas con huéspedes o acceso, contacta a nuestro equipo en vivo.
+                    <div className="w-16 h-16 bg-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-pulse">
+                        <MessageCircle size={32} className="text-white" />
+                    </div>
+                    <h2 className="text-2xl font-black mb-2 tracking-tight">Chat de Soporte Técnico</h2>
+                    <p className="text-gray-400 text-sm mb-6 max-w-xs mx-auto leading-relaxed">
+                        Para temas urgentes: Fugas, acceso denegado, o reportes de seguridad en tiempo real.
                     </p>
                     <Button
                         onClick={onGoToChat}
-                        className="bg-white text-black hover:bg-gray-200 rounded-full font-bold px-8 h-12"
+                        className="bg-white text-black hover:bg-gray-200 rounded-xl font-bold px-8 h-14 w-full sm:w-auto shadow-sm transition-transform active:scale-95"
                     >
-                        <MessageCircle size={18} className="mr-2" />
-                        Ir al Chat de Soporte
+                        Abrir Chat con Operaciones
                     </Button>
                 </div>
                 {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-rose-500/20 rounded-full -ml-10 -mb-10 blur-xl"></div>
-            </div>
-
-            {/* Quick Links Grid */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center text-center space-y-3">
-                    <div className="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center">
-                        <FileText size={24} />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-[#222222] text-sm">Términos</h3>
-                        <p className="text-xs text-gray-400">Contratos y reglas</p>
-                    </div>
-                </div>
-                <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center text-center space-y-3">
-                    <div className="w-12 h-12 bg-purple-50 text-purple-500 rounded-full flex items-center justify-center">
-                        <PlayCircle size={24} />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-[#222222] text-sm">Tutoriales</h3>
-                        <p className="text-xs text-gray-400">Aprende a usar la app</p>
-                    </div>
-                </div>
+                <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-rose-500/20 to-purple-500/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/20 rounded-full -ml-16 -mb-16 blur-2xl"></div>
             </div>
 
             {/* FAQs */}
-            <h3 className="text-xl font-black text-[#222222] mb-4 px-2">Preguntas Frecuentes</h3>
+            <h3 className="text-xl font-black text-[#222222] mb-6 px-2 flex items-center gap-2">
+                <ShieldCheck size={24} className="text-emerald-500" />
+                Preguntas Frecuentes
+            </h3>
+
             <div className="space-y-4">
-                {faqs.map(faq => (
-                    <div key={faq.id} className="bg-white rounded-[24px] border border-gray-100 overflow-hidden transition-all shadow-sm">
+                {faqs.map((faq, idx) => (
+                    <div key={faq.id} className="bg-white rounded-[24px] border border-gray-100 overflow-hidden transition-all shadow-sm hover:shadow-md group">
                         <button
                             onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
                             className="w-full flex items-center justify-between p-5 text-left"
                         >
-                            <span className="font-bold text-[#222222] text-sm pr-4">{faq.question}</span>
+                            <div className="flex items-start gap-4">
+                                <span className="text-gray-300 font-black text-lg select-none">{(idx + 1).toString().padStart(2, '0')}</span>
+                                <span className={`font-bold text-sm pr-4 transition-colors ${openFaq === faq.id ? 'text-rose-500' : 'text-[#222222]'}`}>
+                                    {faq.question}
+                                </span>
+                            </div>
                             <ChevronDown
                                 size={20}
-                                className={`text-gray-400 transition-transform duration-300 ${openFaq === faq.id ? 'rotate-180' : ''}`}
+                                className={`text-gray-400 shrink-0 transition-transform duration-300 ${openFaq === faq.id ? 'rotate-180 text-rose-500' : ''}`}
                             />
                         </button>
                         {openFaq === faq.id && (
-                            <div className="px-5 pb-5 text-sm text-gray-500 animate-in fade-in slide-in-from-top-2 duration-200">
-                                {faq.answer}
+                            <div className="px-5 pb-5 pl-14 text-sm text-gray-500 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <p className="leading-relaxed mb-3">{faq.answer}</p>
+                                {faq.action && (
+                                    <button className="text-xs font-bold text-rose-500 uppercase tracking-wider hover:text-rose-700 flex items-center gap-1">
+                                        {faq.action} <ArrowLeft size={12} className="rotate-180" />
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

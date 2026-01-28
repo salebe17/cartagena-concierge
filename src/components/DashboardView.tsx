@@ -216,6 +216,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                         // Pass mock revenue for now or calculated if available
                         revenue="$1.2M"
                         properties={properties}
+                        onNavigate={(tab) => setActiveTab(tab)}
                     />
                 );
             default:
