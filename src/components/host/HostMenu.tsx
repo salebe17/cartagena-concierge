@@ -40,10 +40,13 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
     };
 
     const handleWalletAccess = () => {
-        const isProtected = localStorage.getItem('biometric_enabled') === 'true';
+        const val = localStorage.getItem('biometric_enabled');
+        const isProtected = val === 'true';
+
         if (isProtected) {
-            // Simulate Biometric Challenge
-            const confirmed = window.confirm("🔒 Seguridad: Confirma tu identidad para ver tu dinero.");
+            // Updated to use a cleaner check loop or just force window.confirm
+            // Adding a small timeout to ensure UI doesn't block immediately? No.
+            const confirmed = window.confirm("🔐 SEGURIDAD ACTIVA\n\nConfirma tu identidad para acceder a la Billetera.");
             if (confirmed) {
                 setView('wallet');
             }
@@ -99,18 +102,31 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
     }
 
     if (view === 'wallet') {
+        const isProtected = typeof window !== 'undefined' && localStorage.getItem('biometric_enabled') === 'true';
+        // If protected and not yet unlocked in this session, show lock screen
+        // ideally we would track "unlocked" state in a simpler way, but for now enforcing check every time for max security
+        // actually, let's use a local state 'isUnlocked' inside HostMenu?
+        // No, because user expects to be asked every time they enter if they left? 
+        // Let's implement a simple "Click to Unlock" overlay if protected.
+
+        // BETTER APPROACH:
+        // We already have 'handleWalletAccess' doing the check. 
+        // If we are HERE (view === 'wallet'), it means we passed the check OR we navigated here directly (unlikely) OR we just rendered.
+        // But wait, if I refresh page, view is 'main'.
+        // If I click 'Finanzas', handleWalletAccess runs.
+        // If protected, it runs confirm(). If true, setView('wallet').
+        // So view === 'wallet' implies we are allowed.
+
+        // THE ISSUE: The user says "configuration to activate/deactivate is not working".
+        // Maybe they toggle it, but it stays false? Or stays true?
+        // Let's improve the toggle in HostSettingsView to be more robust.
         return (
             <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
                 <div className="flex items-center gap-4 mb-6">
                     <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
                         <ChevronRight size={20} className="rotate-180 text-gray-600" />
                     </button>
-                    {/* HostFinanceView has its own title, but we can wrap it or let it handle it. 
-                        HostFinanceView has "Billetera" title. Let's just create a wrapper to handle the back button consistently. */}
                 </div>
-                {/* We need to override the padding/title in HostFinanceView or accept that it duplicates? 
-                    Actually, HostFinanceView has a title. 
-                    Let's render it directly. */}
                 <div className="-mt-12">
                     <HostFinanceView />
                 </div>

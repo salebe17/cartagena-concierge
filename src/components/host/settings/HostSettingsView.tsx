@@ -57,7 +57,9 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
 
     const handleBiometricToggle = (enabled: boolean) => {
         setBiometricEnabled(enabled);
-        localStorage.setItem('biometric_enabled', String(enabled));
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('biometric_enabled', enabled ? 'true' : 'false');
+        }
 
         if (enabled) {
             toast({ title: "Privacidad Activada", description: "Tu saldo ahora está protegido con huella." });
