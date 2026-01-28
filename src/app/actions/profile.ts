@@ -13,34 +13,35 @@ export async function updateProfileAvatar(avatarUrl: string) {
     }
 
     // 1. Update Profiles Table
-    const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-            id: user.id,
-            avatar_url: avatarUrl,
-            updated_at: new Date().toISOString()
+    try {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+                id: user.id,
+                avatar_url: avatarUrl,
+                updated_at: new Date().toISOString()
+            });
+
+        if (profileError) {
+            console.error("Profile update error:", profileError);
+            // We don't throw yet, we try metadata update too
+        }
+
+        // 2. Update Auth Metadata (Backup)
+        const { error: authError } = await supabase.auth.updateUser({
+            data: { avatar_url: avatarUrl }
         });
 
-    if (profileError) {
-        console.error("Profile update error:", profileError);
-        // We don't throw yet, we try metadata update too
+        if (authError) {
+            console.error("Auth metadata update error:", authError);
+            if (profileError) throw profileError; // Throw if both failed
+        }
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
     }
-
-    // 2. Update Auth Metadata (Backup)
-    const { error: authError } = await supabase.auth.updateUser({
-        data: { avatar_url: avatarUrl }
-    });
-
-    if (authError) {
-        console.error("Auth metadata update error:", authError);
-        if (profileError) throw profileError; // Throw if both failed
-    }
-
-    revalidatePath('/dashboard');
-    return { success: true };
-} catch (e: any) {
-    return { success: false, error: e.message };
-}
 }
 
 export async function updateProfileInfo(data: { name: string; phone: string; bio: string }) {
