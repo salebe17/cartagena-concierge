@@ -15,9 +15,13 @@ export function WalletGuard({ onUnlock, onClose }: WalletGuardProps) {
     const [isChecking, setIsChecking] = useState(false);
     const [error, setError] = useState(false);
 
-    // In a real app, this PIN would be hashed in user metadata/localStorage securely
-    // For this MVP, we default to '0000' or read from local if we implemented setup
-    const CORRECT_PIN = "0000";
+    // Use stored PIN or default 0000 if not set yet
+    const [CORRECT_PIN, setCorrectPin] = useState("0000");
+
+    useEffect(() => {
+        const stored = localStorage.getItem('wallet_pin');
+        if (stored) setCorrectPin(stored);
+    }, []);
 
     useEffect(() => {
         // Auto-trigger biometric simulation on mount for premium feel
