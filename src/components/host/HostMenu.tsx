@@ -40,19 +40,8 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
     };
 
     const handleWalletAccess = () => {
-        const val = localStorage.getItem('biometric_enabled');
-        const isProtected = val === 'true';
-
-        if (isProtected) {
-            // Updated to use a cleaner check loop or just force window.confirm
-            // Adding a small timeout to ensure UI doesn't block immediately? No.
-            const confirmed = window.confirm("🔐 SEGURIDAD ACTIVA\n\nConfirma tu identidad para acceder a la Billetera.");
-            if (confirmed) {
-                setView('wallet');
-            }
-        } else {
-            setView('wallet');
-        }
+        // We let the view handle the protection now via WalletGuard
+        setView('wallet');
     };
 
     if (view === 'resources') {
@@ -103,34 +92,29 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
 
     if (view === 'wallet') {
         const isProtected = typeof window !== 'undefined' && localStorage.getItem('biometric_enabled') === 'true';
-        // If protected and not yet unlocked in this session, show lock screen
-        // ideally we would track "unlocked" state in a simpler way, but for now enforcing check every time for max security
-        // actually, let's use a local state 'isUnlocked' inside HostMenu?
-        // No, because user expects to be asked every time they enter if they left? 
-        // Let's implement a simple "Click to Unlock" overlay if protected.
 
-        // BETTER APPROACH:
-        // We already have 'handleWalletAccess' doing the check. 
-        // If we are HERE (view === 'wallet'), it means we passed the check OR we navigated here directly (unlikely) OR we just rendered.
-        // But wait, if I refresh page, view is 'main'.
-        // If I click 'Finanzas', handleWalletAccess runs.
-        // If protected, it runs confirm(). If true, setView('wallet').
-        // So view === 'wallet' implies we are allowed.
+        // Internal State for this view instance
+        // But HostMenu re-renders. We need a state to track "Unlocked" status.
+        // We'll create a Wrapper component right here or use a state in HostMenu.
+        // Let's add 'isWalletUnlocked' to HostMenu state.
 
-        // THE ISSUE: The user says "configuration to activate/deactivate is not working".
-        // Maybe they toggle it, but it stays false? Or stays true?
-        // Let's improve the toggle in HostSettingsView to be more robust.
+        // Actually, cleaner implementation:
         return (
-            <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
-                <div className="flex items-center gap-4 mb-6">
-                    <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-                        <ChevronRight size={20} className="rotate-180 text-gray-600" />
-                    </button>
+            <WalletSecurityWrapper
+                isProtected={isProtected}
+                onBack={() => setView('main')}
+            >
+                <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
+                    <div className="flex items-center gap-4 mb-6">
+                        <button onClick={() => setView('main')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
+                            <ChevronRight size={20} className="rotate-180 text-gray-600" />
+                        </button>
+                    </div>
+                    <div className="-mt-12">
+                        <HostFinanceView />
+                    </div>
                 </div>
-                <div className="-mt-12">
-                    <HostFinanceView />
-                </div>
-            </div>
+            </WalletSecurityWrapper>
         );
     }
 
@@ -239,3 +223,16 @@ const MenuItem = ({ icon: Icon, label, onClick, isLast }: { icon: any, label: st
         <ChevronRight size={20} className="text-gray-400" />
     </button>
 );
+
+function WalletSecurityWrapper({ isProtected, onBack, children }: { isProtected: boolean, onBack: () => void, children: React.ReactNode }) {
+    const [unlocked, setUnlocked] = useState(!isProtected);
+    // Explicitly import WalletGuard dynamically to avoid cycle if needed, or static if fine.
+    // We'll trust static import since I will put it at top.
+    const { WalletGuard } = require('./security/WalletGuard');
+
+    if (!unlocked) {
+        return <WalletGuard onUnlock={() => setUnlocked(true)} onClose={onBack} />;
+    }
+
+    return <>{children}</>;
+}
