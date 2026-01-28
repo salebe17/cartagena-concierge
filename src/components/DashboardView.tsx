@@ -103,6 +103,7 @@ export function DashboardView({ userName, currentUserId, properties, alerts = []
                     <HostTodayView
                         bookings={bookings}
                         alerts={alerts}
+                        services={services}
                         userName={userName}
                     />
                 );
