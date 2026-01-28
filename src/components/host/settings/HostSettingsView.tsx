@@ -144,9 +144,80 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
         }
     };
 
+    // PIN Setup State
+    const [showPinSetup, setShowPinSetup] = useState(false);
+    const [pinStep, setPinStep] = useState<'create' | 'confirm'>('create');
+    const [tempPin, setTempPin] = useState('');
+    const [confirmPin, setConfirmPin] = useState('');
+
+    const handleBiometricToggle = async (enabled: boolean) => {
+        if (enabled) {
+            // Start Setup Flow
+            setShowPinSetup(true);
+            setPinStep('create');
+            setTempPin('');
+            setConfirmPin('');
+        } else {
+            // Disable
+            setBiometricEnabled(false);
+            localStorage.setItem('biometric_enabled', 'false');
+            localStorage.removeItem('biometric_cred_id');
+            localStorage.removeItem('wallet_pin'); // Clear PIN too
+            toast({ title: "Seguridad Desactivada", description: "Billetera visible sin seguridad." });
+        }
+    };
+
+    const handlePinComplete = async () => {
+        if (tempPin !== confirmPin) {
+            toast({ title: "Error", description: "Los PINs no coinciden", variant: "destructive" });
+            return;
+        }
+
+        if (tempPin.length !== 4) {
+            toast({ title: "Error", description: "El PIN debe ser de 4 dígitos", variant: "destructive" });
+            return;
+        }
+
+        setShowPinSetup(false);
+        setIsLoading(true);
+
+        // Proceed with Biometric Registration
+        try {
+            const { registerBiometrics, checkBiometricCapability } = await import('@/lib/biometrics');
+
+            const canBio = await checkBiometricCapability();
+            if (!canBio) {
+                throw new Error("❌ Tu celular no tiene bloqueo seguro configurado.");
+            }
+
+            toast({ title: "Configurando Biometría...", description: "Usa tu huella/rostro para completar." });
+
+            const credentialId = await registerBiometrics();
+
+            // Save ALL credentials
+            setBiometricEnabled(true);
+            localStorage.setItem('biometric_enabled', 'true');
+            localStorage.setItem('biometric_cred_id', credentialId);
+            localStorage.setItem('wallet_pin', tempPin); // Save PIN
+
+            toast({ title: "✅ Seguridad Activada", description: "PIN y Biometría configurados." });
+
+        } catch (e: any) {
+            console.error(e);
+            setBiometricEnabled(false);
+            toast({
+                title: "Error de Activación",
+                description: e.message || "No se pudo completar el registro.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="pb-24 animate-in fade-in slide-in-from-right-8 duration-300">
-            {/* Header */}
+            {/* ... Existing Header ... */}
             <div className="flex items-center gap-4 mb-8">
                 <button onClick={onBack} className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm">
                     <ArrowLeft size={20} className="text-gray-600" />
@@ -157,8 +228,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
             </div>
 
             <div className="space-y-8">
-
-                {/* 1. Profile Photo Section */}
+                {/* Profile Photo & Info Sections (Unchanged) */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col items-center text-center">
                     <div className="relative mb-4 group cursor-pointer">
                         <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-md relative">
@@ -182,7 +252,6 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                     <p className="text-xs text-gray-400">Toca para cambiar</p>
                 </div>
 
-                {/* 2. Personal Info */}
                 <section>
                     <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3 ml-2">Información Personal</h3>
                     <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
@@ -216,7 +285,6 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                     </div>
                 </section>
 
-                {/* 3. Security (Customized for OAuth) */}
                 <section>
                     <div className="flex items-center gap-2 mb-3 ml-2">
                         <Shield size={16} className="text-rose-500" />
@@ -224,8 +292,6 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                     </div>
 
                     <div className="bg-white rounded-3xl p-0 border border-gray-100 shadow-sm overflow-hidden">
-
-                        {/* Biometric Toggle */}
                         <div className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors relative z-10 cursor-pointer" onClick={() => handleBiometricToggle(!biometricEnabled)}>
                             <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${biometricEnabled ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-400'}`}>
@@ -233,7 +299,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                                 </div>
                                 <div className='flex flex-col'>
                                     <span className="font-bold text-gray-900">Proteger Billetera</span>
-                                    <span className="text-xs text-gray-500">Pedir huella para ver saldo</span>
+                                    <span className="text-xs text-gray-500">PIN + Biometría</span>
                                 </div>
                             </div>
                             <div onClick={(e) => e.stopPropagation()}>
@@ -244,9 +310,51 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                             </div>
                         </div>
 
+                        {/* PIN Setup Dialog (Inline/Overlay) */}
+                        <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
+                            <DialogContent className="max-w-xs rounded-3xl">
+                                <DialogHeader>
+                                    <DialogTitle>{pinStep === 'create' ? "Crea tu PIN" : "Confirma tu PIN"}</DialogTitle>
+                                    <DialogDescription>
+                                        {pinStep === 'create'
+                                            ? "Ingresa 4 dígitos para tu código de respaldo."
+                                            : "Vuelve a ingresar el código para confirmar."}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex justify-center py-6">
+                                    <Input
+                                        type="tel"
+                                        maxLength={4}
+                                        className="text-center text-3xl font-black tracking-[1em] w-32 border-none bg-gray-50 h-16 rounded-xl focus:ring-0"
+                                        value={pinStep === 'create' ? tempPin : confirmPin}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                            if (pinStep === 'create') setTempPin(val);
+                                            else setConfirmPin(val);
+
+                                            // Auto-advance
+                                            if (val.length === 4) {
+                                                if (pinStep === 'create') {
+                                                    setTimeout(() => setPinStep('confirm'), 500);
+                                                }
+                                            }
+                                        }}
+                                        autoFocus
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    {pinStep === 'confirm' && confirmPin.length === 4 && (
+                                        <Button onClick={handlePinComplete} className="w-full bg-rose-600 text-white font-bold rounded-xl">
+                                            Guardar y Activar Biometría
+                                        </Button>
+                                    )}
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+
                         <div className="h-px bg-gray-100 mx-6"></div>
 
-                        {/* Google Account Indicator (Replaces Password) */}
+                        {/* Google Account Indicator */}
                         <div className="p-6 flex items-center justify-between bg-gray-50/50">
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center">
@@ -264,7 +372,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                             </div>
                             <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-bold">
                                 <Shield size={12} />
-                                Seguro
+                                Seguror
                             </div>
                         </div>
 
