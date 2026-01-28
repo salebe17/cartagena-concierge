@@ -280,25 +280,47 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="flex justify-center py-6">
-                                    <Input
-                                        type="tel"
-                                        maxLength={4}
-                                        className="text-center text-3xl font-black tracking-[1em] w-32 border-none bg-gray-50 h-16 rounded-xl focus:ring-0"
-                                        value={pinStep === 'create' ? tempPin : confirmPin}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                                            if (pinStep === 'create') setTempPin(val);
-                                            else setConfirmPin(val);
+                                    <div className="relative w-full max-w-[200px] h-16 mx-auto">
+                                        <Input
+                                            type="tel"
+                                            maxLength={4}
+                                            className="absolute inset-0 w-full h-full opacity-0 z-20 cursor-pointer text-center"
+                                            value={pinStep === 'create' ? tempPin : confirmPin}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                                if (pinStep === 'create') setTempPin(val);
+                                                else setConfirmPin(val);
 
-                                            // Auto-advance
-                                            if (val.length === 4) {
-                                                if (pinStep === 'create') {
-                                                    setTimeout(() => setPinStep('confirm'), 500);
+                                                // Auto-advance
+                                                if (val.length === 4) {
+                                                    if (pinStep === 'create') {
+                                                        setTimeout(() => setPinStep('confirm'), 500);
+                                                    }
                                                 }
-                                            }
-                                        }}
-                                        autoFocus
-                                    />
+                                            }}
+                                            autoFocus
+                                        />
+                                        <div className="flex justify-between w-full h-full absolute inset-0 z-10 pointer-events-none">
+                                            {[0, 1, 2, 3].map((idx) => {
+                                                const currentVal = pinStep === 'create' ? tempPin : confirmPin;
+                                                const digit = currentVal[idx];
+                                                const isActive = currentVal.length === idx;
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className={`w-12 h-16 rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all ${digit
+                                                                ? 'bg-white border-rose-500 text-rose-500 shadow-sm'
+                                                                : isActive
+                                                                    ? 'bg-white border-black scale-105 shadow-md'
+                                                                    : 'bg-gray-50 border-gray-200 text-gray-400'
+                                                            }`}
+                                                    >
+                                                        {digit ? digit : ''}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                 </div>
                                 <DialogFooter>
                                     {pinStep === 'confirm' && confirmPin.length === 4 && (
