@@ -71,7 +71,11 @@ export function WalletGuard({ onUnlock, onClose }: WalletGuardProps) {
 
         try {
             const { verifyBiometrics } = await import('@/lib/biometrics');
-            await verifyBiometrics();
+
+            // Fix: Retrieve the specific key ID we created during registration
+            const storedId = localStorage.getItem('biometric_cred_id');
+
+            await verifyBiometrics(storedId);
 
             // If function returns (didn't throw), it means user successfully verified presence!
             toast({ title: "Identidad Confirmada", className: "bg-emerald-50 text-emerald-600 border-none" });
