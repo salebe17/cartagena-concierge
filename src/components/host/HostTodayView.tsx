@@ -14,20 +14,25 @@ interface HostTodayViewProps {
 
 export function HostTodayView({ bookings, alerts, services = [], userName }: HostTodayViewProps) {
     const [mounted, setMounted] = useState(false);
-    const [weather, setWeather] = useState<{ temp: number, code: number } | null>(null);
+    // Default generic weather while loading
+    const [weather, setWeather] = useState<{ temp: number, code: number } | null>({ temp: 30, code: 1 });
+    const [loadingWeather, setLoadingWeather] = useState(true);
 
     useEffect(() => {
         setMounted(true);
-        // Fetch Cartagena Weather (OpenMeteo - No Key Required)
+        // Fetch Cartagena Weather
         fetch('https://api.open-meteo.com/v1/forecast?latitude=10.3997&longitude=-75.5144&current=temperature_2m,weather_code&timezone=America%2FBogota')
             .then(res => res.json())
             .then(data => {
-                setWeather({
-                    temp: Math.round(data.current.temperature_2m),
-                    code: data.current.weather_code
-                });
+                if (data.current) {
+                    setWeather({
+                        temp: Math.round(data.current.temperature_2m),
+                        code: data.current.weather_code
+                    });
+                }
             })
-            .catch(e => console.error("Weather error:", e));
+            .catch(e => console.error("Weather error:", e))
+            .finally(() => setLoadingWeather(false));
     }, []);
 
     // 1. Find Active Booking
@@ -69,15 +74,14 @@ export function HostTodayView({ bookings, alerts, services = [], userName }: Hos
                     <p className="text-gray-500 text-sm font-medium">Estado operativo al día de hoy</p>
                 </div>
 
-                {weather && (
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-2xl px-4 py-2 flex items-center gap-3">
-                        {getWeatherIcon(weather.code)}
-                        <div>
-                            <p className="text-xl font-black text-[#222222] leading-none">{weather.temp}°C</p>
-                            <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Cartagena</p>
-                        </div>
+                {/* Weather Widget (Always Visible) */}
+                <div className={`bg-white border border-gray-100 shadow-sm rounded-2xl px-4 py-2 flex items-center gap-3 transition-opacity ${loadingWeather ? 'opacity-50' : 'opacity-100'}`}>
+                    {weather ? getWeatherIcon(weather.code) : <Sun className="text-amber-500" size={24} />}
+                    <div>
+                        <p className="text-xl font-black text-[#222222] leading-none">{weather?.temp || 30}°C</p>
+                        <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Cartagena</p>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* URGENT ALERTS SECTION */}
