@@ -89,10 +89,13 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
             if (!result.success) throw new Error(result.error);
 
             setProfile(prev => ({ ...prev, avatar: publicUrl }));
+            // Cache locally to prevent flickering/loss if server is slow
+            localStorage.setItem('cached_avatar_url', publicUrl);
+
             toast({ title: "Foto Actualizada", description: "Tu nueva foto de perfil se ha guardado." });
 
-            // Should refresh the page or parent to update the menu icon too
-            // window.location.reload(); // Removed to prevent flashing/stale data
+            // Force soft refresh to try and update server cache
+            window.location.reload();
 
             // @ts-ignore
         } catch (error: any) {

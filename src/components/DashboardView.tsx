@@ -40,7 +40,20 @@ interface DashboardViewProps {
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1000&auto=format&fit=crop";
 
 export function DashboardView({ userName, userFullName, userImage, userPhone, userBio, currentUserId, properties, alerts = [], serviceHistory = null, bookings = [], services = [] }: DashboardViewProps) {
-    // Modal States
+    // Client-side fallback for avatar
+    const [finalAvatar, setFinalAvatar] = useState(userImage);
+
+    // Sync with local storage if server image is missing
+    useEffect(() => {
+        const cached = localStorage.getItem('cached_avatar_url');
+        if (!userImage && cached) {
+            setFinalAvatar(cached);
+        } else if (userImage) {
+            setFinalAvatar(userImage);
+            // Update cache with fresh server data if available
+            localStorage.setItem('cached_avatar_url', userImage);
+        }
+    }, [userImage]);
     const [isPropModalOpen, setPropModalOpen] = useState(false);
     // Tab State: Unifying to Spanish IDs for consistency with BottomNav
     const [activeTab, setActiveTab] = useState<'hoy' | 'calendario' | 'finanzas' | 'anuncios' | 'mensajes' | 'servicios' | 'menu'>('hoy');
@@ -217,7 +230,7 @@ export function DashboardView({ userName, userFullName, userImage, userPhone, us
                     <HostMenu
                         userName={userName}
                         userFullName={userFullName}
-                        userImage={userImage}
+                        userImage={finalAvatar}
                         userPhone={userPhone}
                         userBio={userBio}
                         onLogout={() => signOut()}
