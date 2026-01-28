@@ -16,15 +16,20 @@ import {
 } from "lucide-react";
 import { RequestServiceModal } from "../dashboard/RequestServiceModal";
 
+import { Property } from '@/lib/types';
+
 interface HostServicesViewProps {
-    properties: any[];
+    properties: Property[];
+    bookings?: any[];
+    services?: any[]; // History of requested services
 }
 
-export function HostServicesView({ properties }: HostServicesViewProps) {
+export function HostServicesView({ properties, bookings = [], services = [] }: HostServicesViewProps) {
     // Default to first property for now. In a real app, user might need to select property first if they have multiple.
     const defaultProperty = properties[0];
 
-    const services = [
+    // Renamed to avoid cconflict
+    const SERVICE_TYPES = [
         { id: 'cleaning', label: 'Limpieza', icon: Sparkles, color: 'bg-teal-50 text-teal-600' },
         { id: 'maintenance', label: 'Mantenimiento', icon: Wrench, color: 'bg-orange-50 text-orange-600' },
         { id: 'interior_finishes', label: 'Acabado de Interiores', icon: PaintRoller, color: 'bg-emerald-50 text-emerald-600' },
@@ -49,7 +54,7 @@ export function HostServicesView({ properties }: HostServicesViewProps) {
             <p className="text-gray-500 mb-6 -mt-4">Solicita asistencia técnica o servicios para tu propiedad.</p>
 
             <div className="grid grid-cols-3 gap-4">
-                {services.map((svc) => {
+                {SERVICE_TYPES.map((svc) => {
                     const Icon = svc.icon;
                     return (
                         <RequestServiceModal
