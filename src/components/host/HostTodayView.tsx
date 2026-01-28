@@ -39,7 +39,6 @@ export function HostTodayView({ bookings, alerts, services = [], userName }: Hos
     });
 
     const daysLeft = activeBooking ? differenceInDays(new Date(activeBooking.end_date), today) : 0;
-    const guestsCount = activeBooking?.guests_count || 2;
 
     // 2. Filter Active/Upcoming Services
     const activeServices = services.filter(s => {
@@ -106,7 +105,7 @@ export function HostTodayView({ bookings, alerts, services = [], userName }: Hos
                     </div>
 
                     <h2 className="text-2xl font-black text-[#222222] leading-tight mb-2">
-                        Grupo de {guestsCount} Personas
+                        Estadía en Curso
                     </h2>
                     <p className="text-sm font-medium text-gray-500 max-w-xs mx-auto mb-6">
                         Hospedaje activo hasta el {new Date(activeBooking.end_date).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}
