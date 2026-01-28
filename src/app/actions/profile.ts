@@ -15,8 +15,11 @@ export async function updateProfileAvatar(avatarUrl: string) {
     try {
         const { error } = await supabase
             .from('profiles')
-            .update({ avatar_url: avatarUrl })
-            .eq('id', user.id);
+            .upsert({
+                id: user.id,
+                avatar_url: avatarUrl,
+                updated_at: new Date().toISOString()
+            });
 
         if (error) throw error;
 
@@ -39,18 +42,10 @@ export async function updateProfileInfo(data: { name: string; phone: string; bio
     try {
         const { error } = await supabase
             .from('profiles')
-            .update({
+            .upsert({
+                id: user.id,
                 full_name: data.name,
                 phone: data.phone,
-                bio: data.bio
-            })
-            .eq('id', user.id);
-
-        if (error) throw error;
-
-        revalidatePath('/dashboard');
-        return { success: true };
-    } catch (e: any) {
-        return { success: false, error: e.message };
-    }
+                return { success: false, error: e.message };
+            }
 }
