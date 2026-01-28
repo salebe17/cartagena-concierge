@@ -27,7 +27,8 @@ export default async function DashboardPage() {
 
     const userName = profile?.full_name?.split(' ')[0] || user.user_metadata?.full_name?.split(' ')[0] || "Anfitrión";
     const userFullName = profile?.full_name || user.user_metadata?.full_name || "Anfitrión";
-    const userImage = profile?.avatar_url || user.user_metadata?.avatar_url;
+    // Fix: Prioritize metadata as we are double-writing there and it's faster/more reliable
+    const userImage = user.user_metadata?.avatar_url || profile?.avatar_url;
     const userPhone = profile?.phone;
     const userBio = profile?.bio;
 
