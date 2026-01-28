@@ -58,11 +58,6 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
         }
     };
 
-    import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-    // ... (rest of imports are below, but I should use a cleaner replace strategy)
-    // Actually, I can just replace the top import block AND remove the function.
-    // But MultiReplace is safer for disjoint changes.
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
