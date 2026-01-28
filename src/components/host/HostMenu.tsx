@@ -148,15 +148,18 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                {/* Revenue Card - Clickable to go to Finance */}
+                {/* Revenue/Gastos Card - Clickable to go to Finance */}
                 <div
                     onClick={() => setView('wallet')}
-                    className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40 cursor-pointer hover:border-black transition-colors"
+                    className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40 cursor-pointer hover:border-black active:scale-95 transition-all group"
                 >
                     <div>
-                        <h3 className="text-sm font-bold text-[#222222]">Gastos</h3>
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-sm font-bold text-[#222222]">Gastos</h3>
+                            <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">Total invertido:</p>
-                        <p className="text-lg font-black text-[#222222] tracking-tight">{revenue} COP</p>
+                        <p className="text-lg font-black text-[#222222] tracking-tight group-hover:text-rose-600 transition-colors">{revenue} COP</p>
                     </div>
                     {/* Fake Chart */}
                     <div className="flex items-end gap-1.5 h-12 mt-2 opacity-90">
@@ -170,13 +173,19 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                 </div>
 
                 {/* Info / Ratings Card */}
-                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40">
+                <div
+                    onClick={() => setView('help')} // Or a specific status view if we had one. 'help' is a good fallback for account status queries.
+                    className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40 cursor-pointer hover:border-emerald-500 active:scale-95 transition-all group"
+                >
                     <div>
-                        <h3 className="text-sm font-bold text-[#222222]">Nivel</h3>
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-sm font-bold text-[#222222]">Nivel</h3>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">Estado de cuenta</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-2xl font-black text-emerald-500">Activo</span>
+                        <span className="text-2xl font-black text-emerald-500 group-hover:scale-110 transition-transform">Activo</span>
                         <div className="flex text-[#222222]">★</div>
                     </div>
                 </div>
