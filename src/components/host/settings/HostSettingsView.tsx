@@ -59,34 +59,45 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
 
     const handleBiometricToggle = async (enabled: boolean) => {
         if (enabled) {
-            // Try to register biometrics first
+            setIsLoading(true);
             try {
-                // We need to import dynamically or ensure it runs on client
-                const { registerBiometrics } = await import('@/lib/biometrics');
-                toast({ title: "Configurando FaceID/Huella", description: "Por favor confirma en tu dispositivo..." });
+                const { registerBiometrics, checkBiometricCapability } = await import('@/lib/biometrics');
 
-                await registerBiometrics();
+                // 1. Check if device is capable
+                const canBio = await checkBiometricCapability();
+                if (!canBio) {
+                    throw new Error("❌ Tu celular no tiene bloqueo seguro configurado. Ve a Ajustes > Seguridad en tu Android/iOS y configura un PIN o Huella primero.");
+                }
 
-                // If successful, save state
+                toast({ title: "Configurando...", description: "Usa tu huella/rostro para crear la llave de acceso." });
+
+                // 2. Register
+                const credentialId = await registerBiometrics();
+
+                // 3. Save
                 setBiometricEnabled(true);
                 localStorage.setItem('biometric_enabled', 'true');
-                toast({ title: "Biometría Activada", description: "Tu Billetera está protegida." });
+                localStorage.setItem('biometric_cred_id', credentialId); // Save ID for future reference
+
+                toast({ title: "✅ Seguridad Activada", description: "Tu Billetera está blindada con biometría." });
 
             } catch (e: any) {
                 console.error(e);
-                setBiometricEnabled(false); // Revert
-                // Special handling for cancellation or not supported
+                setBiometricEnabled(false);
                 toast({
-                    title: "No se pudo activar",
-                    description: "Tu dispostivo canceló el registro o no es compatible.",
-                    variant: "destructive"
+                    title: "Error de Activación",
+                    description: e.message || "No se pudo completar el registro.",
+                    variant: "destructive",
+                    duration: 5000
                 });
+            } finally {
+                setIsLoading(false);
             }
         } else {
-            // Disabling is simple
             setBiometricEnabled(false);
             localStorage.setItem('biometric_enabled', 'false');
-            toast({ title: "Seguridad Desactivada", description: "Billetera visible sin PIN." });
+            localStorage.removeItem('biometric_cred_id');
+            toast({ title: "Seguridad Desactivada", description: "Billetera visible sin seguridad." });
         }
     };
 
