@@ -69,7 +69,10 @@ export function HostTodayView({ bookings, alerts, services = [], userName }: Hos
             <div className="flex justify-between items-start mb-8">
                 <div>
                     <h1 className="text-3xl font-black text-[#222222] tracking-tight mb-1">
-                        {activeBooking ? "Propiedad Ocupada" : "Lista para huéspedes"}
+                        <div className="flex items-center gap-2">
+                            {activeBooking ? "Propiedad Ocupada" : "Lista para huéspedes"}
+                            <span className="text-xs bg-gray-100 text-gray-500 px-1 rounded border border-gray-200">v2.1</span>
+                        </div>
                     </h1>
                     <p className="text-gray-500 text-sm font-medium">Estado operativo al día de hoy</p>
                 </div>

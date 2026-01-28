@@ -101,6 +101,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
             // Should refresh the page or parent to update the menu icon too
             window.location.reload();
 
+            // @ts-ignore
         } catch (error: any) {
             toast({ title: "Error", description: error.message || "No se pudo subir la imagen", variant: "destructive" });
         } finally {
