@@ -13,7 +13,7 @@ import { CreditCard, Plus, Loader2, Trash2, CheckCircle2 } from "lucide-react";
 import { createSetupIntent, getHostPaymentMethods } from "@/app/actions/billing";
 import { useToast } from "@/hooks/use-toast";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_live_51Si0pG2OoW4DjQChFqHJsKaQ6OWOclzcjeZSIAYfK4DlwbhnvK2FzpxDNp36wfR8H37BJ2yVqjiXDCx3xT2fEMKI00j6u5M7zC");
+const stripePromise = loadStripe("pk_live_51Si0pG2OoW4DjQChFqHJsKaQ6OWOclzcjeZSIAYfK4DlwbhnvK2FzpxDNp36wfR8H37BJ2yVqjiXDCx3xT2fEMKI00j6u5M7zC");
 
 function AddCardForm({ onCardAdded }: { onCardAdded: () => void }) {
     const stripe = useStripe();
