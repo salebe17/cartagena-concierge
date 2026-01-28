@@ -92,7 +92,7 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
             toast({ title: "Foto Actualizada", description: "Tu nueva foto de perfil se ha guardado." });
 
             // Should refresh the page or parent to update the menu icon too
-            window.location.reload();
+            // window.location.reload(); // Removed to prevent flashing/stale data
 
             // @ts-ignore
         } catch (error: any) {
