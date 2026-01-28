@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,51 +8,108 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Outfit', sans-serif; }
-        .slide { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 4rem; position: relative; overflow: hidden; }
-        .gradient-text { background: linear-gradient(135deg, #FF385C 0%, #BD1E59 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .card { backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .glass-dark { background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .slide {
+                padding: 4rem;
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #FF385C 0%, #BD1E59 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-dark {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900">
 
     <!-- SLIDE 1: PORTADA -->
     <section class="slide bg-black text-white text-center">
-        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=2000')] bg-cover bg-center opacity-40"></div>
-        <div class="relative z-10 max-w-4xl mx-auto">
-            <h1 class="text-7xl font-black tracking-tighter mb-4">Cartagena<span class="text-rose-500">Concierge</span></h1>
-            <p class="text-2xl font-light text-slate-300">El Ecosistema Digital que Conecta Anfitriones, Huéspedes y la Ciudad.</p>
-            <div class="mt-12 flex justify-center gap-4">
-                <span class="px-4 py-2 rounded-full border border-white/20 text-sm">Tecnología SaaS</span>
-                <span class="px-4 py-2 rounded-full border border-white/20 text-sm">Mercado Bilateral</span>
-                <span class="px-4 py-2 rounded-full border border-white/20 text-sm">Turismo Inteligente</span>
+        <div
+            class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=2000')] bg-cover bg-center opacity-40">
+        </div>
+        <div class="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center h-full">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter mb-4 leading-tight">Cartagena<span
+                    class="text-rose-500">Concierge</span></h1>
+            <p class="text-xl md:text-2xl font-light text-slate-300 max-w-xl mx-auto">El Ecosistema Digital que Conecta
+                Anfitriones, Huéspedes y la Ciudad.</p>
+            <div class="mt-8 md:mt-12 flex flex-col md:flex-row justify-center gap-3 w-full md:w-auto px-8">
+                <span class="px-4 py-2 rounded-full border border-white/20 text-sm backdrop-blur-sm">Tecnología
+                    SaaS</span>
+                <span class="px-4 py-2 rounded-full border border-white/20 text-sm backdrop-blur-sm">Mercado
+                    Bilateral</span>
+                <span class="px-4 py-2 rounded-full border border-white/20 text-sm backdrop-blur-sm">Turismo
+                    Inteligente</span>
             </div>
         </div>
     </section>
 
     <!-- SLIDE 2: EL PROBLEMA -->
     <section class="slide">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div>
-                <h2 class="text-5xl font-black mb-6 text-slate-900">La Oportunidad Perdida</h2>
-                <p class="text-xl text-slate-600 mb-8 leading-relaxed">
-                    Cartagena recibe miles de turistas diarios vía Airbnb. Estos turistas gastan millones, pero el gasto es <strong>caótico y disperso</strong>.
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
+            <div class="order-2 md:order-1">
+                <h2 class="text-4xl md:text-5xl font-black mb-6 text-slate-900 leading-tight">La Oportunidad Perdida
+                </h2>
+                <p class="text-lg md:text-xl text-slate-600 mb-8 leading-relaxed">
+                    Cartagena recibe miles de turistas diarios vía Airbnb. Estos turistas gastan millones, pero el gasto
+                    es <strong>caótico y disperso</strong>.
                 </p>
-                <ul class="space-y-4 text-lg text-slate-700">
-                    <li class="flex items-center gap-4"><span class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">1</span> El Anfitrión pierde control una vez el huésped sale del apartamento.</li>
-                    <li class="flex items-center gap-4"><span class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">2</span> Los Restaurantes/Comercios pagan fortunas en Ads para captar turistas "en frío".</li>
-                    <li class="flex items-center gap-4"><span class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">3</span> El Turista cae en trampas para turistas o pierde tiempo buscando.</li>
+                <ul class="space-y-4 text-base md:text-lg text-slate-700">
+                    <li class="flex items-start gap-4">
+                        <span
+                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold shrink-0 mt-1">1</span>
+                        <span>El Anfitrión pierde control una vez el huésped sale del apartamento.</span>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span
+                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold shrink-0 mt-1">2</span>
+                        <span>Los Restaurantes pagan fortunas en Ads para captar turistas "en frío".</span>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span
+                            class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold shrink-0 mt-1">3</span>
+                        <span>El Turista pierde tiempo buscando o cae en trampas.</span>
+                    </li>
                 </ul>
             </div>
-            <div class="relative h-[500px] w-full bg-slate-200 rounded-[40px] shadow-2xl overflow-hidden flex items-center justify-center">
-                <div class="text-center p-8">
-                    <p class="text-6xl font-black text-rose-500 mb-2">~1.2M</p>
-                    <p class="text-slate-500 font-medium uppercase tracking-widest">Turistas al Año</p>
-                    <div class="mt-8 bg-white p-6 rounded-2xl shadow-lg max-w-xs mx-auto transform rotate-[-3deg]">
-                        <p class="text-sm text-gray-400">Gasto Promedio</p>
-                        <p class="text-2xl font-bold text-green-600">$1,500 USD</p>
-                        <p class="text-xs text-gray-400 mt-2">Por grupo (excl. alojamiento)</p>
+            <div
+                class="order-1 md:order-2 relative h-[300px] md:h-[500px] w-full bg-slate-200 rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden flex items-center justify-center">
+                <div class="text-center p-4 md:p-8">
+                    <p class="text-5xl md:text-6xl font-black text-rose-500 mb-2">~1.2M</p>
+                    <p class="text-slate-500 font-medium uppercase tracking-widest text-sm md:text-base">Turistas al Año
+                    </p>
+                    <div
+                        class="mt-6 md:mt-8 bg-white p-4 md:p-6 rounded-2xl shadow-lg max-w-[200px] md:max-w-xs mx-auto transform rotate-[-3deg]">
+                        <p class="text-xs md:text-sm text-gray-400">Gasto Promedio</p>
+                        <p class="text-xl md:text-2xl font-bold text-green-600">$1,500 USD</p>
+                        <p class="text-[10px] md:text-xs text-gray-400 mt-1 md:mt-2">Por grupo (excl. alojamiento)</p>
                     </div>
                 </div>
             </div>
@@ -60,36 +118,52 @@
 
     <!-- SLIDE 3: LA SOLUCIÓN (MODELO HÍBRIDO) -->
     <section class="slide bg-[#111] text-white">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-5xl font-black mb-2">Nuestra Arma Secreta:</h2>
-            <h3 class="text-4xl font-light text-rose-500 mb-16">El Marketplace Híbrido</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-3xl md:text-5xl font-black mb-2">Nuestra Arma Secreta:</h2>
+            <h3 class="text-3xl md:text-4xl font-light text-rose-500 mb-8 md:mb-16 leading-tight">El Marketplace Híbrido
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 <!-- Card 1 -->
-                <div class="glass-dark p-8 rounded-3xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-rose-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-rose-500/30 transition-all"></div>
+                <div class="glass-dark p-6 md:p-8 rounded-3xl relative overflow-hidden group">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-rose-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-rose-500/30 transition-all">
+                    </div>
                     <div class="relative z-10">
-                        <div class="h-12 w-12 bg-white text-black rounded-xl flex items-center justify-center mb-6 text-2xl">⚡</div>
-                        <h4 class="text-2xl font-bold mb-4">Acceso Instantáneo</h4>
-                        <p class="text-slate-400">Para restaurantes casuales y beach clubs. El anfitrión genera un <strong>Código QR Único</strong> al instante. Cero fricción.</p>
+                        <div
+                            class="h-10 w-10 md:h-12 md:w-12 bg-white text-black rounded-xl flex items-center justify-center mb-4 md:mb-6 text-xl md:text-2xl">
+                            ⚡</div>
+                        <h4 class="text-xl md:text-2xl font-bold mb-2 md:mb-4">Acceso Instantáneo</h4>
+                        <p class="text-sm md:text-base text-slate-400">Para restaurantes casuales. Código QR Único al
+                            instante. Cero fricción.</p>
                     </div>
                 </div>
                 <!-- Card 2 -->
-                <div class="glass-dark p-8 rounded-3xl relative overflow-hidden group border-rose-500/50">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-purple-500/30 transition-all"></div>
+                <div class="glass-dark p-6 md:p-8 rounded-3xl relative overflow-hidden group border-rose-500/50">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-purple-500/30 transition-all">
+                    </div>
                     <div class="relative z-10">
-                        <div class="h-12 w-12 bg-rose-500 text-white rounded-xl flex items-center justify-center mb-6 text-2xl">💎</div>
-                        <h4 class="text-2xl font-bold mb-4">Reservas VIP</h4>
-                        <p class="text-slate-400">Para Chefs, Botes y Barberías. Sistema de <strong>"Solicitud bajo Demanda"</strong>. Garantizamos el cupo antes de enviar al cliente.</p>
+                        <div
+                            class="h-10 w-10 md:h-12 md:w-12 bg-rose-500 text-white rounded-xl flex items-center justify-center mb-4 md:mb-6 text-xl md:text-2xl">
+                            💎</div>
+                        <h4 class="text-xl md:text-2xl font-bold mb-2 md:mb-4">Reservas VIP</h4>
+                        <p class="text-sm md:text-base text-slate-400">Para Chefs y Botes. Sistema de <strong>"Solicitud
+                                bajo Demanda"</strong>. Cupo garantizado.</p>
                     </div>
                 </div>
                 <!-- Card 3 -->
-                <div class="glass-dark p-8 rounded-3xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-blue-500/30 transition-all"></div>
+                <div class="glass-dark p-6 md:p-8 rounded-3xl relative overflow-hidden group">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-blue-500/30 transition-all">
+                    </div>
                     <div class="relative z-10">
-                        <div class="h-12 w-12 bg-white text-black rounded-xl flex items-center justify-center mb-6 text-2xl">📊</div>
-                        <h4 class="text-2xl font-bold mb-4">Trazabilidad Total</h4>
-                        <p class="text-slate-400">Sabemos quién envió a quién. Eliminamos el "dinero bajo la mesa". Todo queda registrado digitalmente.</p>
+                        <div
+                            class="h-10 w-10 md:h-12 md:w-12 bg-white text-black rounded-xl flex items-center justify-center mb-4 md:mb-6 text-xl md:text-2xl">
+                            📊</div>
+                        <h4 class="text-xl md:text-2xl font-bold mb-2 md:mb-4">Trazabilidad Total</h4>
+                        <p class="text-sm md:text-base text-slate-400">Sabemos quién envió a quién. Todo queda
+                            registrado digitalmente.</p>
                     </div>
                 </div>
             </div>
@@ -98,94 +172,111 @@
 
     <!-- SLIDE 4: ESTRATEGIA (THE MOAT) -->
     <section class="slide bg-slate-50">
-        <div class="max-w-5xl mx-auto text-center">
-            <span class="text-rose-600 font-bold tracking-widest uppercase mb-4 block">La Ventaja Competitiva</span>
-            <h2 class="text-6xl font-black text-slate-900 mb-12">Somos los Dueños del "Momento Cero"</h2>
-            
+        <div class="max-w-5xl mx-auto text-center w-full">
+            <span class="text-rose-600 font-bold tracking-widest uppercase mb-4 block text-xs md:text-sm">La Ventaja
+                Competitiva</span>
+            <h2 class="text-3xl md:text-6xl font-black text-slate-900 mb-8 md:mb-12 leading-tight">Dueños del "Momento
+                Cero"</h2>
+
             <div class="relative">
-                <!-- Diagram -->
-                <div class="flex items-center justify-center gap-4 text-left">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 hover:scale-105 transition-transform w-72">
+                <!-- Diagram: Vertical on Mobile, Horizontal on Desktop -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-4 text-left">
+
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 w-full md:w-72">
                         <p class="text-xs font-bold text-gray-400 uppercase">El Huésped</p>
-                        <p class="text-lg font-bold text-slate-800">Confía en su Anfitrión</p>
-                        <p class="text-sm text-slate-500 mt-2">"¿Dónde me recomiendas comer?"</p>
+                        <p class="text-lg font-bold text-slate-800">Pregunta al Anfitrión</p>
+                        <p class="text-sm text-slate-500 mt-2">"¿Dónde recomiendas comer?"</p>
                     </div>
-                    <div class="text-4xl text-rose-500">→</div>
-                    <div class="bg-black text-white p-6 rounded-2xl shadow-2xl hover:scale-105 transition-transform w-[400px] border-4 border-rose-500">
-                        <p class="text-xs font-bold text-rose-400 uppercase">Nosotros (La App)</p>
-                        <p class="text-2xl font-bold">La Respuesta Inmediata</p>
-                        <p class="text-sm text-gray-400 mt-2">Le damos al anfitrión la herramienta para responder al instante (y ganar dinero).</p>
+
+                    <div class="text-3xl text-rose-500 rotate-90 md:rotate-0">→</div>
+
+                    <div
+                        class="bg-black text-white p-6 rounded-2xl shadow-2xl w-full md:w-[400px] border-4 border-rose-500">
+                        <p class="text-xs font-bold text-rose-400 uppercase">La App</p>
+                        <p class="text-2xl font-bold">Respuesta Inmediata</p>
+                        <p class="text-sm text-gray-400 mt-2">Damos al anfitrión la herramienta para monetizar esa
+                            respuesta.</p>
                     </div>
-                    <div class="text-4xl text-rose-500">→</div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 hover:scale-105 transition-transform w-72">
+
+                    <div class="text-3xl text-rose-500 rotate-90 md:rotate-0">→</div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 w-full md:w-72">
                         <p class="text-xs font-bold text-gray-400 uppercase">El Aliado</p>
-                        <p class="text-lg font-bold text-slate-800">Recibe Cliente Validado</p>
-                        <p class="text-sm text-slate-500 mt-2">No es tráfico frío de Facebook.</p>
+                        <p class="text-lg font-bold text-slate-800">Recibe Cliente</p>
+                        <p class="text-sm text-slate-500 mt-2">Cliente validado y listo para gastar.</p>
                     </div>
                 </div>
             </div>
-            
-            <p class="mt-16 text-lg text-slate-600 max-w-2xl mx-auto">
-                Las agencias de turismo tradicionales pelean en el aeropuerto o en la calle. <br>
-                <strong>Nosotros ya estamos dentro del apartamento con el cliente.</strong>
+
+            <p class="mt-12 text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+                Las agencias pelean en la calle. <br>
+                <strong>Nosotros ya estamos dentro del apartamento.</strong>
             </p>
         </div>
     </section>
 
     <!-- SLIDE 5: MODELO DE NEGOCIO -->
     <section class="slide bg-white">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 w-full">
             <div>
-                <h2 class="text-5xl font-black mb-8">¿Cómo Ganamos?</h2>
-                <div class="space-y-8">
-                    <div class="flex gap-6">
-                        <div class="text-4xl">💸</div>
+                <h2 class="text-3xl md:text-5xl font-black mb-8 text-center md:text-left">¿Cómo Ganamos?</h2>
+                <div class="space-y-6 md:space-y-8">
+                    <div class="flex gap-4 md:gap-6">
+                        <div class="text-3xl md:text-4xl">💸</div>
                         <div>
-                            <h3 class="text-2xl font-bold text-slate-900">Comisión por Transacción (Take Rate)</h3>
-                            <p class="text-slate-600">Cobramos un % sobre cada reserva de bote, chef o tour gestionada (10-20%).</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900">Comisiones (Take Rate)</h3>
+                            <p class="text-sm md:text-base text-slate-600">Cobramos un % sobre cada reserva de bote,
+                                chef o tour (10-20%).</p>
                         </div>
                     </div>
-                    <div class="flex gap-6">
-                        <div class="text-4xl">💎</div>
+                    <div class="flex gap-4 md:gap-6">
+                        <div class="text-3xl md:text-4xl">💎</div>
                         <div>
-                            <h3 class="text-2xl font-bold text-slate-900">Membresía para Aliados (SaaS)</h3>
-                            <p class="text-slate-600">Restaurantes pagan una mensualidad para tener presencia destacada en la app de miles de anfitriones.</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900">Membresía (SaaS)</h3>
+                            <p class="text-sm md:text-base text-slate-600">Mensualidad por presencia destacada ante
+                                miles de anfitriones.</p>
                         </div>
                     </div>
-                    <div class="flex gap-6">
-                        <div class="text-4xl">📈</div>
+                    <div class="flex gap-4 md:gap-6">
+                        <div class="text-3xl md:text-4xl">📈</div>
                         <div>
-                            <h3 class="text-2xl font-bold text-slate-900">Data & Insights</h3>
-                            <p class="text-slate-600">Sabemos qué busca el turista antes de que salga a la calle. Esa información vale oro para marcas.</p>
+                            <h3 class="text-xl md:text-2xl font-bold text-slate-900">Data & Insights</h3>
+                            <p class="text-sm md:text-base text-slate-600">Información de consumo turístico en tiempo
+                                real.</p>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-100 rounded-3xl p-8 flex flex-col justify-center">
-                <h3 class="text-xl font-bold mb-4 text-center">Proyección de Valor</h3>
+            <div class="bg-gray-100 rounded-3xl p-6 md:p-8 flex flex-col justify-center">
+                <h3 class="text-lg md:text-xl font-bold mb-4 text-center">Proyección de Valor</h3>
                 <div class="space-y-4">
-                    <div class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center text-sm md:text-base">
                         <span class="font-medium">100 Anfitriones</span>
-                        <span class="text-rose-500 font-bold">$5M en reservas/mes</span>
+                        <span class="text-rose-500 font-bold">$5M /mes</span>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center">
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center text-sm md:text-base">
                         <span class="font-medium">1,000 Anfitriones</span>
-                        <span class="text-rose-500 font-bold">$150M en reservas/mes</span>
+                        <span class="text-rose-500 font-bold">$150M /mes</span>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border-l-4 border-rose-500">
-                        <span class="font-medium">Red Completa (5k props)</span>
-                        <span class="text-rose-500 font-bold">$2,000M+ potencial</span>
+                    <div
+                        class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border-l-4 border-rose-500 text-sm md:text-base">
+                        <span class="font-medium">Red Completa</span>
+                        <span class="text-rose-500 font-bold">$2,000M+</span>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-4 text-center">*Cifras estimadas basadas en ticket promedio de experiencia VIP ($500k COP)</p>
+                <p class="text-[10px] md:text-xs text-gray-400 mt-4 text-center">*Estimaciones basadas en ticket
+                    promedio VIP.</p>
             </div>
         </div>
     </section>
 
     <!-- FOOTER -->
-    <footer class="py-12 bg-black text-center text-slate-500 text-sm">
+    <footer class="py-8 md:py-12 bg-black text-center text-slate-500 text-xs md:text-sm">
         <p>Cartagena Concierge Platform &copy; 2024</p>
     </footer>
 
 </body>
+
 </html>
