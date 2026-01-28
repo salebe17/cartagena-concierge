@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { BillingSection } from '../dashboard/BillingSection';
 import { UserFinanceSection } from '../dashboard/UserFinanceSection';
 import { HostFinanceView } from './HostFinanceView';
+import { MarketplaceView } from './marketplace/MarketplaceView';
 
 interface HostMenuProps {
     userName: string;
@@ -21,7 +22,7 @@ interface HostMenuProps {
 
 export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout, properties = [] }: HostMenuProps) {
     const [isSwitching, setIsSwitching] = useState(false);
-    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet'>('main');
+    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet' | 'resources'>('main');
     const router = useRouter();
 
     const handleSwitchToTraveler = () => {
@@ -31,6 +32,9 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
         }, 1500);
     };
 
+    if (view === 'resources') {
+        return <MarketplaceView onBack={() => setView('main')} />;
+    }
 
     if (view === 'properties') {
         return (
@@ -161,26 +165,13 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                 </div>
             </div>
 
-            import {MarketplaceView} from './marketplace/MarketplaceView';
-
-            // ... (in HostMenu function)
-            const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet' | 'resources'>('main');
-
-            // ...
-
-            if (view === 'resources') {
-        return <MarketplaceView onBack={() => setView('main')} />;
-    }
-
-            if (view === 'wallet') {
-                // ...
-                <div className="space-y-1">
-                    <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
-                    <MenuItem icon={Settings} label="Configuración de la cuenta" />
-                    <MenuItem icon={BookOpen} label="Aliados VIP & Recursos" onClick={() => setView('resources')} />
-                    <MenuItem icon={HelpCircle} label="Obtén ayuda" />
-                    <MenuItem icon={LogOut} label="Cerrar Sesión" onClick={onLogout} isLast />
-                </div>
+            <div className="space-y-1">
+                <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
+                <MenuItem icon={Settings} label="Configuración de la cuenta" />
+                <MenuItem icon={BookOpen} label="Aliados VIP & Recursos" onClick={() => setView('resources')} />
+                <MenuItem icon={HelpCircle} label="Obtén ayuda" />
+                <MenuItem icon={LogOut} label="Cerrar Sesión" onClick={onLogout} isLast />
+            </div>
 
             {/* Toggle Mode Button */}
         </div>
