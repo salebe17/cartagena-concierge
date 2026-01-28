@@ -161,13 +161,26 @@ export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, re
                 </div>
             </div>
 
-            <div className="space-y-1">
-                <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
-                <MenuItem icon={Settings} label="Configuración de la cuenta" />
-                <MenuItem icon={BookOpen} label="Recursos para anfitrionar" />
-                <MenuItem icon={HelpCircle} label="Obtén ayuda" />
-                <MenuItem icon={LogOut} label="Cerrar Sesión" onClick={onLogout} isLast />
-            </div>
+            import {MarketplaceView} from './marketplace/MarketplaceView';
+
+            // ... (in HostMenu function)
+            const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet' | 'resources'>('main');
+
+            // ...
+
+            if (view === 'resources') {
+        return <MarketplaceView onBack={() => setView('main')} />;
+    }
+
+            if (view === 'wallet') {
+                // ...
+                <div className="space-y-1">
+                    <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
+                    <MenuItem icon={Settings} label="Configuración de la cuenta" />
+                    <MenuItem icon={BookOpen} label="Aliados VIP & Recursos" onClick={() => setView('resources')} />
+                    <MenuItem icon={HelpCircle} label="Obtén ayuda" />
+                    <MenuItem icon={LogOut} label="Cerrar Sesión" onClick={onLogout} isLast />
+                </div>
 
             {/* Toggle Mode Button */}
         </div>
