@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Ship, Utensils, Car, Sparkles, Map, ChevronRight, Copy, MessageCircle, ArrowLeft } from "lucide-react";
-import { getAllies, generateReferralCode, Ally } from "@/app/actions/marketplace";
+import { Ship, Utensils, Car, Sparkles, Map, ChevronRight, Copy, MessageCircle, ArrowLeft, CalendarClock, Users } from "lucide-react";
+import { getAllies, generateReferralCode, createReservation, Ally } from "@/app/actions/marketplace";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // Mock Data for Fallback/Demo if DB is empty
 const MOCK_ALLIES: Ally[] = [
@@ -17,7 +19,8 @@ const MOCK_ALLIES: Ally[] = [
         description: 'Yates y lanchas deportivas con capitanía certificada.',
         image_url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?q=80&w=1000&auto=format&fit=crop',
         perk_description: '10% OFF + Cervezas de Bienvenida',
-        contact_phone: '573000000000'
+        contact_phone: '573000000000',
+        requires_reservation: false
     },
     {
         id: '2',
@@ -26,7 +29,8 @@ const MOCK_ALLIES: Ally[] = [
         description: 'Cenas privadas de alta cocina caribeña en tu propiedad.',
         image_url: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=1000&auto=format&fit=crop',
         perk_description: 'Postre Gratis para todo el grupo',
-        contact_phone: '573000000000'
+        contact_phone: '573000000000',
+        requires_reservation: true
     },
     {
         id: '3',
@@ -35,7 +39,8 @@ const MOCK_ALLIES: Ally[] = [
         description: 'Camionetas Suburban/Tahoe con escolta opcional.',
         image_url: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1000&auto=format&fit=crop',
         perk_description: 'Upgrade de vehículo (sujeto a disp.)',
-        contact_phone: '573000000000'
+        contact_phone: '573000000000',
+        requires_reservation: false
     }
 ];
 
@@ -49,6 +54,11 @@ export function MarketplaceView({ onBack }: MarketplaceViewProps) {
     const [selectedAlly, setSelectedAlly] = useState<Ally | null>(null);
     const [generatedCode, setGeneratedCode] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
+
+    // Reservation Form State
+    const [reservationStep, setReservationStep] = useState<'form' | 'success'>('form');
+    const [resDetails, setResDetails] = useState({ guest_name: '', date: '', guests: '2', notes: '' });
+
     const { toast } = useToast();
 
     // Fetch real allies on mount
@@ -68,37 +78,66 @@ export function MarketplaceView({ onBack }: MarketplaceViewProps) {
         fetchAllies();
     }, []);
 
-    const handleGenerateCode = async () => {
+    const handleAction = async () => {
         if (!selectedAlly) return;
         setIsGenerating(true);
 
-        try {
-            // In a real app, un-comment this to hit DB
-            // const res = await generateReferralCode(selectedAlly.id);
+        if (selectedAlly.requires_reservation) {
+            // Handle Reservation
+            try {
+                const res = await createReservation(selectedAlly.id, {
+                    guest_name: resDetails.guest_name,
+                    date: new Date(resDetails.date),
+                    guests: parseInt(resDetails.guests),
+                    notes: resDetails.notes
+                });
 
-            // For Demo UX immediately:
-            await new Promise(r => setTimeout(r, 1500)); // Fake network delay
-            const mockCode = `VIP-${Math.floor(1000 + Math.random() * 9000)}`;
+                if (res.success) {
+                    setReservationStep('success');
+                } else {
+                    toast({ title: "Error", description: res.error, variant: "destructive" });
+                }
+            } catch (e) {
+                toast({ title: "Error", description: "Error enviando solicitud", variant: "destructive" });
+            } finally {
+                setIsGenerating(false);
+            }
+        } else {
+            // Handle Direct Code
+            try {
+                // In a real app, un-comment this to hit DB
+                const res = await generateReferralCode(selectedAlly.id);
 
-            setGeneratedCode(mockCode);
-            // setGeneratedCode(res.success ? res.code : mockCode); 
+                // For Demo UX immediately if DB fails or for speed
+                const mockCode = `VIP-${Math.floor(1000 + Math.random() * 9000)}`;
+                setGeneratedCode(res.success ? res.code : mockCode);
 
-        } catch (e) {
-            toast({ title: "Error", description: "No se pudo generar el código.", variant: "destructive" });
-        } finally {
-            setIsGenerating(false);
+            } catch (e) {
+                toast({ title: "Error", description: "No se pudo generar el código.", variant: "destructive" });
+            } finally {
+                setIsGenerating(false);
+            }
         }
     };
 
     const handleWhatsAppRedirect = () => {
-        if (!selectedAlly || !generatedCode) return;
+        if (!selectedAlly) return;
 
-        const message = `Hola ${selectedAlly.name}, soy anfitrión de Cartagena Concierge. Mi huésped está interesado en sus servicios. Te comparto el código de beneficio: *${generatedCode}* (${selectedAlly.perk_description}).`;
+        // Different message for Reservation vs Code
+        let message = '';
+        if (selectedAlly.requires_reservation) {
+            message = `Hola ${selectedAlly.name}, acabo de solicitar una reserva para mi huésped *${resDetails.guest_name}* para el día *${resDetails.date}*. Quedo atento a su confirmación.`;
+        } else {
+            message = `Hola ${selectedAlly.name}, soy anfitrión de Cartagena Concierge. Mi huésped está interesado en sus servicios. Te comparto el código de beneficio: *${generatedCode}* (${selectedAlly.perk_description}).`;
+        }
+
         const url = `https://wa.me/${selectedAlly.contact_phone}?text=${encodeURIComponent(message)}`;
-
         window.open(url, '_blank');
-        setSelectedAlly(null); // Close modal
-        setGeneratedCode(null); // Reset
+
+        if (!selectedAlly.requires_reservation) {
+            setSelectedAlly(null);
+            setGeneratedCode(null);
+        }
     };
 
     const getIcon = (cat: string) => {
@@ -159,80 +198,165 @@ export function MarketplaceView({ onBack }: MarketplaceViewProps) {
 
                         {/* Action */}
                         <Button
-                            onClick={() => setSelectedAlly(ally)}
-                            className="w-full bg-black text-white hover:bg-gray-800 rounded-xl h-12 font-bold"
+                            onClick={() => {
+                                setSelectedAlly(ally);
+                                setReservationStep('form');
+                                setGeneratedCode(null);
+                            }}
+                            className={`w-full h-12 rounded-xl font-bold ${ally.requires_reservation ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-black text-white hover:bg-gray-800'}`}
                         >
-                            Solicitar Código VIP
+                            {ally.requires_reservation ? 'Solicitar Reserva' : 'Obtener Código VIP'}
                         </Button>
                     </div>
                 ))}
             </div>
 
-            {/* MODAL: Code Generation */}
+            {/* MODAL: Logic for Code vs Reservation */}
             <Dialog open={!!selectedAlly} onOpenChange={(open) => !open && setSelectedAlly(null)}>
                 <DialogContent className="rounded-[32px] p-0 overflow-hidden max-w-sm sm:max-w-md">
-                    <div className="bg-[#222222] p-8 text-center text-white relative">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 via-amber-500 to-blue-500"></div>
-                        <Sparkles size={48} className="mx-auto text-amber-400 mb-4 animate-pulse" />
+
+                    {/* Header based on Type */}
+                    <div className={`p-8 text-center text-white relative ${selectedAlly?.requires_reservation ? 'bg-rose-600' : 'bg-[#222222]'}`}>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                        {selectedAlly?.requires_reservation ? (
+                            <CalendarClock size={48} className="mx-auto text-white/90 mb-4" />
+                        ) : (
+                            <Sparkles size={48} className="mx-auto text-amber-400 mb-4 animate-pulse" />
+                        )}
+
                         <DialogTitle className="text-2xl font-black mb-2">
-                            {generatedCode ? "¡Código Generado!" : "Generar Código VIP"}
+                            {selectedAlly?.requires_reservation
+                                ? (reservationStep === 'success' ? "¡Solicitud Enviada!" : "Reservar Experiencia")
+                                : (generatedCode ? "¡Código Generado!" : "Generar Código VIP")
+                            }
                         </DialogTitle>
-                        <DialogDescription className="text-gray-400 max-w-xs mx-auto">
-                            {generatedCode
-                                ? "Comparte este código con el aliado para aplicar el beneficio."
-                                : "Esto creará un código único rastreable para tu huésped."}
+                        <DialogDescription className="text-white/80 max-w-xs mx-auto">
+                            {selectedAlly?.requires_reservation
+                                ? (reservationStep === 'success' ? "El aliado confirmará disponibilidad en breve." : "Ingresa los datos para solicitar cupo.")
+                                : (generatedCode ? "Comparte este código para redimir el beneficio." : "Esto creará un código único rastreable.")
+                            }
                         </DialogDescription>
                     </div>
 
                     <div className="p-8">
-                        {!generatedCode ? (
-                            <div className="space-y-4">
-                                <div className="bg-gray-50 rounded-2xl p-4 flex gap-4 items-center">
-                                    <div className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 shadow-sm">
-                                        {selectedAlly && getIcon(selectedAlly.category)}
+                        {selectedAlly?.requires_reservation ? (
+                            /* --- RESERVATION FLOW --- */
+                            reservationStep === 'form' ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-500 uppercase">Huésped</label>
+                                        <Input
+                                            placeholder="Nombre del titular"
+                                            value={resDetails.guest_name}
+                                            onChange={(e) => setResDetails({ ...resDetails, guest_name: e.target.value })}
+                                            className="rounded-xl border-gray-200"
+                                        />
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <label className="text-xs font-bold text-gray-500 uppercase">Fecha/Hora</label>
+                                            <Input
+                                                type="datetime-local"
+                                                value={resDetails.date}
+                                                onChange={(e) => setResDetails({ ...resDetails, date: e.target.value })}
+                                                className="rounded-xl border-gray-200"
+                                            />
+                                        </div>
+                                        <div className="w-20">
+                                            <label className="text-xs font-bold text-gray-500 uppercase">Pax</label>
+                                            <Input
+                                                type="number"
+                                                value={resDetails.guests}
+                                                onChange={(e) => setResDetails({ ...resDetails, guests: e.target.value })}
+                                                className="rounded-xl border-gray-200"
+                                            />
+                                        </div>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-gray-900">{selectedAlly?.name}</p>
-                                        <p className="text-xs text-gray-500">Se notificará al aliado de tu referido.</p>
+                                        <label className="text-xs font-bold text-gray-500 uppercase">Notas</label>
+                                        <Textarea
+                                            placeholder="Alergias, ocasión especial..."
+                                            value={resDetails.notes}
+                                            onChange={(e) => setResDetails({ ...resDetails, notes: e.target.value })}
+                                            className="rounded-xl border-gray-200"
+                                        />
                                     </div>
+                                    <Button
+                                        onClick={handleAction}
+                                        disabled={isGenerating || !resDetails.guest_name || !resDetails.date}
+                                        className="w-full bg-rose-600 h-12 rounded-xl font-bold text-white hover:bg-rose-700"
+                                    >
+                                        {isGenerating ? "Enviando..." : "Enviar Solicitud"}
+                                    </Button>
                                 </div>
-                                <Button
-                                    onClick={handleGenerateCode}
-                                    disabled={isGenerating}
-                                    className="w-full bg-[#222222] h-12 rounded-xl font-bold text-white hover:bg-black"
-                                >
-                                    {isGenerating ? "Generando..." : "Crear Código Único"}
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="space-y-6 text-center">
-                                {/* THE CODE */}
-                                <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6 relative group cursor-pointer hover:border-gray-400 transition-colors"
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(generatedCode);
-                                        toast({ title: "Copiado", description: "Código copiado al portapapeles" });
-                                    }}
-                                >
-                                    <p className="text-xs font-black uppercase text-gray-400 tracking-[0.2em] mb-2">TU CÓDIGO</p>
-                                    <p className="text-4xl font-black text-[#222222] tracking-widest font-mono">{generatedCode}</p>
-                                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
-                                        <span className="flex items-center gap-2 font-bold text-sm"><Copy size={16} /> Copiar</span>
+                            ) : (
+                                <div className="space-y-6 text-center">
+                                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto text-green-600">
+                                        <MessageCircle size={32} />
                                     </div>
-                                </div>
-
-                                <div className="space-y-3">
+                                    <p className="text-sm text-gray-600">
+                                        Hemos notificado al aliado. Te recomendamos enviar un mensaje directo para acelerar la confirmación.
+                                    </p>
                                     <Button
                                         onClick={handleWhatsAppRedirect}
                                         className="w-full bg-[#25D366] hover:bg-[#128C7E] h-12 rounded-xl font-bold text-white flex items-center justify-center gap-2"
                                     >
                                         <MessageCircle size={20} />
-                                        Enviar por WhatsApp
+                                        Confirmar por WhatsApp
                                     </Button>
-                                    <p className="text-[10px] text-gray-400 max-w-xs mx-auto leading-relaxed">
-                                        Al contactar, se enviará un mensaje pre-redactado con este código. El aliado validará la autenticidad en nuestra plataforma.
-                                    </p>
+                                    <Button variant="ghost" onClick={() => setSelectedAlly(null)}>Cerrar</Button>
                                 </div>
-                            </div>
+                            )
+                        ) : (
+                            /* --- CODE FLOW --- */
+                            !generatedCode ? (
+                                <div className="space-y-4">
+                                    <div className="bg-gray-50 rounded-2xl p-4 flex gap-4 items-center">
+                                        <div className="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center shrink-0 shadow-sm">
+                                            {selectedAlly && getIcon(selectedAlly.category)}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900">{selectedAlly?.name}</p>
+                                            <p className="text-xs text-gray-500">Se notificará al aliado de tu referido.</p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={handleAction}
+                                        disabled={isGenerating}
+                                        className="w-full bg-[#222222] h-12 rounded-xl font-bold text-white hover:bg-black"
+                                    >
+                                        {isGenerating ? "Generando..." : "Crear Código Único"}
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="space-y-6 text-center">
+                                    <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6 relative group cursor-pointer hover:border-gray-400 transition-colors"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(generatedCode);
+                                            toast({ title: "Copiado", description: "Código copiado al portapapeles" });
+                                        }}
+                                    >
+                                        <p className="text-xs font-black uppercase text-gray-400 tracking-[0.2em] mb-2">TU CÓDIGO</p>
+                                        <p className="text-4xl font-black text-[#222222] tracking-widest font-mono">{generatedCode}</p>
+                                        <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+                                            <span className="flex items-center gap-2 font-bold text-sm"><Copy size={16} /> Copiar</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <Button
+                                            onClick={handleWhatsAppRedirect}
+                                            className="w-full bg-[#25D366] hover:bg-[#128C7E] h-12 rounded-xl font-bold text-white flex items-center justify-center gap-2"
+                                        >
+                                            <MessageCircle size={20} />
+                                            Enviar por WhatsApp
+                                        </Button>
+                                        <p className="text-[10px] text-gray-400 max-w-xs mx-auto leading-relaxed">
+                                            Al contactar, se enviará un mensaje pre-redactado con este código.
+                                        </p>
+                                    </div>
+                                </div>
+                            )
                         )}
                     </div>
                 </DialogContent>
