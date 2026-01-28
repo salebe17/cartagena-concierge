@@ -309,10 +309,10 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                                                     <div
                                                         key={idx}
                                                         className={`w-12 h-16 rounded-xl flex items-center justify-center text-2xl font-bold border-2 transition-all ${digit
-                                                                ? 'bg-white border-rose-500 text-rose-500 shadow-sm'
-                                                                : isActive
-                                                                    ? 'bg-white border-black scale-105 shadow-md'
-                                                                    : 'bg-gray-50 border-gray-200 text-gray-400'
+                                                            ? 'bg-white border-rose-500 text-rose-500 shadow-sm'
+                                                            : isActive
+                                                                ? 'bg-white border-black scale-105 shadow-md'
+                                                                : 'bg-gray-50 border-gray-200 text-gray-400'
                                                             }`}
                                                     >
                                                         {digit ? digit : ''}
@@ -363,3 +363,4 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
         </div>
     );
 }
+
