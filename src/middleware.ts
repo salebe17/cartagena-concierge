@@ -111,7 +111,7 @@ export async function middleware(request: NextRequest) {
     // 1. Protect Admin Routes
     if (request.nextUrl.pathname.startsWith('/admin')) {
         if (!user) {
-            return NextResponse.redirect(new URL('/auth/login', request.url))
+            return NextResponse.redirect(new URL('/login', request.url))
         }
     }
 
