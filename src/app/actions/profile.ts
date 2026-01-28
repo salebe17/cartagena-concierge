@@ -46,6 +46,15 @@ export async function updateProfileInfo(data: { name: string; phone: string; bio
                 id: user.id,
                 full_name: data.name,
                 phone: data.phone,
-                return { success: false, error: e.message };
-            }
+                bio: data.bio,
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) throw error;
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
 }
