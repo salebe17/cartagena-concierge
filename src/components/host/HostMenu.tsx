@@ -25,7 +25,7 @@ interface HostMenuProps {
 
 export function HostMenu({ userName, userImage, revenue = "$0", rating = 5.0, reviewsCount = 0, onLogout, properties = [], onNavigate }: HostMenuProps) {
     const [isSwitching, setIsSwitching] = useState(false);
-    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet' | 'resources' | 'help'>('main');
+    const [view, setView] = useState<'main' | 'finance' | 'billing' | 'properties' | 'wallet' | 'resources' | 'help' | 'settings'>('main');
     const router = useRouter();
 
     const handleSwitchToTraveler = () => {
