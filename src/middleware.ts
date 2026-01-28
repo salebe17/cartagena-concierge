@@ -118,7 +118,7 @@ export async function middleware(request: NextRequest) {
     // 2. Protect Host Routes
     if (request.nextUrl.pathname.startsWith('/dashboard')) {
         if (!user) {
-            return NextResponse.redirect(new URL('/auth/login', request.url))
+            return NextResponse.redirect(new URL('/login', request.url))
         }
     }
 
