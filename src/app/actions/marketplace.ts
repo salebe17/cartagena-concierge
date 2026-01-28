@@ -14,7 +14,7 @@ export interface Ally {
 }
 
 export async function getAllies() {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // In a real scenario, we might want to cache this
     const { data, error } = await supabase
@@ -32,7 +32,7 @@ export async function getAllies() {
 }
 
 export async function generateReferralCode(allyId: string) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     try {
         const { data: { user } } = await supabase.auth.getUser();
