@@ -60,9 +60,9 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
         localStorage.setItem('biometric_enabled', String(enabled));
 
         if (enabled) {
-            toast({ title: "Biometría Activada", description: "Se solicitará FaceID/Huella en tu próximo inicio de sesión." });
+            toast({ title: "Privacidad Activada", description: "Tu saldo ahora está protegido con huella." });
         } else {
-            toast({ title: "Biometría Desactivada", description: "Ingresarás solo con tu cuenta." });
+            toast({ title: "Privacidad Desactivada", description: "Cualquiera con tu teléfono puede ver tu saldo." });
         }
     };
 
@@ -196,8 +196,8 @@ export function HostSettingsView({ onBack, userImage, userName, userPhone, userB
                                     <Fingerprint size={24} />
                                 </div>
                                 <div className='flex flex-col'>
-                                    <span className="font-bold text-gray-900">Biometría</span>
-                                    <span className="text-xs text-gray-500">FaceID / TouchID</span>
+                                    <span className="font-bold text-gray-900">Proteger Billetera</span>
+                                    <span className="text-xs text-gray-500">Pedir huella para ver saldo</span>
                                 </div>
                             </div>
                             <Switch

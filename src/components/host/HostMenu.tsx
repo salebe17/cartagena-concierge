@@ -38,6 +38,19 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
         }, 1500);
     };
 
+    const handleWalletAccess = () => {
+        const isProtected = localStorage.getItem('biometric_enabled') === 'true';
+        if (isProtected) {
+            // Simulate Biometric Challenge
+            const confirmed = window.confirm("🔒 Seguridad: Confirma tu identidad para ver tu dinero.");
+            if (confirmed) {
+                setView('wallet');
+            }
+        } else {
+            setView('wallet');
+        }
+    };
+
     if (view === 'resources') {
         return <MarketplaceView onBack={() => setView('main')} />;
     }
@@ -146,7 +159,7 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
             <div className="grid grid-cols-2 gap-4 mb-8">
                 {/* Revenue/Gastos Card - Clickable to go to Finance */}
                 <div
-                    onClick={() => setView('wallet')}
+                    onClick={handleWalletAccess}
                     className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between h-40 cursor-pointer hover:border-black active:scale-95 transition-all group"
                 >
                     <div>
@@ -188,7 +201,7 @@ export function HostMenu({ userName, userFullName, userImage, userPhone, userBio
             </div>
 
             <div className="space-y-1">
-                <MenuItem icon={CreditCard} label="Finanzas" onClick={() => setView('wallet')} />
+                <MenuItem icon={CreditCard} label="Finanzas" onClick={handleWalletAccess} />
                 <MenuItem icon={Settings} label="Configuración de la cuenta" onClick={() => setView('settings')} />
                 <MenuItem icon={BookOpen} label="Aliados VIP & Recursos" onClick={() => setView('resources')} />
                 <MenuItem icon={HelpCircle} label="Obtén ayuda" onClick={() => setView('help')} />
