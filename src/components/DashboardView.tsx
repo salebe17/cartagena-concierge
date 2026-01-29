@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Sparkles, Wrench, Ship, MapPin, Plus, Home, Settings2, MessageSquare, Menu, LayoutGrid } from "lucide-react";
