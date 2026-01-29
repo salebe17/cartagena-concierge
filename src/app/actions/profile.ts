@@ -4,6 +4,11 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfileAvatar(avatarUrl: string) {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing.");
+        return { success: false, error: "Configuration Error: Service Key Missing on Server." };
+    }
+
     const supabase = await createClient(); // Keep normal client for auth check
     const adminDb = await createAdminClient(); // Admin for writing
 
