@@ -1,10 +1,12 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Premium Dark Aesthetic - Primary Palette */
-  --color-primary: #00E5FF; /* Cyan Neon */
-  --color-primary-dark: #00B3CC;
-  --color-accent: #B026FF; /* Purple Neon */
+  /* Premium Dark Aesthetic - inDriver Style Palette */
+  --color-primary: #C6FF00;
+  /* Signature Lime Green */
+  --color-primary-dark: #AEEA00;
+  --color-accent: #FFFFFF;
+  /* High Contrast White */
 
   /* Neutral Palette - Dark Mode First */
   --color-text-primary: #FFFFFF;
@@ -20,7 +22,8 @@
 
   /* Shadows */
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-neon: 0 0 20px rgba(0, 229, 255, 0.4);
+  --shadow-neon: 0 0 20px rgba(198, 255, 0, 0.3);
+  /* Green Glow */
 
   /* Fonts */
   --font-sans: var(--font-geist-sans), Inter, system-ui, sans-serif;
@@ -76,7 +79,7 @@
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-[var(--shadow-neon)] hover:-translate-y-1 hover:border-[rgba(0,229,255,0.3)];
+    @apply transition-all duration-300 hover:shadow-[var(--shadow-neon)] hover:-translate-y-1 hover:border-[#C6FF00]/30;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -87,8 +90,8 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .text-glow {
-    text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+    text-shadow: 0 0 10px rgba(198, 255, 0, 0.6);
   }
 }

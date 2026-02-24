@@ -120,11 +120,11 @@ export function AuthForm() {
                                 placeholder="tu@email.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="h-12 bg-gray-50 border-gray-200 focus:border-[#FF5A5F] focus:ring-[#FF5A5F] rounded-xl text-gray-900 transition-all font-medium"
+                                className="h-12 bg-gray-50 border-gray-200 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] rounded-xl text-gray-900 transition-all font-medium"
                             />
                         </div>
                         <Button
-                            className="w-full h-12 bg-[#FF5A5F] hover:bg-[#E03E43] text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200"
+                            className="w-full h-12 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-black font-extrabold rounded-xl transition-all shadow-lg shadow-[rgba(198,255,0,0.2)]"
                             onClick={handleSendCode}
                             disabled={loading || !email}
                         >
@@ -141,13 +141,13 @@ export function AuthForm() {
                                 placeholder="0 0 0 0 0 0"
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value)}
-                                className="h-14 bg-gray-50 border-gray-200 focus:border-[#FF5A5F] focus:ring-[#FF5A5F] rounded-xl text-center tracking-[0.5em] text-2xl font-bold text-gray-900"
+                                className="h-14 bg-gray-50 border-gray-200 focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)] rounded-xl text-center tracking-[0.5em] text-2xl font-bold text-gray-900"
                                 maxLength={6}
                             />
                             <p className="text-xs text-gray-400 text-center font-medium">Enviamos el código a {email}</p>
                         </div>
                         <Button
-                            className="w-full h-12 bg-[#FF5A5F] hover:bg-[#E03E43] text-white font-bold rounded-xl transition-all shadow-lg shadow-rose-200"
+                            className="w-full h-12 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-black font-extrabold rounded-xl transition-all shadow-lg shadow-[rgba(198,255,0,0.2)]"
                             onClick={handleVerifyCode}
                             disabled={loading || !otp}
                         >
