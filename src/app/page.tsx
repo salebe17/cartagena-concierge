@@ -16,11 +16,11 @@ export default function LandingPage() {
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-glow leading-tight">
-          The <span className="text-[var(--color-primary)]">inDriver</span> for<br />Home Services
+          El <span className="text-[var(--color-primary)]">inDriver</span> de los<br />Servicios para el Hogar
         </h1>
 
         <p className="text-xl text-[var(--color-text-secondary)] mb-12 max-w-xl mx-auto">
-          Name your price for maintenance, cleaning, or concierge services. Technicians bid in real-time.
+          Ponle precio a los servicios de mantenimiento, limpieza o concierge. Los técnicos publican sus ofertas en tiempo real.
         </p>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -30,10 +30,10 @@ export default function LandingPage() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 text-white shadow-xl">
                 <UserRound size={32} />
               </div>
-              <h2 className="text-2xl font-bold mb-2">I need a Service</h2>
-              <p className="text-[var(--color-text-secondary)] mb-6">Post a job, set your price, and get offers instantly.</p>
+              <h2 className="text-2xl font-bold mb-2">Necesito un Servicio</h2>
+              <p className="text-[var(--color-text-secondary)] mb-6">Publica una solicitud, ponle precio y recibe ofertas al instante.</p>
               <div className="flex items-center text-cyan-400 font-semibold group-hover:translate-x-2 transition-transform">
-                Enter as Client <ArrowRight className="w-5 h-5 ml-2" />
+                Entrar como Cliente <ArrowRight className="w-5 h-5 ml-2" />
               </div>
             </div>
           </Link>
@@ -44,10 +44,10 @@ export default function LandingPage() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-6 text-white shadow-xl">
                 <Wrench size={32} />
               </div>
-              <h2 className="text-2xl font-bold mb-2">I am a Technician</h2>
-              <p className="text-[var(--color-text-secondary)] mb-6">Find jobs nearby on the radar and bid to earn money.</p>
+              <h2 className="text-2xl font-bold mb-2">Soy un Técnico</h2>
+              <p className="text-[var(--color-text-secondary)] mb-6">Encuentra trabajos cercanos en el radar y oferta para ganar dinero.</p>
               <div className="flex items-center text-purple-400 font-semibold group-hover:translate-x-2 transition-transform">
-                Enter Gig Radar <ArrowRight className="w-5 h-5 ml-2" />
+                Entrar al Radar de Trabajos <ArrowRight className="w-5 h-5 ml-2" />
               </div>
             </div>
           </Link>
