@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, Receipt, AlertCircle, DollarSign, Calendar } from "lucide-react";
+import { Loader2, ReceiptText, AlertCircle, DollarSign, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -131,7 +131,7 @@ export function UserFinanceSection() {
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-gray-50 flex items-center gap-2 bg-gray-50/50">
-                    <Receipt size={16} className="text-gray-400" />
+                    <ReceiptText size={16} className="text-gray-400" />
                     <h3 className="text-sm font-bold text-gray-700">Historial de Transacciones</h3>
                 </div>
 
