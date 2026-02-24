@@ -115,10 +115,24 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 2. Protect Host Routes
+    // 2. Protect Host Routes (legacy)
     if (request.nextUrl.pathname.startsWith('/dashboard')) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
+        }
+    }
+
+    // 3. Protect Client Routes
+    if (request.nextUrl.pathname.startsWith('/client')) {
+        if (!user) {
+            return NextResponse.redirect(new URL('/login?next=/client/dashboard', request.url))
+        }
+    }
+
+    // 4. Protect Technician Routes
+    if (request.nextUrl.pathname.startsWith('/technician')) {
+        if (!user) {
+            return NextResponse.redirect(new URL('/login?next=/technician/dashboard', request.url))
         }
     }
 
