@@ -25,61 +25,29 @@ function Navbar() {
             </div>
             <div className="hidden sm:block">
               <span className="text-[#FF5A5F] font-bold text-xl tracking-tighter">cartagena</span>
-              <span className="text-gray-900 font-bold text-xl ml-0.5 opacity-40">concierge</span>
+              <span className="text-gray-900 font-bold text-xl ml-0.5 opacity-40">services</span>
             </div>
           </Link>
-
-          {/* Search Bar - Center (Desktop) */}
-          <div className="hidden lg:flex border border-gray-200 rounded-full shadow-sm hover:shadow-md transition cursor-pointer py-2 pl-6 pr-2 items-center justify-between min-w-[400px]">
-            <div className="text-[13px] font-bold px-4 border-r border-gray-100 text-[#222222]">
-              Servicios
-            </div>
-            <div className="text-[13px] font-bold px-4 border-r border-gray-100 text-[#222222]">
-              Logística
-            </div>
-            <div className="text-[13px] font-medium px-4 text-gray-400">
-              ¿Qué necesitas?
-            </div>
-            <div className="p-2.5 bg-[#FF5A5F] rounded-full text-white">
-              <Search size={14} strokeWidth={4} />
-            </div>
-          </div>
-
-          {/* Mobile Search Icon (Instead of full bar) */}
-          <div className="lg:hidden flex border border-gray-200 rounded-full shadow-sm p-3 items-center justify-center text-gray-900">
-            <Search size={18} strokeWidth={2.5} />
-          </div>
 
           {/* User Menu - Right */}
           <div className="flex items-center gap-2">
             <Link
-              href="/dashboard"
+              href="/client/dashboard"
               className="hidden md:block text-[13px] font-bold text-[#222222] rounded-full hover:bg-gray-50 py-3 px-4 transition uppercase tracking-tight"
             >
-              Control Panel
+              Portal de Cliente
+            </Link>
+
+            <Link
+              href="/technician/dashboard"
+              className="hidden md:block text-[13px] font-bold text-[var(--color-primary)] rounded-full hover:bg-gray-50 py-3 px-4 transition uppercase tracking-tight"
+            >
+              Radar de Trabajos
             </Link>
 
             <div className="hidden sm:flex hover:bg-gray-50 rounded-full p-3 transition cursor-pointer">
               <Globe size={16} className="text-[#222222]" />
             </div>
-
-            {/* Refactor: SaaS Login Button (CRO) */}
-            {/* 
-            <div className="flex items-center gap-2 ml-1">
-              <ConnectButton
-                client={client}
-                chain={chain}
-                theme="light"
-                connectButton={{
-                  label: "Ingresar",
-                  className: "!bg-transparent !text-[#222222] !font-bold !text-[13px] !border-2 !border-gray-100 !rounded-2xl !px-6 !h-11 hover:!bg-gray-50 transition-all",
-                }}
-              />
-              <div className="hidden sm:block bg-gray-100 rounded-full p-2 border border-gray-200">
-                <UserCircle size={22} className="text-gray-400 fill-white" />
-              </div>
-            </div> 
-            */}
 
             <Link href="/login" className="flex items-center gap-2 ml-1 hover:shadow-md transition-all rounded-full border border-gray-200 p-2 pl-4 bg-white cursor-pointer group">
               <Menu size={18} className="text-gray-500 group-hover:text-gray-800" />
@@ -93,19 +61,19 @@ function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation (Property Manager Style) */}
+      {/* Mobile Bottom Navigation (inDriver Style) */}
       <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] glass rounded-2xl h-16 border border-white/50 shadow-hero z-50 flex items-center justify-around px-4">
-        <Link href="/" className="flex flex-col items-center gap-1 text-[#FF5A5F]">
-          <Search size={22} strokeWidth={2.5} />
-          <span className="text-[10px] font-black uppercase tracking-tighter">Buscar</span>
-        </Link>
-        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-gray-400">
+        <Link href="/" className="flex flex-col items-center gap-1 text-[#FF5A5F] opacity-70 hover:opacity-100 transition">
           <Home size={22} strokeWidth={2.5} />
-          <span className="text-[10px] font-black uppercase tracking-tighter">Mis Props</span>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Inicio</span>
         </Link>
-        <Link href="/dashboard" className="flex flex-col items-center gap-1 text-gray-400">
+        <Link href="/client/dashboard" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#00E5FF] transition">
+          <Search size={22} strokeWidth={2.5} />
+          <span className="text-[10px] font-black uppercase tracking-tighter">Mis Solicitudes</span>
+        </Link>
+        <Link href="/technician/dashboard" className="flex flex-col items-center gap-1 text-gray-400 hover:text-[var(--color-primary)] transition">
           <Truck size={22} strokeWidth={2.5} />
-          <span className="text-[10px] font-black uppercase tracking-tighter">Pedidos</span>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Radar</span>
         </Link>
       </div>
     </nav>
