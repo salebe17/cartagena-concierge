@@ -17,5 +17,5 @@ export async function POST(req: Request) {
     User's rough description: ${prompt}`,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
 }
