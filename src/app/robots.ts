@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: ['/admin/', '/dashboard/'],
         },
-        sitemap: 'https://cartagena-concierge.vercel.app/sitemap.xml',
+        sitemap: 'https://FairBid-concierge.vercel.app/sitemap.xml',
     }
 }

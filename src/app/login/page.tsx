@@ -3,7 +3,7 @@ import { AuthForm } from '@/components/auth-form'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'Ingresar | Cartagena Concierge',
+    title: 'Ingresar | FairBid',
     description: 'Gestiona tu propiedad con tranquilidad.',
 }
 
@@ -11,14 +11,14 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-white">
 
-            {/* Left Panel: High Key Visuals (Cartagena) */}
+            {/* Left Panel: High Key Visuals (FairBid) */}
             <div className="hidden md:flex flex-col justify-between w-1/2 relative overflow-hidden bg-zinc-950">
                 {/* Tech / City image */}
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay opacity-50 grayscale transition-all duration-1000"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent"></div>
 
                 <div className="relative z-10 p-12">
-                    <span className="text-white font-black text-2xl tracking-tighter">cartagena<span className="text-[var(--color-primary)] font-bold">services</span></span>
+                    <span className="text-white font-black text-2xl tracking-tighter">FairBid<span className="text-[var(--color-primary)] font-bold">services</span></span>
                 </div>
 
                 <div className="relative z-10 p-12 space-y-4">
@@ -26,13 +26,13 @@ export default function LoginPage() {
                         Ponle precio <br /> a tus servicios.
                     </h2>
                     <p className="text-lg text-white/70 font-medium max-w-md leading-relaxed">
-                        El primer mercado bidireccional de Cartagena. Técnicos y clientes acuerdan el precio justo en tiempo real.
+                        El primer mercado bidireccional de FairBid. Técnicos y clientes acuerdan el precio justo en tiempo real.
                     </p>
                 </div>
 
                 <div className="relative z-10 p-12 text-xs text-white/50 font-bold uppercase tracking-widest flex justify-between items-center">
-                    <span>© 2026 Cartagena Services</span>
-                    <span className="text-[var(--color-primary)]">inDriver Platform</span>
+                    <span>© 2026 FairBid</span>
+                    <span className="text-[var(--color-primary)]">Global Bidding Network</span>
                 </div>
             </div>
 

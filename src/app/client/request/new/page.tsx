@@ -16,7 +16,7 @@ export default function NewRequestPage() {
         service_type: "maintenance",
         description: "",
         offered_price: 50000,
-        address: "Cartagena, Bocagrande", // Default or geolocation placeholder
+        address: "Metropolis Center", // Default or geolocation placeholder
     });
 
     const { complete, completion, isLoading: isEnhancing } = useCompletion({

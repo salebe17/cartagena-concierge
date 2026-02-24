@@ -12,11 +12,11 @@ export default function LandingPage() {
       <div className="z-10 text-center max-w-3xl px-6">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 font-medium text-sm mb-8 animate-fade-in">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-          Cartagena Services 2.0
+          FairBid 2.0
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 text-glow leading-tight">
-          El <span className="text-[var(--color-primary)]">inDriver</span> de los<br />Servicios para el Hogar
+          El <span className="text-[var(--color-primary)]">Mercado Justo</span> de los<br />Servicios para el Hogar
         </h1>
 
         <p className="text-xl text-[var(--color-text-secondary)] mb-12 max-w-xl mx-auto">

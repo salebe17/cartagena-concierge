@@ -13,20 +13,20 @@ const inter = Inter({ subsets: ["latin"] });
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Cartagena Concierge | Elite Private Services",
-  description: "Logística privada de lujo en Cartagena. Limpieza, mantenimiento y concierge exclusivo para propietarios.",
-  keywords: ["Cartagena", "Concierge", "Luxury", "Cleaning", "Maintenance", "Private Service"],
+  title: "FairBid | Elite Private Services",
+  description: "Logística privada de lujo en FairBid. Limpieza, mantenimiento y concierge exclusivo para propietarios.",
+  keywords: ["FairBid", "Concierge", "Luxury", "Cleaning", "Maintenance", "Private Service"],
   openGraph: {
-    title: "Cartagena Concierge | Elite Private Services",
-    description: "Gestión de propiedades y servicios de estilo de vida en Cartagena de Indias.",
-    url: "https://cartagena-concierge.vercel.app",
-    siteName: "Cartagena Concierge",
+    title: "FairBid | Elite Private Services",
+    description: "Gestión de propiedades y servicios de estilo de vida en FairBid de Indias.",
+    url: "https://FairBid-concierge.vercel.app",
+    siteName: "FairBid",
     images: [
       {
-        url: "https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200", // Cartagena Streets
+        url: "https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200", // FairBid Streets
         width: 1200,
         height: 630,
-        alt: "Cartagena Architecture",
+        alt: "FairBid Architecture",
       },
     ],
     locale: "es_CO",
@@ -34,8 +34,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cartagena Concierge | Elite Private Services",
-    description: "Logística privada de lujo en Cartagena.",
+    title: "FairBid | Elite Private Services",
+    description: "Logística privada de lujo en FairBid.",
     images: ["https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200"],
   },
   icons: {

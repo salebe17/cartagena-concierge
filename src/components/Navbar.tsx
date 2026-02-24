@@ -24,7 +24,7 @@ function Navbar() {
               </svg>
             </div>
             <div className="hidden sm:block">
-              <span className="text-[#FF5A5F] font-bold text-xl tracking-tighter">cartagena</span>
+              <span className="text-[#FF5A5F] font-bold text-xl tracking-tighter">FairBid</span>
               <span className="text-gray-900 font-bold text-xl ml-0.5 opacity-40">services</span>
             </div>
           </Link>
@@ -61,7 +61,7 @@ function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation (inDriver Style) */}
+      {/* Mobile Bottom Navigation (Radar Style) */}
       <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] glass rounded-2xl h-16 border border-white/50 shadow-hero z-50 flex items-center justify-around px-4">
         <Link href="/" className="flex flex-col items-center gap-1 text-[#FF5A5F] opacity-70 hover:opacity-100 transition">
           <Home size={22} strokeWidth={2.5} />

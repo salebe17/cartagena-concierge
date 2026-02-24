@@ -3,7 +3,7 @@ export type LanguageCode = 'es' | 'en' | 'pt' | 'fr' | 'zh' | 'it' | 'de';
 export const translations: Record<LanguageCode, any> = {
     es: {
         title: "Solicitar Efectivo",
-        subtitle: "Tu Concierge Privado en Cartagena",
+        subtitle: "Tu Concierge Privado en FairBid",
         phone_label: "Número de Celular (WhatsApp)",
         location_label: "Detalles de Ubicación (Edificio/Apto)",
         amount_label: "Monto a Recibir (COP)",
@@ -14,7 +14,7 @@ export const translations: Record<LanguageCode, any> = {
     },
     en: {
         title: "Request Credits",
-        subtitle: "Your Private Concierge in Cartagena",
+        subtitle: "Your Private Concierge in FairBid",
         phone_label: "Phone Number (WhatsApp)",
         location_label: "Location Details (Building/Apt)",
         amount_label: "Amount to Receive (COP)",
@@ -25,7 +25,7 @@ export const translations: Record<LanguageCode, any> = {
     },
     pt: {
         title: "Solicitar Dinheiro",
-        subtitle: "Seu Concierge Privado em Cartagena",
+        subtitle: "Seu Concierge Privado em FairBid",
         phone_label: "Número de Celular (WhatsApp)",
         location_label: "Detalhes da Localização (Edifício/Apto)",
         amount_label: "Valor a Receber (COP)",
@@ -52,7 +52,7 @@ export const translations: Record<LanguageCode, any> = {
     },
     it: {
         title: "Richiedi Contanti",
-        subtitle: "Il tuo Concierge Privato a Cartagena",
+        subtitle: "Il tuo Concierge Privato a FairBid",
         phone_label: "Numero di Cellulare (WhatsApp)",
         location_label: "Dettagli Posizione (Edificio/Appt)",
         amount_label: "Importo da Ricevere (COP)",
@@ -61,7 +61,7 @@ export const translations: Record<LanguageCode, any> = {
     },
     de: {
         title: "Bargeld Anfordern",
-        subtitle: "Ihr Privater Concierge in Cartagena",
+        subtitle: "Ihr Privater Concierge in FairBid",
         phone_label: "Handynummer (WhatsApp)",
         location_label: "Standortdetails (Gebäude/Whg)",
         amount_label: "Betrag zu Erhalten (COP)",

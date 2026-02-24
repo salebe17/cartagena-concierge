@@ -23,12 +23,12 @@ export async function sendInvoiceEmail({
 
     try {
         const { data, error } = await resend.emails.send({
-            from: 'Cartagena Services <platform@updates.cartagenaservices.com>', // Note: Needs verified domain in production
+            from: 'FairBid <platform@updates.fairbid.com>', // Note: Needs verified domain in production
             to: [email],
             subject: `Recibo de Servicio: ${serviceType} - ${invoiceId}`,
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #111; padding: 40px; border-radius: 20px; background: #050505; color: #fff;">
-                    <h2 style="color: #C6FF00; margin-bottom: 24px;">Cartagena Services</h2>
+                    <h2 style="color: #C6FF00; margin-bottom: 24px;">FairBid</h2>
                     <p>Hola <strong>${customerName}</strong>,</p>
                     <p>El técnico ha finalizado el servicio de <strong>${serviceType}</strong> exitosamente y el pago fue procesado.</p>
                     

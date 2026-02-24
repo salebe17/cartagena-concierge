@@ -107,7 +107,7 @@ export default function TechnicianBidPage() {
 
                     <div className="flex items-center gap-2 text-[var(--color-text-secondary)] bg-white/5 w-max px-4 py-2 rounded-xl">
                         <MapPin className="w-4 h-4 text-[var(--color-primary)]" />
-                        <span>Cartagena, Colombia</span>
+                        <span>Global Network</span>
                     </div>
                 </div>
 

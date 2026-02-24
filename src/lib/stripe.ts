@@ -21,7 +21,7 @@ export const getStripe = () => {
         stripeInstance = new Stripe(secretKey, {
             apiVersion: '2025-01-27.acacia' as any,
             appInfo: {
-                name: 'Cartagena Concierge',
+                name: 'FairBid',
                 version: '0.1.0',
             },
             typescript: true,

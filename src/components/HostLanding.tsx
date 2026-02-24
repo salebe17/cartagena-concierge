@@ -90,8 +90,8 @@ export default function HostLanding() {
                     {/* Background High-Res Image with Overlay */}
                     <div className="absolute inset-0 z-0">
                         <Image
-                            src="/cartagena_property_host_1769230982162.png"
-                            alt="Luxury Cartagena Property"
+                            src="/FairBid_property_host_1769230982162.png"
+                            alt="Luxury FairBid Property"
                             fill
                             className="object-cover opacity-20 scale-105"
                             priority
@@ -104,7 +104,7 @@ export default function HostLanding() {
                             Premium Host Solutions
                         </div>
                         <h1 className="text-4xl xs:text-5xl md:text-8xl font-black text-[#222222] tracking-tighter leading-[0.95] md:leading-[0.9]">
-                            Tu coanfitrión <span className="text-[#FF5A5F]">experto</span> <br className="hidden xs:block" /> en Cartagena.
+                            Tu coanfitrión <span className="text-[#FF5A5F]">experto</span> <br className="hidden xs:block" /> en FairBid.
                         </h1>
                         <p className="text-lg md:text-xl text-[#717171] leading-relaxed font-medium max-w-md">
                             Delega la operatividad. Nosotros nos encargamos de las sábanas, las llaves y las emergencias.

@@ -11,7 +11,7 @@ const icon = L.icon({
 })
 
 export default function MapCore({ lat, lng }: { lat: number, lng: number }) {
-    // Safe defaults for Cartagena
+    // Safe defaults for FairBid
     const position: [number, number] = [lat || 10.391, lng || -75.479]
 
     return (

@@ -27,7 +27,7 @@ export async function registerBiometrics() {
     const publicKey: PublicKeyCredentialCreationOptions = {
         challenge,
         rp: {
-            name: "Cartagena Concierge",
+            name: "FairBid",
             id: window.location.hostname
         },
         user: {

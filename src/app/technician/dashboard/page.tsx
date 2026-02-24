@@ -117,7 +117,7 @@ export default function TechnicianDashboard() {
 
                                     <div className="flex items-center gap-2 text-[var(--color-text-secondary)] text-sm mb-6 mt-auto">
                                         <MapPin className="w-4 h-4 text-gray-400" />
-                                        <span>Cartagena City</span> {/* Make dynamic later */}
+                                        <span>Global Network</span> {/* Make dynamic later */}
                                     </div>
 
                                     <div className="flex justify-between items-end border-t border-[rgba(255,255,255,0.05)] pt-4 mt-auto">
