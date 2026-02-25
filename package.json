@@ -10,7 +10,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.31",
+    "@ai-sdk/openai": "^3.0.33",
     "@ai-sdk/react": "^3.0.99",
     "@capacitor/android": "^8.0.2",
     "@capacitor/cli": "^8.0.2",
@@ -30,7 +30,7 @@
     "@types/leaflet": "^1.9.21",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.2",
-    "ai": "^6.0.97",
+    "ai": "^6.0.100",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
