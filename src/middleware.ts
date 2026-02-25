@@ -14,10 +14,10 @@ const redis =
 // Create a new ratelimiter, that allows 10 requests per 10 seconds per IP
 const ratelimit = redis
   ? new Ratelimit({
-      redis: redis,
-      limiter: Ratelimit.slidingWindow(10, "10 s"),
-      analytics: true,
-    })
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(10, "10 s"),
+    analytics: true,
+  })
   : null;
 
 export async function middleware(request: NextRequest) {
@@ -175,10 +175,22 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 1. Protect Admin Routes
+  // 1. Protect Admin Routes (Phase 11: Command Center)
   if (request.nextUrl.pathname.startsWith("/admin")) {
     if (!user) {
-      return NextResponse.redirect(new URL("/login", request.url));
+      return NextResponse.redirect(new URL("/login?next=/admin/dashboard", request.url));
+    }
+
+    // Strict Role Enforcement
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "admin") {
+      // If a standard Client or Technician tries to access the Command Center, kick them to client dashboard
+      return NextResponse.redirect(new URL("/client/dashboard", request.url));
     }
   }
 
