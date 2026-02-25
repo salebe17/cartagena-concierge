@@ -12,6 +12,9 @@ export const ServiceRequestSchema = z.object({
   offered_price: z.number().positive(),
   accepted_bid_id: z.string().uuid().optional().nullable(),
   images: z.array(z.string().url()).optional(),
+  location_geom: z.any().optional(),
+  deleted_at: z.date().optional().nullable(),
+  version: z.number().int().default(1),
 });
 
 export const BidSchema = z.object({
@@ -20,6 +23,8 @@ export const BidSchema = z.object({
   technician_id: z.string().uuid(),
   amount: z.number().positive(),
   status: z.enum(["pending", "accepted", "rejected"]).default("pending"),
+  deleted_at: z.date().optional().nullable(),
+  version: z.number().int().default(1),
 });
 
 export type ServiceRequestInput = z.infer<typeof ServiceRequestSchema>;
