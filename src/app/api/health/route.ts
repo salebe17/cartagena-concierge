@@ -7,6 +7,27 @@ import { logger } from '@/lib/logger';
 // Master Plan Phase 8: Synthetic Deep Health Checks
 // Used by Vercel Checks, Datadog or BetterUptime to verify end-to-end subsystem health
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     description: Returns the health status of the API and its underlying services (Database, Cache).
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 uptime:
+ *                   type: number
+ *                 latency:
+ *                   type: number
+ */
 export async function GET() {
     const startTime = performance.now();
     const healthStatus = {
