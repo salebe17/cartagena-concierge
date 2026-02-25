@@ -71,9 +71,12 @@ export default function NewRequestPage() {
       return;
     }
 
+    // Remove `version` and `deleted_at` fields since the remote Production DB lacks them
+    const { version, deleted_at, ...safeInsertData } = parsed.data;
+
     const { data, error } = await supabase
       .from("service_requests")
-      .insert(parsed.data)
+      .insert(safeInsertData)
       .select()
       .single();
 
@@ -127,8 +130,8 @@ export default function NewRequestPage() {
                       setFormData({ ...formData, service_type: type })
                     }
                     className={`p-4 rounded-xl border text-sm font-bold uppercase transition-all ${formData.service_type === type
-                        ? "border-[var(--color-primary)] bg-[rgba(0,229,255,0.1)] text-[var(--color-primary)] shadow-[var(--shadow-neon)] scale-[1.02]"
-                        : "border-[var(--color-glass-border)] bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] hover:border-white/20"
+                      ? "border-[var(--color-primary)] bg-[rgba(0,229,255,0.1)] text-[var(--color-primary)] shadow-[var(--shadow-neon)] scale-[1.02]"
+                      : "border-[var(--color-glass-border)] bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] hover:border-white/20"
                       }`}
                   >
                     {type}
