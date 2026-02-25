@@ -8,6 +8,7 @@ import { Plus, ArrowRight, Clock, CheckCircle } from "lucide-react";
 
 export default function ClientDashboard() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -36,7 +37,7 @@ export default function ClientDashboard() {
         if (!user) return;
 
         // In a real app we would join with bids count
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from("service_requests")
             .select("*")
             .eq("requester_id", user.id)
@@ -81,7 +82,7 @@ export default function ClientDashboard() {
                         </div>
                         <h3 className="text-xl font-bold mb-2">No Active Requests</h3>
                         <p className="text-[var(--color-text-secondary)] mb-6 max-w-sm">
-                            You haven't requested any services yet. Post a request and technicians will bid for your job instantly.
+                            You haven&apos;t requested any services yet. Post a request and technicians will bid for your job instantly.
                         </p>
                         <Link href="/client/request/new">
                             <button className="btn-secondary">Get Started</button>

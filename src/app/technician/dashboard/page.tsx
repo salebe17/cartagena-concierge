@@ -4,14 +4,22 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { MapPin, Search, Wrench, Clock, DollarSign, Filter } from "lucide-react";
+import { MapPin, Search, Clock, Filter, Users } from "lucide-react";
+import { usePresence } from "@/hooks/usePresence";
 
 export default function TechnicianDashboard() {
     const supabase = createClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userId, setUserId] = useState<string>("");
+
+    // Start Presence tracking
+    const { onlineUsers } = usePresence("global_radar", userId, { role: "technician" });
 
     useEffect(() => {
+        supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id || ""));
+
         fetchOpenRequests();
 
         // Subscribe to new requests
@@ -32,7 +40,7 @@ export default function TechnicianDashboard() {
     }, []);
 
     async function fetchOpenRequests() {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from("service_requests")
             .select("*, requester:requester_id(id, full_name, avatar_url)")
             .eq("status", "pending")
@@ -73,12 +81,21 @@ export default function TechnicianDashboard() {
 
             {/* Stats Quick View */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                <div className="glass rounded-2xl p-4 border border-[var(--color-primary)]/20">
+                    <div className="flex justify-between items-start mb-1">
+                        <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider">Active Techs</p>
+                        <Users className="w-4 h-4 text-[var(--color-primary)] opacity-80" />
+                    </div>
+                    <p className="text-2xl font-bold text-white flex items-center gap-2">
+                        {onlineUsers.length} <span className="flex w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    </p>
+                </div>
                 <div className="glass rounded-2xl p-4">
                     <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Available Jobs</p>
                     <p className="text-2xl font-bold text-white">{requests.length}</p>
                 </div>
                 <div className="glass rounded-2xl p-4">
-                    <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Today's Earnings</p>
+                    <p className="text-xs text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Today&apos;s Earnings</p>
                     <p className="text-2xl font-bold text-[var(--color-primary)]">$0</p>
                 </div>
             </div>
