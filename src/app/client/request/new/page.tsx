@@ -71,12 +71,47 @@ export default function NewRequestPage() {
       return;
     }
 
+    // Ensure the remote database's legacy `property_id` constraint is satisfied
+    let propertyId = null;
+    const { data: existingProperties } = await supabase
+      .from("properties")
+      .select("id")
+      .limit(1);
+
+    if (existingProperties && existingProperties.length > 0) {
+      propertyId = existingProperties[0].id;
+    } else {
+      // Create a ghost property 
+      const { data: newProperty, error: propError } = await supabase
+        .from("properties")
+        .insert({
+          owner_id: user.id,
+          title: "FairBid Virtual Location",
+          address: formData.address || "Cartagena"
+        })
+        .select()
+        .single();
+
+      if (!propError && newProperty) {
+        propertyId = newProperty.id;
+      }
+    }
+
+    if (!propertyId) {
+      alert("Error mapping location to legacy database structure. Please try again.");
+      setLoading(false);
+      return;
+    }
+
     // Remove `version` and `deleted_at` fields since the remote Production DB lacks them
     const { version, deleted_at, ...safeInsertData } = parsed.data;
 
+    // Inject the dummy property ID to bypass the DB `property_id` NOT NULL constraint
+    const finalPayload = { ...safeInsertData, property_id: propertyId };
+
     const { data, error } = await supabase
       .from("service_requests")
-      .insert(safeInsertData)
+      .insert(finalPayload)
       .select()
       .single();
 
