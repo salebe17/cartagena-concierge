@@ -2,23 +2,31 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/logout-button";
 import { ClientProviders } from "@/components/ClientProviders";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], display: "swap", preload: true });
 
 // Force dynamic because we use cookies in the layout for auth checking
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "FairBid | Elite Private Services",
-  description: "Logística privada de lujo en FairBid. Limpieza, mantenimiento y concierge exclusivo para propietarios.",
-  keywords: ["FairBid", "Concierge", "Luxury", "Cleaning", "Maintenance", "Private Service"],
+  description:
+    "Logística privada de lujo en FairBid. Limpieza, mantenimiento y concierge exclusivo para propietarios.",
+  keywords: [
+    "FairBid",
+    "Concierge",
+    "Luxury",
+    "Cleaning",
+    "Maintenance",
+    "Private Service",
+  ],
   openGraph: {
     title: "FairBid | Elite Private Services",
-    description: "Gestión de propiedades y servicios de estilo de vida en FairBid de Indias.",
+    description:
+      "Gestión de propiedades y servicios de estilo de vida en FairBid de Indias.",
     url: "https://FairBid-concierge.vercel.app",
     siteName: "FairBid",
     images: [
@@ -36,7 +44,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "FairBid | Elite Private Services",
     description: "Logística privada de lujo en FairBid.",
-    images: ["https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200"],
+    images: [
+      "https://images.unsplash.com/photo-1583531352515-8884af319dc1?q=80&w=1200",
+    ],
   },
   icons: {
     icon: "/icon-512.png",
@@ -58,14 +68,12 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let user = null;
+  const user = null;
   /*
   try {
     const supabase = await createClient();
@@ -80,7 +88,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta httpEquiv="Content-Security-Policy" content="default-src 'self' https://*.supabase.co https://*.stripe.com; img-src 'self' blob: data: https://*.supabase.co; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com;" />
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content="default-src 'self' https://*.supabase.co https://*.stripe.com; img-src 'self' blob: data: https://*.supabase.co; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com;"
+        />
       </head>
       <body className={inter.className}>
         <ClientProviders>
