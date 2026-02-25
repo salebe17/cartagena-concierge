@@ -124,9 +124,21 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // ----- E2E TEST BYPASS (PLAYWRIGHT ONLY) -----
+  // If we are in local testing and Playwright injects a mock role cookie, we bypass Supabase Auth
+  const mockRoleCookie = request.cookies.get("x-playwright-mock-role")?.value;
+  let user = null;
+  let isPlaywrightTest = false;
+
+  if (mockRoleCookie && process.env.NODE_ENV !== "production") {
+    isPlaywrightTest = true;
+    user = { id: `mock-${mockRoleCookie}-id` }; // Fake user object
+  } else {
+    // Normal Production Flow
+    const { data: authData } = await supabase.auth.getUser();
+    user = authData?.user;
+  }
+  // ---------------------------------------------
 
   // 0. Maintenance Mode Check
   // Runs on ALL routes except /admin, /auth, /api/auth
@@ -147,13 +159,17 @@ export async function middleware(request: NextRequest) {
       if (maintenance?.enabled) {
         let isAdmin = false;
         if (user) {
-          // Check profile role
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("id", user.id)
-            .single();
-          if (profile?.role === "admin") isAdmin = true;
+          if (isPlaywrightTest && mockRoleCookie === "admin") {
+            isAdmin = true;
+          } else if (!isPlaywrightTest) {
+            // Check profile role normally
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", user.id)
+              .single();
+            if (profile?.role === "admin") isAdmin = true;
+          }
         }
 
         if (!isAdmin) {
@@ -182,13 +198,20 @@ export async function middleware(request: NextRequest) {
     }
 
     // Strict Role Enforcement
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    let role = null;
 
-    if (profile?.role !== "admin") {
+    if (isPlaywrightTest) {
+      role = mockRoleCookie;
+    } else {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      role = profile?.role;
+    }
+
+    if (role !== "admin") {
       // If a standard Client or Technician tries to access the Command Center, kick them to client dashboard
       return NextResponse.redirect(new URL("/client/dashboard", request.url));
     }
