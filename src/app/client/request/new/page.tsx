@@ -59,9 +59,8 @@ export default function NewRequestPage() {
     const payload = {
       requester_id: user.id,
       service_type: formData.service_type,
-      description: formData.description,
+      description: `${formData.address ? `Location: ${formData.address}\n\n` : ''}${formData.description}`,
       offered_price: formData.offered_price,
-      address: formData.address,
       status: "pending",
     };
 
@@ -80,7 +79,7 @@ export default function NewRequestPage() {
 
     if (error) {
       console.error(error);
-      alert("Error creating request");
+      alert("Error creating request: " + error.message);
       setLoading(false);
     } else {
       router.push(`/client/request/${data.id}`);
@@ -127,11 +126,10 @@ export default function NewRequestPage() {
                     onClick={() =>
                       setFormData({ ...formData, service_type: type })
                     }
-                    className={`p-4 rounded-xl border text-sm font-bold uppercase transition-all ${
-                      formData.service_type === type
+                    className={`p-4 rounded-xl border text-sm font-bold uppercase transition-all ${formData.service_type === type
                         ? "border-[var(--color-primary)] bg-[rgba(0,229,255,0.1)] text-[var(--color-primary)] shadow-[var(--shadow-neon)] scale-[1.02]"
                         : "border-[var(--color-glass-border)] bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] hover:border-white/20"
-                    }`}
+                      }`}
                   >
                     {type}
                   </button>

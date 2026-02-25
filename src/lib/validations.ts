@@ -8,7 +8,7 @@ export const ServiceRequestSchema = z.object({
   status: z
     .enum(["pending", "accepted", "completed", "cancelled"])
     .default("pending"),
-  address: z.string(),
+  address: z.string().optional(),
   offered_price: z.number().positive(),
   accepted_bid_id: z.string().uuid().optional().nullable(),
   images: z.array(z.string().url()).optional(),
