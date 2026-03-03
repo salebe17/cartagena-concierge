@@ -1,9 +1,11 @@
 name: Hourly Calendar Sync
 
+# DISABLED: Schedule removed to stop automated runs.
+# To re-enable, uncomment the schedule block below.
 on:
-  schedule:
-    - cron: '0 * * * *' # Every hour
-  workflow_dispatch: # Allow manual trigger
+  # schedule:
+  #   - cron: '0 * * * *' # Every hour
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   sync:
