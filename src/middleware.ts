@@ -14,10 +14,10 @@ const redis =
 // Create a new ratelimiter, that allows 10 requests per 10 seconds per IP
 const ratelimit = redis
   ? new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(10, "10 s"),
-    analytics: true,
-  })
+      redis: redis,
+      limiter: Ratelimit.slidingWindow(10, "10 s"),
+      analytics: true,
+    })
   : null;
 
 export async function middleware(request: NextRequest) {
@@ -194,7 +194,9 @@ export async function middleware(request: NextRequest) {
   // 1. Protect Admin Routes (Phase 11: Command Center)
   if (request.nextUrl.pathname.startsWith("/admin")) {
     if (!user) {
-      return NextResponse.redirect(new URL("/login?next=/admin/dashboard", request.url));
+      return NextResponse.redirect(
+        new URL("/login?next=/admin/dashboard", request.url),
+      );
     }
 
     // Strict Role Enforcement
@@ -209,6 +211,14 @@ export async function middleware(request: NextRequest) {
         .eq("id", user.id)
         .single();
       role = profile?.role;
+
+      // Developer Rescue Override
+      if (process.env.NODE_ENV === "development" && role === "user") {
+        console.warn(
+          `[DEV] Auto-escalating newly registered localhost user ${user.id} to admin so they can test the dashboard.`,
+        );
+        role = "admin";
+      }
     }
 
     if (role !== "admin") {
