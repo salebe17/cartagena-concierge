@@ -105,7 +105,7 @@ export function AuthForm() {
   const handleGoogleLogin = async () => {
     // Determine the exact Redirect URL relying on the environment
     const redirectURL = Capacitor.isNativePlatform()
-      ? `${window.location.origin}/auth/callback?is_native=true` // Hit Vercel Bouncer first
+      ? `https://cartagena-concierge-g6tt.vercel.app/auth/callback?is_native=true` // Hit Vercel Bouncer first
       : `${window.location.origin}/auth/callback`;
 
     console.log("CAPACITOR OAUTH INITIATED. Redirect URI: ", redirectURL);
