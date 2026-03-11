@@ -43,38 +43,14 @@ export function AuthForm() {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       App.addListener("appUrlOpen", async (event) => {
+        // event.url = "com.cartagenaconcierge.app://auth/callback?code=..."
         const slug = event.url.split(".app://").pop();
         if (slug) {
-          // Instruct Supabase to absorb the access_token fragments from the URL 
-          const { data, error } = await supabase.auth.getSessionFromUrl({
-            storeSession: true,
-          });
-
           // Close the Native Custom Tab
-          Browser.close();
+          await Browser.close();
 
-          if (!error && data.session) {
-            // Role fetching and routing
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("role")
-              .eq("id", data.session.user.id)
-              .single();
-
-            if (profile?.role === "technician") {
-              router.push("/technician/dashboard");
-            } else if (profile?.role === "admin") {
-              router.push("/admin/dashboard");
-            } else {
-              router.push("/client/dashboard");
-            }
-          } else {
-            toast({
-              title: "Native Session Error",
-              description: error?.message || "Could not parse session fragments",
-              variant: "destructive",
-            });
-          }
+          // Pass the slug (e.g. "auth/callback?code=...") directly into Next.js router
+          router.push(`/${slug}`);
         }
       });
     }
@@ -89,13 +65,15 @@ export function AuthForm() {
   const handleGoogleLogin = async () => {
     // Determine the exact Redirect URL relying on the environment
     const redirectURL = Capacitor.isNativePlatform()
-      ? "com.cartagenaconcierge.app://login-callback"
+      ? "com.cartagenaconcierge.app://auth/callback"
       : `${window.location.origin}/auth/callback`;
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: redirectURL,
+        // On Native, stop Supabase from hijacking the window to Chrome
+        skipBrowserRedirect: Capacitor.isNativePlatform(),
         // On Native, skip forcing consent screens every time for pure speeds
         queryParams: {
           prompt: "select_account",
@@ -109,6 +87,12 @@ export function AuthForm() {
         description: error.message,
         variant: "destructive",
       });
+      return;
+    }
+
+    // Launch the Custom Tab manually if running native
+    if (Capacitor.isNativePlatform() && data?.url) {
+      await Browser.open({ url: data.url });
     }
   };
 

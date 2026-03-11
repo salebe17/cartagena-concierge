@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Cartagena Concierge</string>
+    <string name="capacitor_app_name">Cartagena Concierge</string>
     <string name="title_activity_main">Cartagena Concierge</string>
     <string name="package_name">com.cartagenaconcierge.app</string>
     <string name="custom_url_scheme">com.cartagenaconcierge.app</string>
