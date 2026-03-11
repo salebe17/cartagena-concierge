@@ -50,16 +50,16 @@ export default async function AdminDashboardPage() {
                 {stats.map((item) => (
                     <div
                         key={item.name}
-                        className="relative overflow-hidden rounded-lg bg-gray-900 border border-gray-800 px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6"
+                        className="relative overflow-hidden rounded-xl bg-[var(--color-bg-card)] border border-[var(--color-border-dark)] px-4 pb-12 pt-5 shadow-[var(--shadow-card)] sm:px-6 sm:pt-6 card-hover"
                     >
                         <dt>
-                            <div className="absolute rounded-md bg-teal-500/10 p-3">
-                                <item.icon className="h-6 w-6 text-teal-400" aria-hidden="true" />
+                            <div className="absolute rounded-lg bg-[var(--color-primary)]/10 p-3">
+                                <item.icon className="h-6 w-6 text-[var(--color-primary)]" aria-hidden="true" />
                             </div>
                             <p className="ml-16 truncate text-sm font-medium text-gray-400">{item.name}</p>
                         </dt>
                         <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                            <p className="text-2xl font-semibold text-white">{item.stat}</p>
+                            <p className="text-2xl font-bold text-white tracking-tight">{item.stat}</p>
                         </dd>
                     </div>
                 ))}

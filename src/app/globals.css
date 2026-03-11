@@ -59,27 +59,40 @@
 /* Utilities Layer */
 @layer utilities {
   .glass {
-    background: var(--color-glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--color-glass-border);
-    box-shadow: var(--shadow-card);
+    background: rgba(18, 18, 18, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Ultra Premium Glass for Navigation */
+  .glass-nav {
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border: 1px solid rgba(198, 255, 0, 0.1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(198, 255, 0, 0.05);
   }
 
   .btn-primary {
-    @apply bg-[var(--color-primary)] text-black font-extrabold py-3 px-6 rounded-xl transition-all active:scale-95;
+    @apply bg-[var(--color-primary)] text-black font-extrabold py-3 px-6 rounded-xl transition-all duration-300 active:scale-95 shadow-[0_4px_15px_#c6ff004d];
 
     &:hover {
-      @apply bg-[var(--color-primary-dark)] shadow-[var(--shadow-neon)];
+      @apply bg-[#d4ff33] shadow-[0_0_25px_#c6ff0099] -translate-y-0.5;
     }
   }
 
   .btn-secondary {
-    @apply border border-[var(--color-glass-border)] text-white font-bold py-3 px-6 rounded-xl hover:bg-[var(--color-glass-highlight)] transition-all transform active:scale-95;
+    @apply border border-white/10 bg-white/5 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 active:scale-95;
+
+    &:hover {
+      @apply bg-white/10 border-white/20 shadow-[0_0_15px_#ffffff1a] -translate-y-0.5;
+    }
   }
 
   .card-hover {
-    @apply transition-all duration-300 hover:shadow-[var(--shadow-neon)] hover:-translate-y-1 hover:border-[#C6FF00]/30;
+    @apply transition-all duration-500 hover:shadow-[0_10px_40px_#c6ff0026] hover:-translate-y-1 hover:border-[#C6FF00]/40 hover:bg-white/5;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -92,6 +105,10 @@
   }
 
   .text-glow {
-    text-shadow: 0 0 10px rgba(198, 255, 0, 0.6);
+    text-shadow: 0 0 25px rgba(198, 255, 0, 0.4);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400;
   }
 }
