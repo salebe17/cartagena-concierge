@@ -111,14 +111,27 @@ export function AuthForm() {
     console.log("CAPACITOR OAUTH INITIATED. Redirect URI: ", redirectURL);
 
     if (Capacitor.isNativePlatform()) {
-      // Manual URL Composition for Custom Tabs is REQUIRED
-      // Supabase's signInWithOAuth + skipBrowserRedirect is bugged on Android and drops the custom app:// scheme
-      const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(
-        redirectURL
-      )}&prompt=select_account`;
-      
-      console.log("CAPACITOR LAUNCHING CUSTOM TAB MANUAL URL: ", oauthUrl);
-      await Browser.open({ url: oauthUrl });
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectURL,
+          skipBrowserRedirect: true,
+          queryParams: {
+            prompt: "select_account",
+          },
+        },
+      });
+
+      if (error) {
+        console.error("CAPACITOR OAUTH ERROR:", error);
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      if (data?.url) {
+        console.log("CAPACITOR LAUNCHING CUSTOM TAB OAUTH URL: ", data.url);
+        await Browser.open({ url: data.url });
+      }
     } else {
       // Standard Web Flow
       const { error } = await supabase.auth.signInWithOAuth({
