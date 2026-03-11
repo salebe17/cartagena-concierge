@@ -21,6 +21,24 @@ const ratelimit = redis
   : null;
 
 export async function middleware(request: NextRequest) {
+  try {
+    return await doMiddleware(request);
+  } catch (error: any) {
+    console.error("EDGE MIDDLEWARE ERROR:", error);
+    return new NextResponse(
+      `<html>
+        <body style="font-family: monospace; background: #111; color: #fff; padding: 2rem;">
+          <h1 style="color: #ff3333">EDGE MIDDLEWARE CRASH</h1>
+          <h2>${error.message}</h2>
+          <pre style="background: #222; padding: 1rem; overflow-x: auto;">${error.stack}</pre>
+        </body>
+      </html>`,
+      { status: 500, headers: { "content-type": "text/html" } }
+    );
+  }
+}
+
+async function doMiddleware(request: NextRequest) {
   const correlationId = crypto.randomUUID();
   const headersWidthId = new Headers(request.headers);
   headersWidthId.set("x-correlation-id", correlationId);
