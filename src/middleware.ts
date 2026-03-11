@@ -96,9 +96,14 @@ async function doMiddleware(request: NextRequest) {
     }
   }
 
+  // Secure fallback for Capacitor/Edge environments to prevent URL parsing crashes
+  const fallbackUrl = request.nextUrl.origin || "http://localhost:3000";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || fallbackUrl;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fallback";
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://fallback.supabase.co",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "fallback_anon_key",
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {
