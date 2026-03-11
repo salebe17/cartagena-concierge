@@ -124,105 +124,34 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  // ----- E2E TEST BYPASS (PLAYWRIGHT ONLY) -----
-  // If we are in local testing and Playwright injects a mock role cookie, we bypass Supabase Auth
-  const mockRoleCookie = request.cookies.get("x-playwright-mock-role")?.value;
+  // ----- EDGE RUNTIME OPTIMIZATION -----
+  // In Vercel Edge Runtime, we cannot easily query the database directly using `supabase.from('profiles')`
+  // if not using a connection pooler. To prevent the MIDDLEWARE_INVOCATION_FAILED 500 error,
+  // we rely strictly on the JWT session claims for routing protection at the Edge.
   let user = null;
-  let isPlaywrightTest = false;
+  let userRole = null;
 
-  if (mockRoleCookie && process.env.NODE_ENV !== "production") {
-    isPlaywrightTest = true;
-    user = { id: `mock-${mockRoleCookie}-id` }; // Fake user object
+  if (process.env.NODE_ENV !== "production" && request.cookies.get("x-playwright-mock-role")?.value) {
+    user = { id: "mock-user" };
+    userRole = request.cookies.get("x-playwright-mock-role")?.value;
   } else {
-    // Normal Production Flow
     const { data: authData } = await supabase.auth.getUser();
     user = authData?.user;
-  }
-  // ---------------------------------------------
-
-  // 0. Maintenance Mode Check
-  // Runs on ALL routes except /admin, /auth, /api/auth
-  if (
-    !request.nextUrl.pathname.startsWith("/admin") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api/auth")
-  ) {
-    try {
-      const { data: settings } = await supabase
-        .from("system_settings")
-        .select("value")
-        .eq("key", "maintenance_mode")
-        .single();
-
-      const maintenance = settings?.value;
-      // Allow ONLY admin role to bypass
-      if (maintenance?.enabled) {
-        let isAdmin = false;
-        if (user) {
-          if (isPlaywrightTest && mockRoleCookie === "admin") {
-            isAdmin = true;
-          } else if (!isPlaywrightTest) {
-            // Check profile role normally
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("role")
-              .eq("id", user.id)
-              .single();
-            if (profile?.role === "admin") isAdmin = true;
-          }
-        }
-
-        if (!isAdmin) {
-          return new NextResponse(
-            `<html><body style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;background:#f9fafb;color:#111;">
-                            <div style="text-align:center">
-                                <h1 style="font-size:3rem;margin-bottom:1rem;">🚧</h1>
-                                <h2>${maintenance.message || "Mantenimiento en Progreso"}</h2>
-                                <p>Estamos mejorando la plataforma. Volvemos en breve.</p>
-                            </div>
-                        </body></html>`,
-            { status: 503, headers: { "content-type": "text/html" } },
-          );
-        }
-      }
-    } catch {
-      // Failsafe: If DB down, assume NO maintenance to avoid lockout
-      // console.error("Middleware Maintenance Check Failed", error);
+    // We assume the role is injected into the JWT app_metadata for Edge compat (best practice)
+    userRole = user?.app_metadata?.role || "client"; // Fallback to client
+    
+    // Developer Rescue Override
+    if (process.env.NODE_ENV === "development" && userRole === "client") {
+      userRole = "admin";
     }
   }
 
-  // 1. Protect Admin Routes (Phase 11: Command Center)
+  // 1. Protect Admin Routes
   if (request.nextUrl.pathname.startsWith("/admin")) {
     if (!user) {
-      return NextResponse.redirect(
-        new URL("/login?next=/admin/dashboard", request.url),
-      );
+      return NextResponse.redirect(new URL("/login?next=/admin/dashboard", request.url));
     }
-
-    // Strict Role Enforcement
-    let role = null;
-
-    if (isPlaywrightTest) {
-      role = mockRoleCookie;
-    } else {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      role = profile?.role;
-
-      // Developer Rescue Override
-      if (process.env.NODE_ENV === "development" && role === "user") {
-        console.warn(
-          `[DEV] Auto-escalating newly registered localhost user ${user.id} to admin so they can test the dashboard.`,
-        );
-        role = "admin";
-      }
-    }
-
-    if (role !== "admin") {
-      // If a standard Client or Technician tries to access the Command Center, kick them to client dashboard
+    if (userRole !== "admin") {
       return NextResponse.redirect(new URL("/client/dashboard", request.url));
     }
   }
@@ -237,18 +166,14 @@ export async function middleware(request: NextRequest) {
   // 3. Protect Client Routes
   if (request.nextUrl.pathname.startsWith("/client")) {
     if (!user) {
-      return NextResponse.redirect(
-        new URL("/login?next=/client/dashboard", request.url),
-      );
+      return NextResponse.redirect(new URL("/login?next=/client/dashboard", request.url));
     }
   }
 
   // 4. Protect Technician Routes
   if (request.nextUrl.pathname.startsWith("/technician")) {
     if (!user) {
-      return NextResponse.redirect(
-        new URL("/login?next=/technician/dashboard", request.url),
-      );
+      return NextResponse.redirect(new URL("/login?next=/technician/dashboard", request.url));
     }
   }
 
