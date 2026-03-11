@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { App } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,13 +39,70 @@ export function AuthForm() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
+  // Native App Deep Link Listener
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      App.addListener("appUrlOpen", async (event) => {
+        const slug = event.url.split(".app://").pop();
+        if (slug) {
+          // Instruct Supabase to absorb the access_token fragments from the URL 
+          const { data, error } = await supabase.auth.getSessionFromUrl({
+            storeSession: true,
+          });
+
+          // Close the Native Custom Tab
+          Browser.close();
+
+          if (!error && data.session) {
+            // Role fetching and routing
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", data.session.user.id)
+              .single();
+
+            if (profile?.role === "technician") {
+              router.push("/technician/dashboard");
+            } else if (profile?.role === "admin") {
+              router.push("/admin/dashboard");
+            } else {
+              router.push("/client/dashboard");
+            }
+          } else {
+            toast({
+              title: "Native Session Error",
+              description: error?.message || "Could not parse session fragments",
+              variant: "destructive",
+            });
+          }
+        }
+      });
+    }
+
+    return () => {
+      if (Capacitor.isNativePlatform()) {
+        App.removeAllListeners();
+      }
+    };
+  }, [supabase, router, toast]);
+
   const handleGoogleLogin = async () => {
+    // Determine the exact Redirect URL relying on the environment
+    const redirectURL = Capacitor.isNativePlatform()
+      ? "com.cartagenaconcierge.app://login-callback"
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectURL,
+        // On Native, skip forcing consent screens every time for pure speeds
+        queryParams: {
+          prompt: "select_account",
+        },
       },
     });
+
     if (error) {
       toast({
         title: "Error",

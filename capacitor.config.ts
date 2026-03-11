@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
     appName: 'Cartagena Concierge',
     webDir: 'out',
     server: {
-        url: 'https://cartagena-concierge.vercel.app', // IMPORTANT: Change this to your actual Vercel URL
+        url: 'https://cartagena-concierge-g6tt.vercel.app', // Adjusted to match the specific Vercel project name
         cleartext: true,
         androidScheme: 'https'
     },
