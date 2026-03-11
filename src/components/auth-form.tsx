@@ -68,31 +68,31 @@ export function AuthForm() {
       ? "com.cartagenaconcierge.app://auth/callback"
       : `${window.location.origin}/auth/callback`;
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: redirectURL,
-        // On Native, stop Supabase from hijacking the window to Chrome
-        skipBrowserRedirect: Capacitor.isNativePlatform(),
-        // On Native, skip forcing consent screens every time for pure speeds
-        queryParams: {
-          prompt: "select_account",
+    if (Capacitor.isNativePlatform()) {
+      // Manual URL Composition for Custom Tabs (Bypasses Supabase Chrome Hijack)
+      const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(
+        redirectURL
+      )}&prompt=select_account`;
+      await Browser.open({ url: oauthUrl });
+    } else {
+      // Standard Web Flow
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectURL,
+          queryParams: {
+            prompt: "select_account",
+          },
         },
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
       });
-      return;
-    }
 
-    // Launch the Custom Tab manually if running native
-    if (Capacitor.isNativePlatform() && data?.url) {
-      await Browser.open({ url: data.url });
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
