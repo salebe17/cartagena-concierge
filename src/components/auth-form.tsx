@@ -39,69 +39,6 @@ export function AuthForm() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   );
 
-  // Native App Deep Link Listener
-  useEffect(() => {
-    let appListener: any;
-    if (Capacitor.isNativePlatform()) {
-      // Setup the listener
-      appListener = App.addListener("appUrlOpen", async (event) => {
-        console.log("CAPACITOR APP URL OPEN DETECTED: ", event.url);
-        
-        // Safely extract the code query param
-        const codeMatch = event.url.match(/code=([^&]+)/);
-        
-        if (codeMatch && codeMatch[1]) {
-          const code = codeMatch[1];
-          console.log("CAPACITOR EXTRACTED CODE: ", code);
-          
-          // Force close the Native Custom Tab immediately
-          await Browser.close();
-          setLoading(true);
-
-          try {
-            // Process the PKCE session completely Client-Side (bypasses Next.js API Routes)
-            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-            
-            if (error) {
-              console.error("CAPACITOR SESSION EXCHANGE ERROR: ", error);
-              toast({ title: "Error", description: error.message, variant: "destructive" });
-              setLoading(false);
-              return;
-            }
-
-            console.log("CAPACITOR SESSION SUCCESS, Fetching Role...");
-            if (data?.user) {
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("role")
-                .eq("id", data.user.id)
-                .single();
-
-              if (profile?.role === "technician") {
-                router.push("/technician/dashboard");
-              } else if (profile?.role === "admin") {
-                router.push("/admin/dashboard");
-              } else {
-                router.push("/client/dashboard");
-              }
-            }
-          } catch (e) {
-            console.error("CAPACITOR FATAL ERROR: ", e);
-          } finally {
-            setLoading(false);
-          }
-        }
-      });
-    }
-
-    return () => {
-      // Cleanup listener when component unmounts
-      if (appListener) {
-        appListener.then((listener: any) => listener.remove());
-      }
-    };
-  }, [supabase, router, toast]);
-
   const handleGoogleLogin = async () => {
     // Determine the exact Redirect URL relying on the environment
     const redirectURL = Capacitor.isNativePlatform()
