@@ -70,8 +70,10 @@ export function AuthForm() {
 
     if (Capacitor.isNativePlatform()) {
       // Manual URL Composition for Custom Tabs (Bypasses Supabase Chrome Hijack)
+      // We append ?is_native=true so the edge callback knows to print an auto-closing HTML script
+      const nativeRedirectUrl = `${redirectURL}?is_native=true`;
       const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(
-        redirectURL
+        nativeRedirectUrl
       )}&prompt=select_account`;
       await Browser.open({ url: oauthUrl });
     } else {

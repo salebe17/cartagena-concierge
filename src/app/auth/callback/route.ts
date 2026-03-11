@@ -45,25 +45,41 @@ export async function GET(request: Request) {
             .eq("id", user.id)
             .single();
 
-          if (profile?.role === "technician")
-            return NextResponse.redirect(
-              new URL("/technician/dashboard", request.url),
-            );
-          if (profile?.role === "admin")
-            return NextResponse.redirect(
-              new URL("/admin/dashboard", request.url),
-            );
-          return NextResponse.redirect(
-            new URL("/client/dashboard", request.url),
-          );
+          let targetRoute = "/client/dashboard";
+          if (profile?.role === "technician") targetRoute = "/technician/dashboard";
+          if (profile?.role === "admin") targetRoute = "/admin/dashboard";
+
+          // If this originated from the Native App deep link, do NOT load the dashboard 
+          // inside the Chrome Custom Tab. Instead, bounce it back to the host App.
+          const isNativeApp = request.url.includes("is_native=true");
+
+          if (isNativeApp) {
+             const html = `
+              <html>
+               <body>
+                 <script>
+                   window.location.href = 'com.cartagenaconcierge.app://${targetRoute.replace(/^\//, "")}';
+                 </script>
+               </body>
+              </html>
+             `;
+             return new NextResponse(html, {
+               headers: { 'Content-Type': 'text/html' }
+             });
+          }
+
+          return NextResponse.redirect(new URL(targetRoute, request.url));
         }
       }
-      return NextResponse.redirect(
-        new URL(
-          next === "/dashboard" ? "/client/dashboard" : next,
-          request.url,
-        ),
-      );
+      
+      const bounceRoute = next === "/dashboard" ? "/client/dashboard" : next;
+      const isNativeAppFallback = request.url.includes("is_native=true");
+      if (isNativeAppFallback) {
+         const html = `<html><body><script>window.location.href = 'com.cartagenaconcierge.app://${bounceRoute.replace(/^\//, "")}';</script></body></html>`;
+         return new NextResponse(html, { headers: { 'Content-Type': 'text/html' } });
+      }
+
+      return NextResponse.redirect(new URL(bounceRoute, request.url));
     }
   }
 
