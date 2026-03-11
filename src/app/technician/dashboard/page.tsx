@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { MapPin, Search, Clock, Filter, Users } from "lucide-react";
 import { usePresence } from "@/hooks/usePresence";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function TechnicianDashboard() {
     const supabase = createClient();
@@ -70,12 +71,15 @@ export default function TechnicianDashboard() {
                         <input
                             type="text"
                             placeholder="Search jobs..."
-                            className="bg-[var(--color-bg-card)] border border-[var(--color-glass-border)] rounded-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[var(--color-primary)] w-48 transition-all"
+                            className="bg-[var(--color-bg-card)] border border-[var(--color-glass-border)] rounded-full pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[var(--color-primary)] w-40 md:w-48 transition-all"
                         />
                     </div>
-                    <button className="p-2 rounded-full border border-[var(--color-glass-border)] bg-[var(--color-bg-card)] hover:bg-white/10 transition-colors">
+                    <button className="p-2 rounded-full border border-[var(--color-glass-border)] bg-[var(--color-bg-card)] hover:bg-white/10 transition-colors hidden md:block">
                         <Filter className="w-5 h-5 text-gray-300" />
                     </button>
+                    <div className="bg-[var(--color-bg-card)] border border-[var(--color-glass-border)] rounded-xl py-0 px-2 lg:px-4 ml-2">
+                        <LogoutButton />
+                    </div>
                 </div>
             </div>
 

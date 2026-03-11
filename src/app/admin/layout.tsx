@@ -6,6 +6,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AdminMobileNav } from '@/components/admin/mobile-nav';
+import { LogoutButton } from '@/components/logout-button';
 
 export const metadata: Metadata = {
     title: 'Command Center | FairBid',
@@ -66,6 +67,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                             </Link>
                         );
                     })}
+                </div>
+
+                {/* Logout Button Pinned to Bottom */}
+                <div className="p-4 border-t border-gray-800">
+                    <LogoutButton />
                 </div>
             </nav>
 

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, PlusSquare, User, Settings, Bell } from "lucide-react";
+import { Home, PlusSquare, User, Settings, Bell, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
+import { LogoutButton } from "@/components/logout-button";
 
 export function ClientNav() {
     const pathname = usePathname();
@@ -38,6 +39,14 @@ export function ClientNav() {
                             </Link>
                         );
                     })}
+
+                    {/* Mobile Client Logout */}
+                    <div className="relative group flex flex-col items-center">
+                        <div className="relative p-2 rounded-2xl transition-all duration-300 text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer">
+                            {/* Pass a minimal, invisible overlay or just trigger the handler */}
+                            <LogoutButton />
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -73,13 +82,19 @@ export function ClientNav() {
                 </nav>
 
                 <div className="mt-auto">
-                    <div className="glass rounded-2xl p-4 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-800 to-gray-600 flex items-center justify-center border border-white/10">
-                            <User className="w-5 h-5 text-gray-300" />
+                    {/* Desktop Client Logout */}
+                    <div className="glass rounded-2xl p-4 flex flex-col gap-3">
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-800 to-gray-600 flex items-center justify-center border border-white/10">
+                                 <User className="w-5 h-5 text-gray-300" />
+                             </div>
+                             <div className="flex-1 min-w-0">
+                                 <p className="text-sm font-bold text-white truncate">Client Profile</p>
+                                 <p className="text-xs text-[var(--color-text-secondary)] truncate">Manage Details</p>
+                             </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-white truncate">Client Profile</p>
-                            <p className="text-xs text-[var(--color-text-secondary)] truncate">Manage Details</p>
+                        <div className="pt-2 border-t border-[rgba(255,255,255,0.05)] w-full">
+                            <LogoutButton />
                         </div>
                     </div>
                 </div>

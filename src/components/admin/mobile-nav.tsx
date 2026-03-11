@@ -13,6 +13,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/logout-button";
 
 const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
@@ -66,6 +67,11 @@ export function AdminMobileNav() {
                             </Link>
                         );
                     })}
+                </div>
+
+                {/* Logout Button Pinned to Bottom */}
+                <div className="p-4 border-t border-gray-800 absolute bottom-0 w-full bg-gray-900">
+                    <LogoutButton />
                 </div>
             </SheetContent>
         </Sheet>
