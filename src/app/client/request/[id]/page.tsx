@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, Check, X, ShieldCheck, Loader2, DollarSign } from "lucide-react";
+import { ChevronLeft, Check, X, ShieldCheck, Loader2, DollarSign, Clock, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { cancelServiceRequest } from "@/app/actions/dashboard";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
 
 export default function ClientRequestPage() {
     const params = useParams();
@@ -17,6 +20,9 @@ export default function ClientRequestPage() {
     const [bids, setBids] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [accepting, setAccepting] = useState<string | null>(null);
+    const [cancelling, setCancelling] = useState(false);
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
+    const { toast } = useToast();
 
     useEffect(() => {
         fetchData();
@@ -54,7 +60,53 @@ export default function ClientRequestPage() {
             .order("amount", { ascending: true }); // Lowest bids first
 
         if (bidsData) setBids(bidsData);
+
+        // Initialize countdown if still pending
+        if (reqData?.status === 'pending' && reqData.created_at) {
+            const createdAt = new Date(reqData.created_at).getTime();
+            const now = new Date().getTime();
+            const elapsedSeconds = Math.floor((now - createdAt) / 1000);
+            const remaining = Math.max(0, 300 - elapsedSeconds); // 5 minutes = 300 seconds
+            setTimeLeft(remaining);
+        }
+
         setLoading(false);
+    };
+
+    // Auto-Cancel Countdown Logic
+    useEffect(() => {
+        if (timeLeft === null || timeLeft <= 0 || request?.status !== 'pending' || cancelling) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev !== null && prev <= 1) {
+                    clearInterval(timer);
+                    handleCancelRequest(true); // Auto-cancel when reaching 0
+                    return 0;
+                }
+                return prev ? prev - 1 : 0;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [timeLeft, request?.status, cancelling]);
+
+    const handleCancelRequest = async (autoCancel: boolean = false) => {
+        if (cancelling) return;
+        setCancelling(true);
+
+        const res = await cancelServiceRequest(id);
+        if (res.success) {
+            if (autoCancel) {
+                toast({ title: "Tiempo Expirado", description: "La solicitud fue cancelada automáticamente porque ningún técnico aceptó en 5 minutos.", variant: "destructive" });
+            } else {
+                toast({ title: "Solicitud Cancelada", description: "Has cancelado la solicitud con éxito." });
+            }
+            router.push('/client/dashboard');
+        } else {
+            toast({ title: "Error", description: res.error, variant: "destructive" });
+            setCancelling(false);
+        }
     };
 
     const handleAcceptBid = async (bidId: string) => {
@@ -110,6 +162,19 @@ export default function ClientRequestPage() {
                             </div>
                         </div>
                     </div>
+
+                    {request?.status === 'pending' && (
+                        <div className="space-y-4">
+                            <Button
+                                onClick={() => handleCancelRequest(false)}
+                                disabled={cancelling}
+                                variant="destructive"
+                                className="w-full h-12 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]"
+                            >
+                                {cancelling ? <Loader2 className="w-5 h-5 animate-spin" /> : <><X className="w-5 h-5 mr-2" /> Cancel Request</>}
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Bids Feed */}
@@ -130,10 +195,34 @@ export default function ClientRequestPage() {
 
                     <div className="space-y-4 relative">
                         {bids.length === 0 && !isConfirmed && (
-                            <div className="glass rounded-2xl p-8 text-center flex flex-col items-center">
-                                <Loader2 className="w-12 h-12 text-[var(--color-primary)] animate-spin opacity-50 mb-4" />
-                                <p className="text-[var(--color-text-secondary)]">Broadcasting your request to nearby technicians...</p>
-                            </div>
+                            <>
+                                <div className="glass rounded-2xl p-8 text-center flex flex-col items-center">
+                                    <div className="relative mb-6">
+                                        <Loader2 className="w-16 h-16 text-[var(--color-primary)] animate-spin" />
+                                        {timeLeft !== null && (
+                                            <div className="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">
+                                                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">Searching for Technicians...</h3>
+                                    <p className="text-[var(--color-text-secondary)] px-4">
+                                        Broadcasting your request to the nearby network. If no one accepts within 5 minutes, this request will be automatically cancelled.
+                                    </p>
+                                </div>
+
+                                <div className="glass rounded-2xl p-4 sm:p-6 border border-yellow-500/30 bg-yellow-500/5 flex items-start gap-4">
+                                    <div className="p-3 bg-yellow-500/20 rounded-full mt-1 shrink-0">
+                                        <DollarSign className="w-6 h-6 text-yellow-400" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-yellow-100 mb-1">Want faster responses?</h4>
+                                        <p className="text-sm text-yellow-200/80 mb-3 leading-relaxed">
+                                            Technicians prioritize gigs with highly competitive payouts. If you've been waiting for a while, consider cancelling this request and creating a new one with a higher offered price.
+                                        </p>
+                                    </div>
+                                </div>
+                            </>
                         )}
 
                         <AnimatePresence>

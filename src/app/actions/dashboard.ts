@@ -275,3 +275,44 @@ export async function markAlertRead(alertId: string): Promise<ActionResponse> {
         return { success: false, error: "Error updating alert" };
     }
 }
+
+export async function cancelServiceRequest(requestId: string): Promise<ActionResponse> {
+    try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) return { success: false, error: "Debes iniciar sesión para cancelar." };
+
+        // Ensure the request belongs to the user and is still pending
+        const { data: request, error: fetchError } = await supabase
+            .from('service_requests')
+            .select('id, requester_id, status')
+            .eq('id', requestId)
+            .single();
+
+        if (fetchError || !request) {
+            return { success: false, error: "Solicitud no encontrada." };
+        }
+
+        if (request.requester_id !== user.id) {
+            return { success: false, error: "No tienes permiso para cancelar esta solicitud." };
+        }
+
+        if (request.status !== 'pending') {
+            return { success: false, error: "Solo se pueden cancelar solicitudes pendientes." };
+        }
+
+        const { error: updateError } = await supabase
+            .from('service_requests')
+            .update({ status: 'cancelled' })
+            .eq('id', requestId);
+
+        if (updateError) throw updateError;
+
+        revalidatePath('/dashboard');
+        return deepSerialize({ success: true });
+    } catch (e: any) {
+        console.error("Cancel Service Request FAILED:", e.message || e);
+        return { success: false, error: "Error al cancelar la solicitud." };
+    }
+}
